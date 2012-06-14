@@ -1,0 +1,9 @@
+; BHGX_CardActiveX.def : 定义模块参数。
+
+LIBRARY      "BHGX_CardActiveX.DLL"
+
+EXPORTS
+	DllCanUnloadNow		PRIVATE
+	DllGetClassObject	PRIVATE
+	DllRegisterServer	PRIVATE
+	DllUnregisterServer	PRIVATE

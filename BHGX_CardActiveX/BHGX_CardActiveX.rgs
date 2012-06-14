@@ -1,0 +1,11 @@
+HKCR
+{
+	NoRemove AppID
+	{
+		'%APPID%' = s 'BHGX_CardActiveX'
+		'BHGX_CardActiveX.DLL'
+		{
+			val AppID = s '%APPID%'
+		}
+	}
+}

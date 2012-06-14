@@ -1,0 +1,14 @@
+;PrintDLL.def
+LIBRARY PrintDLL.dll
+DESCIPTION 	'打印的动态链接库驱动DLL'
+EXPORTS
+	iFeedCardToM1	@1
+	iBackCardFromM1	@2
+	iInitGraphics	@3
+	iPrintText	@4
+	iFlushGraphics	@5
+	iCloseGraphics	@6
+	iOutCard	@7
+	iProbePrinter	@8
+	iFreePrinter    @9
+	iCheckPrinterStatus	@10

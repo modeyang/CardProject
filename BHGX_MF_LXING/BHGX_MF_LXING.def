@@ -1,0 +1,12 @@
+;zb_mifare.def
+LIBRARY "zb_mifare"
+DESCIPTION	'Zb_Mifare Çý¶¯'
+EXPORTS
+	bProbe		@1
+	iOpen		@2
+	iClose		@3
+	iScanCard	@4
+	iIOCtl		@5
+	iRead		@6
+	iWrite		@7
+	iChangePwdEx	@8

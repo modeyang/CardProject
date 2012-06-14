@@ -1,0 +1,11 @@
+;BHGX_MF_VCard.def
+LIBRARY BHGX_MF_VCard.dll
+DESCIPTION	'±±º½¹ÚÐÂÐéÄâ¿¨Çý¶¯DLL'
+EXPORTS
+	bProbe		@1
+	iOpen		@2
+	iClose		@3
+	iScanCard	@4
+	iIOCtl		@5
+	iRead		@6
+	iWrite		@7

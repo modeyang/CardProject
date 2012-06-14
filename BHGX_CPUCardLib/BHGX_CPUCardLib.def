@@ -1,0 +1,25 @@
+;BHGX_CPUCardLib.def
+LIBRARY BHGX_CPUCardLib.dll
+DESCIPTION	'北航冠新CPU卡驱动程序'
+EXPORTS
+	iGetCardVersion 	@1
+	iCardInit		@2
+	iReadInfo		@3
+	iWriteInfo		@4
+	iQueryInfo		@5
+	err			      @6
+	iPatchCard		@7
+	iPrintCard		@8
+	iCreateCard		@9
+	iCardCtlCard		@10
+	iFormatCard		@11
+	iScanCard		@12
+	iReadAnyInfo		@13
+	iCardClose		@14
+	iReadCardMessageForNH	@15
+	iCardIsEmpty		@16
+	iCheckMsgForNH		@17
+	iRegMsgForNH		@18
+	iReadConfigMsg  @19
+	iEncryFile      @20
+	iGetPrinterList @21

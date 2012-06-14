@@ -1,0 +1,27 @@
+HKCR
+{
+	BHGX_CardActiveX.CardProcess.1 = s 'CardProcess Class'
+	{
+		CLSID = s '{8610611D-8094-461B-B83A-881CCB340D3E}'
+	}
+	BHGX_CardActiveX.CardProcess = s 'CardProcess Class'
+	{
+		CLSID = s '{8610611D-8094-461B-B83A-881CCB340D3E}'
+		CurVer = s 'BHGX_CardActiveX.CardProcess.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {8610611D-8094-461B-B83A-881CCB340D3E} = s 'CardProcess Class'
+		{
+			ProgID = s 'BHGX_CardActiveX.CardProcess.1'
+			VersionIndependentProgID = s 'BHGX_CardActiveX.CardProcess'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			val AppID = s '%APPID%'
+			'TypeLib' = s '{892D8909-1013-42C0-86C3-62653E0797B3}'
+		}
+	}
+}

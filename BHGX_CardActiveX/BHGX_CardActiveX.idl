@@ -1,0 +1,61 @@
+// BHGX_CardActiveX.idl : BHGX_CardActiveX 的 IDL 源
+//
+
+// 此文件将由 MIDL 工具处理以
+// 产生类型库(BHGX_CardActiveX.tlb)和封送处理代码。
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(02D30C94-A1B9-4663-99A9-C9F856ED3137),
+	dual,
+	nonextensible,
+	helpstring("ICardProcess 接口"),
+	pointer_default(unique)
+]
+interface ICardProcess : IDispatch{
+	[id(1), helpstring("方法iATLGetCardVersion")] HRESULT iATLGetCardVersion([out,retval] BSTR* szVersion);
+	[id(2), helpstring("方法iATLCardInit")] HRESULT iATLCardInit( [out,retval]LONG *nRet);
+	[id(3), helpstring("方法iATLReadInfo")] HRESULT iATLReadInfo(LONG nFlag, [out,retval] BSTR* szReadXML);
+	[id(4), helpstring("方法iATLWriteInfo")] HRESULT iATLWriteInfo(BSTR szXML, [out,retval]LONG *nRet);
+	[id(5), helpstring("方法iATLQueryInfo")] HRESULT iATLQueryInfo(BSTR szQuerySource, [out,retval] BSTR* szResult);
+	[id(6), helpstring("方法iATLerr")] HRESULT iATLerr([out,retval]BSTR* szError);
+	[id(7), helpstring("方法iATLFormatCard")] HRESULT iATLFormatCard([out,retval]LONG *nRet);
+	[id(8), helpstring("方法iATLCreateCard")] HRESULT iATLCreateCard(BSTR szCardXML, [out,retval]LONG *nRet);
+	[id(9), helpstring("方法iATLPrintCard")] HRESULT iATLPrintCard(BSTR pszPrinterType, BSTR pszCardCoverDataXml,
+		BSTR pszCardCoverXml, [out,retval]LONG *nRet);
+	[id(10), helpstring("方法iATLPatchCard")] HRESULT iATLPatchCard(BSTR szCardXML, BSTR pszCardCoverDataXml, 
+		BSTR pszPrinterType, BSTR pszCardCoverXml, [out,retval]LONG *nRet);
+	[id(11), helpstring("方法iATLCreateCardData")] HRESULT iATLCreateCardData(BSTR szCreateData, BSTR szLicense);
+	[id(12), helpstring("方法iATLScanCard")] HRESULT iATLScanCard([out,retval] LONG* nRet);
+	[id(13), helpstring("方法iATLCardClose")] HRESULT iATLCardClose([out,retval]LONG* nRet);
+	[id(15), helpstring("方法iATLReadCardMessageForNH")] HRESULT iATLReadCardMessageForNH(BSTR pszCardCheckXML, BSTR pszCardRewritePackageXML, [out,retval] BSTR* pszXml);
+	[id(16), helpstring("方法iATLReadHISInfo")] HRESULT iATLReadHISInfo(BSTR pszCardCheckXML, BSTR pszCardRewritePackageXML,[out,retval] BSTR* szXML);
+	[id(17), helpstring("方法iATLReadInfoForXJ")] HRESULT iATLReadInfoForXJ(BSTR pszCardCheckXML, BSTR pszCardRewritePackageXML,[out,retval] BSTR* szXML);
+	[id(18), helpstring("方法iATLCardIsEmpty")] HRESULT iATLCardIsEmpty([out,retval] LONG* bEmpty);
+	[id(19), helpstring("方法iATLCheckMsgForNH")] HRESULT iATLCheckMsgForNH(BSTR bstrCheckWSDL, BSTR bstrServerURL, [out,retval]  BSTR* strCheckRet);
+	[id(20), helpstring("方法iATLReadConfigMsg")] HRESULT iATLReadConfigMsg(BSTR bstrConfigInfo, [out,retval] BSTR* bstrReadXML);
+	[id(21), helpstring("方法iATLRegMsgForNH")] HRESULT iATLRegMsgForNH(BSTR bstrServerURL, [out,retval] BSTR* bstrReadXML);
+	[id(22), helpstring("方法iATLEncryFile")] HRESULT iATLEncryFile(BSTR bstrfilename, [out,retval] LONG* nProCode);
+	[id(23), helpstring("方法iATLGetPrinterList")] HRESULT iATLGetPrinterList([out,retval] BSTR* bstrPrinterXML);
+	[id(24), helpstring("方法iATLReadOnlyHIS")] HRESULT iATLReadOnlyHIS([out,retval] BSTR* bstrHISInfo);
+};
+[
+	uuid(892D8909-1013-42C0-86C3-62653E0797B3),
+	version(1.0),
+	helpstring("BHGX_CardActiveX 1.0 类型库")
+]
+library BHGX_CardActiveXLib
+{
+	importlib("stdole2.tlb");
+	[
+		uuid(8610611D-8094-461B-B83A-881CCB340D3E),
+		helpstring("CardProcess Class")
+	]
+	coclass CardProcess
+	{
+		[default] interface ICardProcess;
+	};
+};
