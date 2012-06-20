@@ -1542,6 +1542,8 @@ int __stdcall iPatchCard(
 		if (nTimeOut >= TIMEOUT)
 		{
 			cout<<"Ñ°¿¨Ê§°Ü"<<endl;
+			m_pBHPrinter->DeInitPrinter();
+			SAFE_DELETE(m_pBHPrinter);
 			return FeedCardError;
 		}
 		Sleep(2000);
@@ -1556,6 +1558,7 @@ int __stdcall iPatchCard(
 		return CardCreateErr;
 	}
 
+	m_pBHPrinter->BackToPrintHeader();
 	nret = iPrintCard(pszPrinterType, pszCardCoverDataXml, pszCardCoverXml);
 	if (nret != 0)
 	{
@@ -1654,8 +1657,8 @@ int __stdcall iCreateCard(char *pszCardDataXml)
 	ASSERT_INIT(m_bCardInit);
 	int result = 0;
 
-	if (!CheckLicense())
-		return CardCreateErr;
+	//if (!CheckLicense())
+	//	return CardCreateErr;
 
 	if (iScanCard() != 0)
 		return CardScanErr;

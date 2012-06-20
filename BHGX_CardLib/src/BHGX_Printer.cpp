@@ -126,6 +126,13 @@ int	 CBHGX_Printer::FeedCard()
 	return -1;
 }
 
+int CBHGX_Printer::BackToPrintHeader()
+{
+	if (m_iPrinter.iBackCardToPrintHeader != NULL)
+		return m_iPrinter.iBackCardToPrintHeader();
+	return -1;
+}
+
 int  CBHGX_Printer::CheckStatus()
 {
 	return m_iPrinter.iCheckPrinterStatus();
@@ -198,7 +205,7 @@ int CBHGX_Printer::StartPrint()
 	int nRet = -1;
 	if (m_bInit)
 	{
-		m_iPrinter.iBackCardToPrintHeader();
+		//m_iPrinter.iBackCardToPrintHeader();
 		nRet = m_iPrinter.iInitGraphics(m_strPrinter.c_str());
 
 		if (nRet != 1)

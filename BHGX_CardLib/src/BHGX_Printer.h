@@ -232,6 +232,7 @@ public:
 	int  DeInitPrinter();
 	int  StartPrint();
 	int	 FeedCard();
+	int  BackToPrintHeader();
 	int  CheckStatus();
 	static int	GetPrinterList(std::vector<std::string> &vecPrinter);
 protected:
