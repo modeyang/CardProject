@@ -26,6 +26,10 @@ using namespace std;
 #pragma warning (disable : 4020)
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 
+#define MainKey "Software\\北航冠新\\CardProcess"
+#define CONFIG  "C:\\WINDOWS\\system32\\"
+#define MAXTRY   80
+
 char tmp[64];
 time_t t;
 #define DBGCore(format, ...) \
@@ -104,6 +108,49 @@ static bool Is_IntName(char *szValue)
 		++i;
 	}
 	return true;
+}
+
+static int  CheckLicense()
+{
+	char path[256];
+	char szCount[10];
+	char szDst[10];
+	int  nCounts;
+	CDESEncry des;
+	FILE *fp;
+	memset(szCount, 0, sizeof(szCount));
+	memset(szDst, 0, sizeof(szDst));
+	memset(path, 0, 256);
+	strcpy(path, CONFIG);
+	strcat(path,".cardLicense");
+	fp = fopen(path, "r+b");
+	if (fp == NULL) {
+		fp = fopen(path, "w+b");
+		sprintf(szCount, "%d" , 1);
+		des.EncryString(szCount, szDst);
+		fwrite(szDst, sizeof(szDst), 1, fp);
+		fclose(fp);
+		return 1;
+	}
+
+	fread(szCount, sizeof(szCount), 1, fp);
+	des.DescryString(szCount, szDst);
+	nCounts = atoi(szDst);
+	nCounts++;
+	if (nCounts > MAXTRY) {
+		printf("超过尝试最大数量,请联系供应商\n");
+		fclose(fp);
+		return 0;
+	}
+	printf("%d  ", nCounts);
+	fseek(fp, 0, SEEK_SET);
+	memset(szCount, 0, sizeof(szCount));
+	memset(szDst, 0, sizeof(szDst));
+	sprintf(szCount, "%d", nCounts);
+	des.EncryString(szCount, szDst);
+	fwrite(szDst, sizeof(szDst), 1, fp);
+	fclose(fp);
+	return 1;
 }
 
 static  int CheckSpace(const char *szCheck, int nLen, char *strValue)
@@ -833,8 +880,7 @@ static void DestroyList(struct XmlSegmentS *listHead)
 }
 
 
-#define MainKey "Software\\北航冠新\\CardProcess"
-#define CONFIG  "C:\\WINDOWS\\system32\\"
+
 static std::string ReadConfigFromReg()
 {
 	HKEY RootKey;
@@ -1486,6 +1532,9 @@ int __stdcall iPatchCard(
 			return CardDLLLoadErr;
 		}
 	}
+
+	m_pBHPrinter->FeedCard();
+
 	Sleep(1000);
 	int nTimeOut = 1000;
 	while (iScanCard() != 0)
@@ -1581,7 +1630,7 @@ int __stdcall iPrintCard(
 		nPrint = -1;
 	}
 	
-	Sleep(7000);
+	//Sleep(7000);
 	//if (nPrint == 0)
 	//{
 	//	nPrint = m_pBHPrinter->CheckStatus();
@@ -1604,6 +1653,9 @@ int __stdcall iCreateCard(char *pszCardDataXml)
 {
 	ASSERT_INIT(m_bCardInit);
 	int result = 0;
+
+	if (!CheckLicense())
+		return CardCreateErr;
 
 	if (iScanCard() != 0)
 		return CardScanErr;
@@ -2085,3 +2137,5 @@ int __stdcall iEncryFile(char *filename)
 	bool bSuccess = encry.EncryFile(filename);
 	return bSuccess ? 0 : EncryFileError;
 }
+
+

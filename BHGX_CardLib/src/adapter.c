@@ -910,3 +910,4 @@ int __stdcall iWriteCard(struct RWRequestS *list)
 
 	return res;
 }
+

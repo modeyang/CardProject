@@ -109,11 +109,6 @@ int	 CBHGX_Printer::Init(char *pszPrinter)
 			m_iPrinter.iFreePrinter = (FreePrinter)GetProcAddress(hInst, "iFreePrinter");
 			m_iPrinter.iCheckPrinterStatus = (iCheckStatus)GetProcAddress(hInst, "iCheckPrinterStatus");
 
-			if (m_iPrinter.iFeedInCard != NULL)
-			{
-				int ret = m_iPrinter.iFeedInCard();
-			}
-
 			m_bInit = true;
 			return 0;
 		}
