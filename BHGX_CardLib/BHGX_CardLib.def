@@ -23,3 +23,5 @@ EXPORTS
 	iReadConfigMsg  @19
 	iEncryFile      @20
 	iGetPrinterList @21
+	iCardOpen        @22
+	iCardDeinit      @23

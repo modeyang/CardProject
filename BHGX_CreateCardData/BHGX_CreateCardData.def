@@ -3,4 +3,4 @@ LIBRARY BHGX_CreateCardData.dll
 ;DESCIPTION	'北航冠新制卡动态库'
 EXPORTS
 	iCreateCardData		@1
-	iCreatePubSysCardData	@2
+	iCreateCardDataForEncry	@2

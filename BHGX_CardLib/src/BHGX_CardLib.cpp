@@ -60,7 +60,9 @@ struct QueryColum
 
 
 CBHGX_Printer *m_pBHPrinter = NULL;
-BOOL m_bCardInit = FALSE;
+BOOL g_bPreLoad = FALSE;
+BOOL g_bCardOpen = FALSE;
+
 
 /**
  * 全局的数据结构
@@ -1242,11 +1244,21 @@ static struct CreateKeyInfoS* CreateCardKeyInfo(unsigned char *seed)
 }
 
 
-#define ASSERT_INIT(a)\
-	if (a != TRUE)\
-	{\
-		return -1;\
-	}\
+#define ASSERT_INIT(a)      \
+	if (a != TRUE)          \
+	{                       \
+		return -1;          \
+	}                       \
+
+
+#define ASSERT_OPEN(a)       \
+	 if (!a)                 \
+	     return CardNotOpen; \
+
+
+
+
+
 /**
  *
  */
@@ -1265,9 +1277,9 @@ int __stdcall iGetCardVersion(char *pszVersion)
  */
 int __stdcall iCardInit(char *xml)
 {
-	if (m_bCardInit == TRUE)
+	if (g_bPreLoad == TRUE)
 	{
-		iCardClose();
+		return 0;
 	}
 
 	// 在资源文件里边提取XML文件并且初始化他
@@ -1293,22 +1305,43 @@ int __stdcall iCardInit(char *xml)
 	std::string szSystem = ReadConfigFromReg();
 
 	// 对设备进行初始化
-	m_bCardInit = (initCoreDevice(szSystem.c_str())==0);
-	return m_bCardInit==TRUE ? 0:-1;
+	g_bPreLoad = (initCoreDevice(szSystem.c_str())==0);
+	g_bCardOpen = g_bPreLoad;
+	return g_bPreLoad==TRUE ? 0:-1;
 }
 
-
-int __stdcall iCardClose()
+int __stdcall iCardDeinit()
 {
 	DestroyList(XmlListHead);
 	XmlListHead = NULL;
-	m_bCardInit = FALSE;
+	g_bPreLoad = FALSE;
+	g_bCardOpen = FALSE;
 	return closeCoreDevice();
 }
 
+int __stdcall iCardOpen()
+{
+   ASSERT_INIT(g_bPreLoad);
+   int ret =  opendev();
+   if (!ret)
+	   g_bCardOpen = TRUE;
+   return ret;
+
+}
+
+int __stdcall iCardClose()
+{
+	ASSERT_OPEN(g_bCardOpen);
+	int ret =  closedev();
+	if (!ret)
+		g_bCardOpen = FALSE;
+	return ret;
+}
+
+
 int __stdcall iScanCard()
 {
-	ASSERT_INIT(m_bCardInit);
+	ASSERT_OPEN(g_bCardOpen);
 	return iCoreFindCard();
 }
 /**
@@ -1324,7 +1357,7 @@ char* __stdcall err(int errcode)
 
 int __stdcall iCardIsEmpty()
 {
-	ASSERT_INIT(m_bCardInit);
+	ASSERT_OPEN(g_bCardOpen);
 
 	if (iScanCard() != 0)
 		return CardScanErr;
@@ -1371,7 +1404,7 @@ int __stdcall iCardIsEmpty()
 
 int __stdcall iReadInfo(int flag, char *xml)
 {
-	ASSERT_INIT(m_bCardInit);
+	ASSERT_OPEN(g_bCardOpen);
 	struct XmlSegmentS	*list = NULL;
 	struct RWRequestS	*RequestList = NULL;
 	int length;
@@ -1415,7 +1448,7 @@ int __stdcall iReadInfo(int flag, char *xml)
 
 DLL_EXPORT int __stdcall iReadAnyInfo(int flag, char *xml, char *name)
 {
-	ASSERT_INIT(m_bCardInit);
+	ASSERT_OPEN(g_bCardOpen);
 	if (iScanCard() != 0)
 		return CardScanErr;
 	int nret = -1;
@@ -1437,7 +1470,7 @@ DLL_EXPORT int __stdcall iReadAnyInfo(int flag, char *xml, char *name)
  */
 int __stdcall iQueryInfo(char *name, char *xml)
 {
-	ASSERT_INIT(m_bCardInit);
+	ASSERT_OPEN(g_bCardOpen);
 	if (iScanCard() != 0)
 		return CardScanErr;
 
@@ -1471,7 +1504,7 @@ int __stdcall iQueryInfo(char *name, char *xml)
  */
 int __stdcall iWriteInfo(char *xml)
 {
-	ASSERT_INIT(m_bCardInit);
+	ASSERT_OPEN(g_bCardOpen);
 
 	if (CheckCardXMLValid(xml) < 0)
 	{
@@ -1521,7 +1554,7 @@ int __stdcall iPatchCard(
 						char *pszCardCoverXml 
 						)
 {
-	ASSERT_INIT(m_bCardInit);
+	ASSERT_OPEN(g_bCardOpen);
 	
 	if (m_pBHPrinter == NULL)
 	{
@@ -1546,8 +1579,8 @@ int __stdcall iPatchCard(
 			SAFE_DELETE(m_pBHPrinter);
 			return FeedCardError;
 		}
-		Sleep(2000);
-		nTimeOut += 2000;
+		Sleep(1000);
+		nTimeOut += 1000;
 	}
 
 	int nret = iCreateCard(pszCardDataXml);
@@ -1557,7 +1590,7 @@ int __stdcall iPatchCard(
 		SAFE_DELETE(m_pBHPrinter);
 		return CardCreateErr;
 	}
-
+   
 	m_pBHPrinter->BackToPrintHeader();
 	nret = iPrintCard(pszPrinterType, pszCardCoverDataXml, pszCardCoverXml);
 	if (nret != 0)
@@ -1654,7 +1687,7 @@ int __stdcall iPrintCard(
 
 int __stdcall iCreateCard(char *pszCardDataXml)
 {
-	ASSERT_INIT(m_bCardInit);
+	ASSERT_OPEN(g_bCardOpen);
 	int result = 0;
 
 	//if (!CheckLicense())
@@ -1710,7 +1743,7 @@ int __stdcall iCreateCard(char *pszCardDataXml)
 
 int __stdcall iFormatCard()
 {
-	ASSERT_INIT(m_bCardInit);
+	ASSERT_OPEN(g_bCardOpen);
 	if (iScanCard() != 0)
 		return CardScanErr;
 
@@ -1720,13 +1753,13 @@ int __stdcall iFormatCard()
 
 int __stdcall iCardCtlCard(int cmd, void *data)
 {
-	ASSERT_INIT(m_bCardInit);
+	ASSERT_OPEN(g_bCardOpen);
 	return iCtlCard(cmd, data);
 }
 
 DLL_EXPORT int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServerURL,char* pszXml)
 {
-	ASSERT_INIT(m_bCardInit);
+	ASSERT_OPEN(g_bCardOpen);
 	std::string strCheckWSDL = pszCardCheckWSDL;
 	std::string strServerURL = pszCardServerURL;
 
@@ -1775,9 +1808,9 @@ DLL_EXPORT int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServ
 	if(m_CardObj.soap->error)   
 	{   
 		bSuccessed = false;
-		CreateResponXML(3, "与服务器连接失败", strResult);
 		DBGCore( "soap error:%d,%s,%s/n", m_CardObj.soap->error, *soap_faultcode(m_CardObj.soap),
 			*soap_faultstring(m_CardObj.soap));
+		CreateResponXML(3, *soap_faultstring(m_CardObj.soap), strResult);
 		strcpy(pszXml, strResult);
 	}
 	else
@@ -1823,7 +1856,7 @@ DLL_EXPORT int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServ
 
 DLL_EXPORT int __stdcall iReadConfigMsg(char *pszConfigXML,char *pszReadXML)
 {
-	ASSERT_INIT(m_bCardInit);
+	ASSERT_OPEN(g_bCardOpen);
 	std::string strQuery("");
 	std::vector<std::string> vecQuery;
 	vecQuery = split(std::string(pszConfigXML), "|");
@@ -1857,7 +1890,7 @@ DLL_EXPORT int __stdcall iReadConfigMsg(char *pszConfigXML,char *pszReadXML)
 
 DLL_EXPORT int __stdcall iRegMsgForNH(char *pszCardServerURL,char* pszXml)
 {
-	ASSERT_INIT(m_bCardInit);
+	ASSERT_OPEN(g_bCardOpen);
 	std::string strServerURL = pszCardServerURL;
 
 	std::string strXML;

@@ -187,12 +187,14 @@ typedef std::vector<PrintColumn> vecColumn;
 
 struct  PrintSegMent
 {
-	int nID;
-	std::string strContent;
-	BH_PrintInfo SegPrintInfo;
-	vecColumn vecPrintColumn;
+	int				nID;
+	std::string		strContent;
+	BH_PrintInfo	SegPrintInfo;
+	BOOL			bPrint;
+	vecColumn		vecPrintColumn;
 	PrintSegMent()
 		:nID(0)
+		,bPrint(FALSE)
 	{
 
 	}
@@ -202,6 +204,7 @@ struct  PrintSegMent
 		,strContent(node.strContent)
 		,SegPrintInfo(node.SegPrintInfo)
 		,vecPrintColumn(node.vecPrintColumn)
+		,bPrint(FALSE)
 	{
 
 	}
@@ -214,6 +217,7 @@ struct  PrintSegMent
 			strContent = node.strContent;
 			SegPrintInfo = node.SegPrintInfo;
 			vecPrintColumn = node.vecPrintColumn;
+			bPrint = node.bPrint;
 		}
 		return *this;
 	}

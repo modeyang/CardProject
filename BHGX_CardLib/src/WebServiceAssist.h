@@ -175,7 +175,7 @@ int CreateCheckWsdlParams(const char *CardID, const char *pszCardCheckWSDL, char
 	sprintf(strParams, "<root><system><parm name=\"functionName\" value=\" CardCheckForNH\"/>"
 		"<parm name=\"divisionCode\" value=\"\"/></system><parms><parm name=\"cardID \" value=\"%s\"/>"
 		"<parm name=\" pszCardCheckWSDL \" value=\"%s\"/></parms></root>", CardID, pszCardCheckWSDL);
-	//strParams[strlen(strParams)] = 0;
+	strParams[strlen(strParams)] = 0;
 	return 0;
 }
 

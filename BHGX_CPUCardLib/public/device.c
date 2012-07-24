@@ -75,17 +75,19 @@ static struct CardDevice *_InitDevice(HINSTANCE hInstLibrary)
 	result->iClose = (DllClose)GetProcAddress(hInstLibrary, "iClose");
 	result->iIOCtl = (DLLIOCtl)GetProcAddress(hInstLibrary, "iIOCtl");
 	result->ICCSet = (DLLICCSet)GetProcAddress(hInstLibrary, "ICCSet");
-	result->iGetDevAuthGene = (DLLGetDevAuthGene)GetProcAddress(hInstLibrary, "iGetDevAuthGene");
-	result->iDevAuthSys = (DLLDevAuthSys)GetProcAddress(hInstLibrary, "iDevAuthSys");
-	result->iSysAuthDev = (DLLSysAuthDev)GetProcAddress(hInstLibrary,"iSysAuthDev");
+	//result->iGetDevAuthGene = (DLLGetDevAuthGene)GetProcAddress(hInstLibrary, "iGetDevAuthGene");
+	//result->iDevAuthSys = (DLLDevAuthSys)GetProcAddress(hInstLibrary, "iDevAuthSys");
+	//result->iSysAuthDev = (DLLSysAuthDev)GetProcAddress(hInstLibrary,"iSysAuthDev");
 	result->iGetRandom = (DLLGetRandom)GetProcAddress(hInstLibrary, "iGetRandom");
 	result->iSelectFile = (DLLSelectFile)GetProcAddress(hInstLibrary, "iSelectFile");
-	result->iSysAuthUCard = (DLLSysAuthUCard)GetProcAddress(hInstLibrary, "iSysAuthUCard");
+	//result->iSysAuthUCard = (DLLSysAuthUCard)GetProcAddress(hInstLibrary, "iSysAuthUCard");
 	result->iUCardAuthSys = (DLLUCardAuthSys)GetProcAddress(hInstLibrary,"iUCardAuthSys");
 	result->iReadRec = (DllReadRec)GetProcAddress(hInstLibrary, "iReadRec");
 	result->iWriteRec = (DllWriteRec)GetProcAddress(hInstLibrary, "iWriteRec");
 	result->iReadBin = (DllReadBin)GetProcAddress(hInstLibrary, "iReadBin");
 	result->iWriteBin = (DllWriteBin)GetProcAddress(hInstLibrary, "iWriteBin");
+	result->iAppendRec = (DllAppendRec)GetProcAddress(hInstLibrary, "iAppendRec");
+	result->iSignRec = (DllSignRec)GetProcAddress(hInstLibrary, "iSignRec");
 	return result;
 }
 
@@ -107,7 +109,7 @@ struct CardDevice *getCardDevice(const char *System)
 	int nProbe = 0;
 
 	// ¿ªÊ¼²éÕÒ
-	strcpy(Pattern, "..\\debug\\");
+	strcpy(Pattern, "..\\Debug\\");
 	strcat(Pattern, "BHGX_MF_*.dll");
 	hFind = FindFirstFile(Pattern, &FindFileData);
 	while (hFind != INVALID_HANDLE_VALUE)

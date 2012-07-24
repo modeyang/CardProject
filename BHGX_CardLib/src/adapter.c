@@ -180,6 +180,21 @@ int __stdcall closeCoreDevice(void)
 	return ret;
 }
 
+int __stdcall opendev(void)
+{
+	int ret = 0;
+	if (Instance)
+		ret = Instance->iOpen();
+	return ret;
+}
+int __stdcall closedev(void)
+{
+	int ret = 0;
+	if (Instance)
+		ret = Instance->iClose();
+	return ret;
+}
+
 /**
  * º¯Êı£ºiFindCard
  * ²ÎÊı£º

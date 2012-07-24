@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<SEGMENTS PROGRAMID="001">
+    <SEGMENT ID="11">
+        <COLUMN ID="1" VALUE="艾滋病" />
+        <COLUMN ID="2" VALUE="想死" />
+    </SEGMENT>
+</SEGMENTS>

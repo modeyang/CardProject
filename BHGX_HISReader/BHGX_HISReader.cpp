@@ -276,7 +276,10 @@ int __stdcall iReadHISInfo(char *pszCardCheckWSDL, char *pszCardServerURL, char 
 
 	memset(xml, 0, strlen(xml)+1);
 
-	return GetHISInfo(szRead, xml);
+	nInit = GetHISInfo(szRead, xml);
+
+	iCardDeinit();
+	return nInit;
 }
 
 int __stdcall iReadOnlyHIS(char *xml)
@@ -323,7 +326,10 @@ int __stdcall iReadOnlyHIS(char *xml)
 
 	memset(xml, 0, strlen(xml)+1);
 
-	return GetHISInfo(szRead, xml);
+	nInit = GetHISInfo(szRead, xml);
+
+	iCardDeinit();
+	return nInit;
 }
 
 int __stdcall iReadInfoForXJ(char *pszCardCheckWSDL, char *pszCardServerURL, char *xml)
@@ -375,6 +381,10 @@ int __stdcall iReadInfoForXJ(char *pszCardCheckWSDL, char *pszCardServerURL, cha
 
 	memset(xml, 0, strlen(xml)+1);
 
-	return GetInfoForXJ(szRead, xml);
+	nInit = GetHISInfo(szRead, xml);
+
+	iCardDeinit();
+
+	return nInit;
 }
 

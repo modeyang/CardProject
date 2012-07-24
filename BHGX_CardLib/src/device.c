@@ -134,9 +134,9 @@ struct CardDevice *getCardDevice(const char *System)
 	}
 	FindClose(hFind);
 
-	/**
-	 * 如果设备找到，就打开并且嗡鸣一下
-	 */
+	///**
+	// * 如果设备找到，就打开并且嗡鸣一下
+	// */
 	if(result)
 	{
 		int ret = result->iOpen();

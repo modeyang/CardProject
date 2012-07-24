@@ -28,11 +28,20 @@ typedef int (__stdcall *DLLSysAuthDev)(unsigned char *, unsigned char *);
 typedef int (__stdcall *DLLGetRandom)(unsigned char, unsigned char, unsigned char *);
 typedef int (__stdcall *DLLSelectFile)(unsigned char, unsigned char *);
 typedef int (__stdcall *DLLSysAuthUCard)(unsigned char *, unsigned char *, unsigned char *);
-typedef int (__stdcall *DLLUCardAuthSys)(void);
+typedef int (__stdcall *DLLUCardAuthSys)(int);
 typedef int (__stdcall *DllReadBin)(unsigned char ,unsigned char *, unsigned char *, int, int);
 typedef int (__stdcall *DllWriteBin)(unsigned char, unsigned char *, unsigned char *, int ,int);
 typedef int (__stdcall *DllReadRec)(unsigned char ,unsigned char *, unsigned char *, int, int, int);
 typedef int (__stdcall *DllWriteRec)(unsigned char, unsigned char *, unsigned char *, int ,int,int);
+
+//add at 0624
+
+typedef int (_stdcall  *DllAppendRec)(unsigned char *, unsigned char *, unsigned long);
+
+
+typedef int (_stdcall  *DllSignRec)(unsigned char *pFID, 
+								 int		iRecNo,
+								 int		sign );
 
 /**
  * strurct 
@@ -56,17 +65,19 @@ struct CardDevice
 	DllClose			iClose;
 	DLLIOCtl			iIOCtl;
 	DLLICCSet			ICCSet;
-	DLLGetDevAuthGene	iGetDevAuthGene;
-	DLLDevAuthSys		iDevAuthSys;
-	DLLSysAuthDev		iSysAuthDev;
+	//DLLGetDevAuthGene	iGetDevAuthGene;
+	//DLLDevAuthSys		iDevAuthSys;
+	//DLLSysAuthDev		iSysAuthDev;
 	DLLGetRandom		iGetRandom;
 	DLLSelectFile		iSelectFile;
-	DLLSysAuthUCard		iSysAuthUCard;
+	//DLLSysAuthUCard		iSysAuthUCard;
 	DLLUCardAuthSys     iUCardAuthSys;
 	DllReadRec			iReadRec;
 	DllWriteRec			iWriteRec;
 	DllReadBin			iReadBin;
 	DllWriteBin			iWriteBin;
+	DllAppendRec        iAppendRec;
+	DllSignRec          iSignRec;
 };
 
 #ifdef  __cplusplus

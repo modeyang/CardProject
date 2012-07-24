@@ -454,12 +454,6 @@ int __stdcall iCreateCardData(
 	{
 		while(in.getline(lines, 1024))
 		{
-		//CDESEncry encry;
-		//encry.DesryFile((char*)filename);
-		//for (int i=0; i<encry.GetMaxLines(); ++i)
-		//{
-		//	encry.GetlineInfo(lines, i);
-
 			mbstowcs(wlines, lines, sizeof(lines));
 
 			// 定义变量，组织vector信息
@@ -528,7 +522,7 @@ int __stdcall iCreateCardData(
 	return result;
 }
 
-DLL_EXPORT int __stdcall iCreatePubSysCardData( 
+DLL_EXPORT int __stdcall iCreateCardDataForEncry( 
 	const char *filename, 
 	const char *license,
 	const char *datafile, 
@@ -566,13 +560,11 @@ DLL_EXPORT int __stdcall iCreatePubSysCardData(
 	ofstream out(infofile);
 	if(in && out) 
 	{
-		while(in.getline(lines, 1024))
+		CDESEncry encry;
+		encry.DesryFile((char*)filename);
+		for (int i=0; i<encry.GetMaxLines(); ++i)
 		{
-		//CDESEncry encry;
-		//encry.DesryFile((char*)filename);
-		//for (int i=0; i<encry.GetMaxLines(); ++i)
-		//{
-		//	encry.GetlineInfo(lines, i);
+			encry.GetlineInfo(lines, i);
 			
 			mbstowcs(wlines, lines, sizeof(lines));
 
@@ -591,12 +583,31 @@ DLL_EXPORT int __stdcall iCreatePubSysCardData(
 			// 初始化卡
 			iCardCtlCard(1, NULL);
 
-			// 写入KEY
-			iWriteKey((unsigned char *)v[0].c_str());
+			if (v[0].c_str()[0] == '0')
+			{
+				// 写入KEY
+				iWriteKey((unsigned char *)v[6].c_str());
 
-			// 写入实际的内容
-			memset(xml, 0, 4096);
-			iCreatePubSysXmlByVector(v, xml, &length);
+				// 写入实际的内容
+				memset(xml, 0, 4096);
+				iCreateXmlByVector(v, xml, &length);
+
+				// 创建信息列表文件
+				iCreateListFile(out, v);
+			}
+			else
+			{
+				// 写入KEY
+				iWriteKey((unsigned char *)v[0].c_str());
+
+				// 写入实际的内容
+				memset(xml, 0, 4096);
+				iCreatePubSysXmlByVector(v, xml, &length);
+
+				// 创建信息列表文件
+				iCreatePubSysListFile(out, v);
+			}
+
 
 			if (iWriteInfo(xml) != 0)
 			{

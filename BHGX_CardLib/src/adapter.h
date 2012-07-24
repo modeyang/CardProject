@@ -30,7 +30,10 @@ extern "C" {
 #endif
 
 	int __stdcall initCoreDevice(const char *System);
+	
 	int __stdcall closeCoreDevice(void);
+	int __stdcall opendev(void);
+	int __stdcall closedev(void);
 
 	int __stdcall iCoreFindCard(void);
 

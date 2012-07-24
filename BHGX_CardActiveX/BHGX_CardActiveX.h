@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0366 */
-/* at Wed Jan 04 13:46:25 2012
+/* at Wed Jun 27 10:50:43 2012
  */
 /* Compiler settings for .\BHGX_CardActiveX.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -181,6 +181,12 @@ EXTERN_C const IID IID_ICardProcess;
         virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadOnlyHIS( 
             /* [retval][out] */ BSTR *bstrHISInfo) = 0;
         
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLCardOpen( 
+            /* [retval][out] */ LONG *Ret) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLCardDeinit( 
+            /* [retval][out] */ LONG *Ret) = 0;
+        
     };
     
 #else 	/* C style interface */
@@ -344,6 +350,14 @@ EXTERN_C const IID IID_ICardProcess;
             ICardProcess * This,
             /* [retval][out] */ BSTR *bstrHISInfo);
         
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLCardOpen )( 
+            ICardProcess * This,
+            /* [retval][out] */ LONG *Ret);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLCardDeinit )( 
+            ICardProcess * This,
+            /* [retval][out] */ LONG *Ret);
+        
         END_INTERFACE
     } ICardProcessVtbl;
 
@@ -448,6 +462,12 @@ EXTERN_C const IID IID_ICardProcess;
 
 #define ICardProcess_iATLReadOnlyHIS(This,bstrHISInfo)	\
     (This)->lpVtbl -> iATLReadOnlyHIS(This,bstrHISInfo)
+
+#define ICardProcess_iATLCardOpen(This,Ret)	\
+    (This)->lpVtbl -> iATLCardOpen(This,Ret)
+
+#define ICardProcess_iATLCardDeinit(This,Ret)	\
+    (This)->lpVtbl -> iATLCardDeinit(This,Ret)
 
 #endif /* COBJMACROS */
 
@@ -749,6 +769,30 @@ void __RPC_STUB ICardProcess_iATLGetPrinterList_Stub(
 
 
 void __RPC_STUB ICardProcess_iATLReadOnlyHIS_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLCardOpen_Proxy( 
+    ICardProcess * This,
+    /* [retval][out] */ LONG *Ret);
+
+
+void __RPC_STUB ICardProcess_iATLCardOpen_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLCardDeinit_Proxy( 
+    ICardProcess * This,
+    /* [retval][out] */ LONG *Ret);
+
+
+void __RPC_STUB ICardProcess_iATLCardDeinit_Stub(
     IRpcStubBuffer *This,
     IRpcChannelBuffer *_pRpcChannelBuffer,
     PRPC_MESSAGE _pRpcMessage,

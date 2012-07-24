@@ -26,6 +26,7 @@ enum ErrType
 	EncryFileError,
 	DescryFileError,
 	CardIsNotEmpty,
+	CardNotOpen,
 };
 
 static char *errString[] =
@@ -46,7 +47,8 @@ static char *errString[] =
 	"卡注册失败",				//-13
 	"加密文件失败",				//-14
 	"解密文件失败",				//-15
-	"卡不是是空卡",
+	"卡不是空卡",
+	"设备没有被打开",
 };
 
 char *_err(int errcode);

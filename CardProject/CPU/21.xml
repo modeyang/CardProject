@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<SEGMENTS PROGRAMID="001">
+    <SEGMENT ID="21">
+        <COLUMN ID="1" VALUE="放到哪里" />
+        <COLUMN ID="2" VALUE="12312" />
+        <COLUMN ID="3" VALUE="23243" />
+        <COLUMN ID="4" VALUE="233243" />
+        <COLUMN ID="5" VALUE="能放大" />
+    </SEGMENT>
+</SEGMENTS>

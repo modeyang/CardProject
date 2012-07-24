@@ -15,7 +15,11 @@
 	// 动态链接库初始化函数
 	DLL_EXPORT int __stdcall iCardInit(char *xml="");
 
+	DLL_EXPORT int __stdcall iCardDeinit();
+
 	DLL_EXPORT int __stdcall iCardClose();
+
+	DLL_EXPORT int __stdcall iCardOpen();
 
 	DLL_EXPORT int __stdcall iCardIsEmpty();
 

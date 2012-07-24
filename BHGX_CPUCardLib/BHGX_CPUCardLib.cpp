@@ -31,7 +31,7 @@ int __stdcall iGetCardVersion(char *pszVersion)
 int __stdcall iCardInit(char *xml)
 {
 	if (g_CardInit)
-		return CardInitErr;
+		return 0;
 
 	// 在资源文件里边提取XML文件并且初始化他
 	HINSTANCE hInstance = ::LoadLibrary("BHGX_CPUCardLib.dll");
@@ -39,15 +39,17 @@ int __stdcall iCardInit(char *xml)
 	HGLOBAL hgRes = ::LoadResource(hInstance, hResInfo);
 	DWORD cbRes = ::SizeofResource(hInstance, hResInfo);
 	char *pvRes = (char *)::LockResource(hgRes);
-	if(!pvRes)
+	if(!pvRes) 
 	{	
 		return CardInitErr;
 	}
-
-	//std::string szSystem = ReadConfigFromReg();
+  
+	char szSystem[256];
+	memset(szSystem, 0, sizeof(szSystem));
+	ReadConfigFromReg(szSystem);
 
 	// 对设备进行初始化
-	g_CardInit = (initCoreDevice("")==0);
+	g_CardInit = (initCoreDevice(szSystem)==0);
 
 	if (g_CardInit)
 	{
@@ -56,12 +58,24 @@ int __stdcall iCardInit(char *xml)
 	return 0;
 }
 
-int __stdcall iCardClose()
+int __stdcall iCardDeinit()
 {
-	DestroyCPUData();
+	DestroyList(g_XmlListHead->SegHeader, 0);
+	free(g_XmlListHead);
 	g_CardInit = FALSE;
 	g_XmlListHead = NULL;
 	return closeCoreDevice();
+}
+
+
+int __stdcall iCardClose()
+{
+	return 0;
+}
+
+int __stdcall iCardOpen()
+{
+	return 0;
 }
 
 int __stdcall iCardIsEmpty()
@@ -96,7 +110,7 @@ int __stdcall iReadInfo(int flag, char *xml)
 	// 通过链表产生XML字符串
 	iConvertXmlByList(list, xml, &length);
 
-	DestroyList(list);
+	DestroyList(list, 1);
 
 	return res!=0 ? CardReadErr : 0;
 }
@@ -132,12 +146,12 @@ int __stdcall iWriteInfo(char *xml)
 	if (XmlList == NULL)
 	{
 		// 销毁XML链表
-		DestroyList(XmlList);
+		DestroyList(XmlList, 1);
 		return CardXmlErr;
 	}
 
 	// 产生读写链表
-	RequestList = CreateRequest(XmlList, 1);
+	RequestList = CreateRequest(XmlList, 0);
 
 	// 对设备进行真实的写
 	res = iWriteCard(RequestList);
@@ -146,7 +160,7 @@ int __stdcall iWriteInfo(char *xml)
 	DestroyRequest(RequestList, 0);
 
 	// 销毁XML链表
-	DestroyList(XmlList);
+	DestroyList(XmlList, 1);
 
 	return res;
 }
@@ -159,7 +173,7 @@ int __stdcall iScanCard()
 //错误信息
 char* __stdcall err(int errcode)
 {
-	return "fdjaslaf";
+	return _err(errcode);
 }
 
 

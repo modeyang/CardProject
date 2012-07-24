@@ -132,6 +132,32 @@ STDMETHODIMP CCardProcess::iATLCardInit( LONG* nRet)
 	return S_OK;
 }
 
+
+STDMETHODIMP CCardProcess::iATLCardClose(LONG* nRet)
+{
+	// TODO: 在此添加实现代码
+	int ret = iCardClose();
+	GetErrInfo(ret, (*nRet));
+	return S_OK;
+}
+
+STDMETHODIMP CCardProcess::iATLCardOpen(LONG* Ret)
+{
+	// TODO: 在此添加实现代码
+	int ret = iCardOpen();
+	GetErrInfo(ret, (*Ret));
+	return S_OK;
+}
+
+STDMETHODIMP CCardProcess::iATLCardDeinit(LONG* Ret)
+{
+	// TODO: 在此添加实现代码
+	int ret = iCardDeinit();
+	GetErrInfo(ret, (*Ret));
+	return S_OK;
+}
+
+
 STDMETHODIMP CCardProcess::iATLReadInfo(LONG nFlag, BSTR* szReadXML)
 {
 	// TODO: 在此添加实现代码
@@ -272,14 +298,6 @@ STDMETHODIMP CCardProcess::iATLScanCard(LONG* nRet)
 	return S_OK;
 }
 
-STDMETHODIMP CCardProcess::iATLCardClose(LONG* nRet)
-{
-	// TODO: 在此添加实现代码
-	int ret = iCardClose();
-	GetErrInfo(ret, (*nRet));
-	return S_OK;
-}
-
 
 
 STDMETHODIMP CCardProcess::iATLReadCardMessageForNH(BSTR pszCardCheckWSDL, BSTR pszCardRewritePackageWSDL, BSTR* pszXml)
@@ -409,5 +427,7 @@ STDMETHODIMP CCardProcess::iATLGetPrinterList(BSTR* bstrPrinterXML)
 	*bstrPrinterXML = bstr.Detach();
 	return S_OK;
 }
+
+
 
 

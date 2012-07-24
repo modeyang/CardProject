@@ -27,7 +27,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BHGX_CPUCardLib", "BHGX_CPU
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BHGX_MF_VCard", "VCard\BHGX_MF_VCard.vcproj", "{75D4E99B-E1AD-48A8-8C6B-2F32E79E916D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BHGX_MF_CPUVCard", "BHGX_MF_CPUVCard\BHGX_MF_CPUVCard.vcproj", "{4851F73F-536A-45BC-96B2-9A40B16F46E0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HDZB_Cardlib_Test", "..\CPU\HuaHong\HDZB_Cardlib_Test\HDZB_Cardlib_Test.vcproj", "{BACE1F1B-38CE-43AC-A7F7-3B0F854B41C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -87,10 +87,10 @@ Global
 		{75D4E99B-E1AD-48A8-8C6B-2F32E79E916D}.Debug|Win32.Build.0 = Debug|Win32
 		{75D4E99B-E1AD-48A8-8C6B-2F32E79E916D}.Release|Win32.ActiveCfg = Release|Win32
 		{75D4E99B-E1AD-48A8-8C6B-2F32E79E916D}.Release|Win32.Build.0 = Release|Win32
-		{4851F73F-536A-45BC-96B2-9A40B16F46E0}.Debug|Win32.ActiveCfg = Debug|Win32
-		{4851F73F-536A-45BC-96B2-9A40B16F46E0}.Debug|Win32.Build.0 = Debug|Win32
-		{4851F73F-536A-45BC-96B2-9A40B16F46E0}.Release|Win32.ActiveCfg = Release|Win32
-		{4851F73F-536A-45BC-96B2-9A40B16F46E0}.Release|Win32.Build.0 = Release|Win32
+		{BACE1F1B-38CE-43AC-A7F7-3B0F854B41C5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BACE1F1B-38CE-43AC-A7F7-3B0F854B41C5}.Debug|Win32.Build.0 = Debug|Win32
+		{BACE1F1B-38CE-43AC-A7F7-3B0F854B41C5}.Release|Win32.ActiveCfg = Release|Win32
+		{BACE1F1B-38CE-43AC-A7F7-3B0F854B41C5}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

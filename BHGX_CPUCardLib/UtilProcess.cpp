@@ -5,19 +5,25 @@
 #include <map>
 #include "public/Markup.h"
 #include "./tinyxml/headers/tinyxml.h"
+#include "public/algorithm.h"
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 
 using namespace std;
 #pragma warning (disable : 4996)
 
 extern struct XmlProgramS *g_XmlListHead;
-extern "C" struct RecFolder *g_recIndex;
+extern "C" 
+{
+struct RecFolder g_recIndex[30];
+}
 
-#define  INSERT_SEGS(list, seg, id, name) \
-	memcpy(g_recIndex[id].fileName, name, sizeof(g_recIndex[id].fileName));\
-	seg->ID = id;\
-	list->SegTailer->Next = seg;\
-	list->SegTailer = seg;\
+#define  INSERT_SEGS(list, seg, id, name)											\
+	memcpy(g_recIndex[id-1].section, g_recIndex[seg->ID-1].section, 10);            \
+    memcpy(g_recIndex[id-1].subSection, g_recIndex[seg->ID-1].subSection, 10);      \
+	memcpy(g_recIndex[id-1].fileName, name, strlen(name));							\
+	seg->ID = id;																	\
+	list->SegTailer->Next = seg;													\
+	list->SegTailer = seg;															\
 
 int __stdcall CreateCPUData(char *configXML) {
 
@@ -29,6 +35,7 @@ int __stdcall CreateCPUData(char *configXML) {
 	struct ColCell 
 	{
 		std::string Source;
+		int itemtype;
 		int nByte;
 	};
 	struct XmlSegmentS *pTmp = NULL;
@@ -46,20 +53,23 @@ int __stdcall CreateCPUData(char *configXML) {
 
 	xml.IntoElem();
 	while (xml.FindElem("SEGMENT")) {
-
+		std::string szTmp;
 		int RecFlag = atoi(xml.GetAttrib("REC").c_str());
 		struct XmlSegmentS *pSeg = (struct XmlSegmentS*)malloc(sizeof(struct XmlSegmentS));
 		pSeg->ColumnHeader = pSeg->ColumnTailer = NULL;
 		pSeg->Next = NULL;
-		pSeg->datatype = RecFlag;
+		pSeg->datatype = (eFileType)RecFlag;
 		pSeg->offset = 0;
 		pSeg->ID = atoi(xml.GetAttrib("ID").c_str());
 		nSegID = pSeg->ID;
-		memcpy(g_recIndex[nSegID].section, xml.GetAttrib("SECTION").c_str(), sizeof(g_recIndex[nSegID].section));
-		memcpy(g_recIndex[nSegID].subSection, xml.GetAttrib("SUBSECTION").c_str(), sizeof(g_recIndex[nSegID].subSection));
+		szTmp = xml.GetAttrib("SECTION").c_str();
+		memcpy(g_recIndex[nSegID-1].section, szTmp.c_str(),szTmp.size());
+
+		szTmp = xml.GetAttrib("SUBSECTION").c_str();
+		memcpy(g_recIndex[nSegID-1].subSection, szTmp.c_str(), szTmp.size());
 		memcpy(pSeg->Target, xml.GetAttrib("SOURCE").c_str(),sizeof(pSeg->Target));
 
-		std::string FileType = xml.GetAttrib("FILE");
+		std::string cFileType = xml.GetAttrib("FILE");
 
 		xml.IntoElem();
 		int nIDCounts = 0, subflag=0;
@@ -70,9 +80,14 @@ int __stdcall CreateCPUData(char *configXML) {
 			XmlColumnS *pColumnS = (XmlColumnS*)malloc(sizeof(XmlColumnS));
 			pColumnS->Next = NULL;
 			strcpy(pColumnS->Source, xml.GetAttrib("SOURCE").c_str());
-			pColumnS->ID = nIDCounts;
+			if (nSegID < 11) 
+				pColumnS->ID = atoi(xml.GetAttrib("ID").c_str());
+			else
+				pColumnS->ID = nIDCounts;
+
 			pColumnS->ColumnByte = atoi(xml.GetAttrib("OCCUPYBYTE").c_str());
 			pColumnS->Offset = nOffset;
+			pColumnS->itemtype = (eItemType)atoi(xml.GetAttrib("TYPE").c_str());
 			nOffset += pColumnS->ColumnByte;
 			pColumnS->value = (BYTE*)malloc(sizeof(BYTE)*(pColumnS->ColumnByte+1));
 			memset(pColumnS->value, 0, pColumnS->ColumnByte+1);
@@ -100,6 +115,7 @@ int __stdcall CreateCPUData(char *configXML) {
 					{
 						ColCell *pCell = new ColCell;
 						pCell->nByte = atoi(xml.GetAttrib("OCCUPYBYTE").c_str());
+						pCell->itemtype = atoi(xml.GetAttrib("TYPE").c_str());
 						pCell->Source = xml.GetAttrib("SOURCE");
 						vecCell.push_back(pCell);
 					}
@@ -120,6 +136,7 @@ int __stdcall CreateCPUData(char *configXML) {
 							pColumnS->ID = nIDCounts;
 							pColumnS->ColumnByte = pCell->nByte;
 							pColumnS->Offset = nOffset;
+							pColumnS->itemtype = (eItemType)pCell->itemtype;
 							nOffset += pColumnS->ColumnByte;
 							pColumnS->value = (BYTE*)malloc(sizeof(BYTE)*(pColumnS->ColumnByte+1));
 							memset(pColumnS->value, 0, pColumnS->ColumnByte+1);
@@ -144,33 +161,38 @@ int __stdcall CreateCPUData(char *configXML) {
 		if (g_XmlListHead->SegHeader == NULL) {
 			g_XmlListHead->SegHeader = pSeg;
 			g_XmlListHead->SegTailer = pSeg;
+			memcpy(g_recIndex[nSegID-1].fileName, cFileType.c_str(), cFileType.size());
 		} else {
 
-			if (FileType == std::string("EE01--03")) {
-				INSERT_SEGS(g_XmlListHead, pSeg, nSegID++, "EE01");
+			if (cFileType == std::string("EE01--03")) {
+				INSERT_SEGS(g_XmlListHead, pSeg, nSegID, "EE01");
 				pTmp = CloneSegment(pSeg);
-				INSERT_SEGS(g_XmlListHead, pTmp, nSegID++, "EE02")
-					pTmp = CloneSegment(pSeg);
-				INSERT_SEGS(g_XmlListHead, pTmp, nSegID++, "EE03")
-			} else if (FileType == std::string("DD01--05")) {
+				nSegID++;
+				INSERT_SEGS(g_XmlListHead, pTmp, nSegID, "EE02")
+				nSegID++;
+				pTmp = CloneSegment(pSeg);
+				INSERT_SEGS(g_XmlListHead, pTmp, nSegID, "EE03")
+			} else if (cFileType == std::string("ED01--05")) {
 
-				INSERT_SEGS(g_XmlListHead, pSeg, nSegID++, "DD01")
-					pTmp = CloneSegment(pSeg);
-				INSERT_SEGS(g_XmlListHead, pTmp, nSegID++, "DD02")
-					pTmp = CloneSegment(pSeg);
-				INSERT_SEGS(g_XmlListHead, pTmp, nSegID++, "DD03")
-					pTmp = CloneSegment(pSeg);
-				INSERT_SEGS(g_XmlListHead, pTmp, nSegID++, "DD04")
-					pTmp = CloneSegment(pSeg);
-				INSERT_SEGS(g_XmlListHead, pTmp, nSegID++, "DD05")
+				INSERT_SEGS(g_XmlListHead, pSeg, nSegID, "ED01")
+				pTmp = CloneSegment(pSeg);
+				nSegID++;
+				INSERT_SEGS(g_XmlListHead, pTmp, nSegID, "ED02")
+				nSegID++;
+				pTmp = CloneSegment(pSeg);
+				INSERT_SEGS(g_XmlListHead, pTmp, nSegID, "ED03")
+				nSegID++;
+				pTmp = CloneSegment(pSeg);
+				INSERT_SEGS(g_XmlListHead, pTmp, nSegID, "ED04")
+				nSegID++;
+				pTmp = CloneSegment(pSeg);
+				INSERT_SEGS(g_XmlListHead, pTmp, nSegID, "ED05")
 			} else {
 
-				memcpy(g_recIndex[nSegID].fileName, FileType.c_str(), sizeof(g_recIndex[nSegID].fileName));
+				memcpy(g_recIndex[nSegID-1].fileName, cFileType.c_str(), cFileType.size());
 				g_XmlListHead->SegTailer->Next = pSeg;
 				g_XmlListHead->SegTailer = pSeg;
-			}
-
-
+				}
 		}
 
 	}
@@ -244,8 +266,15 @@ static struct XmlColumnS *CloneColmn(struct XmlColumnS *ColmnElement)
 	{
 		return NULL;
 	}
-
 	memcpy(result, ColmnElement, sizeof(struct XmlColumnS));
+	if (result->itemtype != eAnsType) {
+		result->value = (BYTE*)malloc(2*result->ColumnByte+3);
+		memset(result->value, 0, 2*result->ColumnByte+3);
+	}else { 
+		result->value = (BYTE*)malloc(result->ColumnByte+1);
+		memset(result->value, 0, result->ColumnByte+1);
+	}
+	
 	result->Next = NULL;
 
 	return result;
@@ -296,7 +325,7 @@ struct XmlSegmentS *CloneSegment(struct XmlSegmentS *SegmentElement)
 
 #define MainKey "Software\\北航冠新\\CardProcess"
 #define CONFIG  "C:\\WINDOWS\\system32\\"
-char* ReadConfigFromReg()
+int ReadConfigFromReg(char *reg)
 {
 	HKEY RootKey;
 	HKEY hKey;
@@ -314,14 +343,14 @@ char* ReadConfigFromReg()
 			KEY_READ | KEY_WRITE, NULL, &hKey, &dwDesc))
 		{
 			RegCloseKey(hKey);
-			return NULL;
+			return -1;
 		}
 
 		if (ERROR_SUCCESS != RegSetValueEx(hKey, "Config", NULL, dwType, 
 			(PBYTE)CONFIG, (DWORD)strlen(CONFIG)))
 		{
 			RegCloseKey(hKey);
-			return NULL;
+			return -1;
 		}
 	}
 
@@ -330,12 +359,14 @@ char* ReadConfigFromReg()
 		(PBYTE)szValue,&dwLen))
 	{
 		RegCloseKey(hKey);
-		return NULL;
+		return -1;
 	}
 	szValue[dwLen] = 0;
 	RegCloseKey(hKey);
+	memcpy(reg, szValue, dwLen+1);
 
-	return szValue;
+
+	return 0;
 }
 
 
@@ -345,15 +376,14 @@ struct XmlSegmentS *GetXmlSegmentByFlag(int flag)
 	struct XmlSegmentS *CurrSegmentElement = NULL;
 	struct XmlSegmentS *TempSegmentElement = NULL;
 	struct XmlSegmentS *result = NULL;
-	int nFlag = 1;
 	XmlSegmentS *XmlListHead = g_XmlListHead->SegHeader;
 
 	for(SegmentElement=XmlListHead; SegmentElement; SegmentElement = SegmentElement->Next)
 	{
 		// 表明这个位置被设置
-		int nReadFlag = nFlag & flag;
-		int nSegFlag = (1 << (SegmentElement->ID-1)) & nFlag;
-		if(nReadFlag > 0 && nSegFlag > 0)
+		int nReadFlag = flag & 0x1;
+
+		if(nReadFlag > 0)
 		{
 			TempSegmentElement = CloneSegment(SegmentElement);
 
@@ -369,13 +399,13 @@ struct XmlSegmentS *GetXmlSegmentByFlag(int flag)
 				result = CurrSegmentElement;
 			}
 		}
-		nFlag = nFlag<<1;
+		flag = flag >> 1;
 	}
 
 	return result;
 }
 
-void DestroyList(struct XmlSegmentS *listHead)
+void DestroyList(struct XmlSegmentS *listHead, int mode)
 {
 	struct XmlSegmentS	*CurrSegmentElement = NULL;
 	struct XmlSegmentS	*TempSegmentElement = NULL;
@@ -390,6 +420,8 @@ void DestroyList(struct XmlSegmentS *listHead)
 		{
 			TempColumnElement = CurrColumnElement;
 			CurrColumnElement = CurrColumnElement->Next;
+			if (mode)
+               free(TempColumnElement->value);
 
 			free(TempColumnElement);
 		}
@@ -434,7 +466,9 @@ struct RWRequestS* __stdcall CreateRequest(struct XmlSegmentS *listHead, int mod
 			TempRequest->offset = ColumnElement->Offset;
 			TempRequest->length = ColumnElement->ColumnByte;
 			TempRequest->nID = SegmentElement->ID;
+			TempRequest->nColumID = ColumnElement->ID;
 			TempRequest->datatype = SegmentElement->datatype;
+			TempRequest->itemtype = ColumnElement->itemtype;
 			TempRequest->value = ColumnElement->value;
 			TempRequest->pri = (void *) ColumnElement;
 
@@ -577,7 +611,10 @@ struct XmlSegmentS* ConvertXmltoList(char *xml)
 	TiXmlElement  *RootElement;
 	TiXmlElement  *Segment;
 	TiXmlElement  *Colum;
+	BYTE *HexString = NULL;
+	BYTE *tmpString = NULL;
 	int ElemLen = 0, padding = 0;
+	BYTE tmpArray[200];
 
 	struct XmlSegmentS *XmlListHead = g_XmlListHead->SegHeader;
 
@@ -611,7 +648,7 @@ struct XmlSegmentS* ConvertXmltoList(char *xml)
 			CurrSegmentElement = TempSegmentElement;
 			result = CurrSegmentElement;
 		}
-
+        padding = 0;
 		Colum = Segment->FirstChildElement();
 		while(Colum)
 		{
@@ -626,29 +663,54 @@ struct XmlSegmentS* ConvertXmltoList(char *xml)
 			TempColumnElement->Next = NULL;
 
 			//为了节省空间
-			ElemLen = strlen(Colum->Attribute("VALUE"));
-			ElemLen = ElemLen > TempColumnElement->ColumnByte ? TempColumnElement->ColumnByte : ElemLen;
-			if (ID < 15 && ID != 3) {
+			if (TempSegmentElement->datatype == eRecType) {
 				padding = 2; //记录文件需要填充2个字节
-			} 
-			TempColumnElement->value = (BYTE*)malloc(ElemLen +padding);
-			memset(TempColumnElement->value, 0, ElemLen + padding);
-			TempColumnElement->ColumnByte = ElemLen + padding;
-			
-			// 赋值
-			memcpy(TempColumnElement->value+padding,  Colum->Attribute("VALUE"),  ElemLen);
+			}
+			std::string strColum = Colum->Attribute("VALUE");
+			ElemLen = (int)strColum.length();
+
+			//考虑每个字段字符转化当不为Ans类型时，需要转化
+			TempColumnElement->value = (BYTE*)malloc(TempColumnElement->ColumnByte+padding);
+			memset(TempColumnElement->value, 0, TempColumnElement->ColumnByte + padding);
+
+			//进行数据转换ans cn b类型
+			if (TempColumnElement->itemtype != eAnsType) {
+				HexString = TempColumnElement->value;
+				if (ElemLen % 2)  //当不为Ans时，不是2的倍数时，补充‘f’
+					ElemLen++;
+
+				if (ElemLen > sizeof(tmpArray)) {
+					tmpString = (BYTE*)malloc(ElemLen + 1);
+				} else {
+					tmpString = tmpArray;
+				}
+
+				memset(tmpString, 0, ElemLen+1);
+			    tmpString[ElemLen] = 0;
+				tmpString[ElemLen-1] = 'f';
+				memcpy(tmpString, strColum.c_str(), strColum.size());
+				HexstrToBin(HexString+padding, tmpString, ElemLen);
+
+				if (ElemLen > sizeof(tmpArray)) {
+					free(tmpString);
+				}
+			} else {
+				HexString = TempColumnElement->value;
+				memcpy(HexString+padding, strColum.c_str(), ElemLen);
+			}
 
 			// 加入链表
-			if(CurrSegmentElement->ColumnHeader) // 已经加入过了
+			if(CurrSegmentElement->ColumnHeader)
 			{
-				CurrColumnElement->Next = TempColumnElement;
-				CurrColumnElement = TempColumnElement;
+				CurrSegmentElement->ColumnTailer->Next = TempColumnElement;
+				CurrSegmentElement->ColumnTailer = TempColumnElement;
+
 
 			}
 			else // 第一次加入
 			{
-				CurrColumnElement = TempColumnElement;
-				CurrSegmentElement->ColumnTailer = CurrColumnElement;
+				CurrSegmentElement->ColumnHeader = TempColumnElement;
+				CurrSegmentElement->ColumnTailer = TempColumnElement;
 			}
 
 			// 向后迭代

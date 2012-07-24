@@ -76,6 +76,10 @@ public:
 	STDMETHOD(iATLReadConfigMsg)(BSTR bstrConfigInfo, BSTR* bstrReadXML);
 	STDMETHOD(iATLRegMsgForNH)(BSTR bstrServerURL, BSTR* bstrReadXML);
 	STDMETHOD(iATLEncryFile)(BSTR bstrfilename, LONG* nProCode);
+	STDMETHOD(iATLGetPrinterList)(BSTR* bstrPrinterXML);
+	STDMETHOD(iATLReadOnlyHIS)(BSTR* bstrHISInfo);
+	STDMETHOD(iATLCardOpen)(LONG* Ret);
+	STDMETHOD(iATLCardDeinit)(LONG* Ret);
 
 protected:
 	void GetErrInfo(int nProcRet, LONG &nRet);
@@ -86,11 +90,6 @@ protected:
 
 protected:
 	char m_strErr[1024];
-
-public:
-	STDMETHOD(iATLGetPrinterList)(BSTR* bstrPrinterXML);
-public:
-	STDMETHOD(iATLReadOnlyHIS)(BSTR* bstrHISInfo);
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(CardProcess), CCardProcess)

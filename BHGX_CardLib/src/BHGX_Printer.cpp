@@ -215,17 +215,20 @@ int CBHGX_Printer::StartPrint()
 		for (size_t i=0; i<m_vecPrintSeg.size(); ++i)
 		{
 			PrintSegMent &seg = m_vecPrintSeg[i];
-			m_iPrinter.iDrawText(seg.SegPrintInfo.xPos, seg.SegPrintInfo.yPos,
-				seg.SegPrintInfo.strTarget.c_str(), seg.SegPrintInfo.strFontFace.c_str(),
-				seg.SegPrintInfo.nFontHeight, seg.SegPrintInfo.lFontStyle, seg.SegPrintInfo.lColor);
-
-			for (size_t j=0; j<seg.vecPrintColumn.size(); ++j)
+			if (seg.bPrint)
 			{
-				PrintColumn &stColum = seg.vecPrintColumn[j];
-				m_iPrinter.iDrawText(stColum.ColumnPrintInfo.xPos, stColum.ColumnPrintInfo.yPos,
-					stColum.strSource.c_str(), stColum.ColumnPrintInfo.strFontFace.c_str(),
-					stColum.ColumnPrintInfo.nFontHeight, stColum.ColumnPrintInfo.lFontStyle,
-					stColum.ColumnPrintInfo.lColor);
+				m_iPrinter.iDrawText(seg.SegPrintInfo.xPos, seg.SegPrintInfo.yPos,
+					seg.SegPrintInfo.strTarget.c_str(), seg.SegPrintInfo.strFontFace.c_str(),
+					seg.SegPrintInfo.nFontHeight, seg.SegPrintInfo.lFontStyle, seg.SegPrintInfo.lColor);
+
+				for (size_t j=0; j<seg.vecPrintColumn.size(); ++j)
+				{
+					PrintColumn &stColum = seg.vecPrintColumn[j];
+					m_iPrinter.iDrawText(stColum.ColumnPrintInfo.xPos, stColum.ColumnPrintInfo.yPos,
+						stColum.strSource.c_str(), stColum.ColumnPrintInfo.strFontFace.c_str(),
+						stColum.ColumnPrintInfo.nFontHeight, stColum.ColumnPrintInfo.lFontStyle,
+						stColum.ColumnPrintInfo.lColor);
+				}
 			}
 		}
 		nRet = m_iPrinter.iPrintGraphics();
@@ -261,9 +264,10 @@ int CBHGX_Printer::CreatePrintData(char *pszCardXml)
 			nColumID = QuerySegment(nColumID);
 			if (nColumID < 0)
 			{
-				return -1;
+				continue;
 			}
 			PrintSegMent &stSegment = m_vecPrintSeg[nColumID];
+			stSegment.bPrint = TRUE;
 			std::string szContent = Cloumn->Attribute("VALUE");
 			if (stSegment.vecPrintColumn.size() > 1)
 			{
@@ -328,6 +332,7 @@ int CBHGX_Printer::CreatePrintInfo(char *szPrintXML)
 		stSegment.SegPrintInfo.nWidth = Cm2Pos(atof(Segment->Attribute("WIDTH")));
 		stSegment.SegPrintInfo.strFontFace = Segment->Attribute("FONT.FACE");
 		stSegment.SegPrintInfo.nFontHeight = abs(atoi(Segment->Attribute("FONT.HEITHT")));
+		stSegment.bPrint = FALSE;
 		Colum = Segment->FirstChildElement();
 		while (Colum)
 		{

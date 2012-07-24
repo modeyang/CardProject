@@ -25,7 +25,7 @@ extern "C" {
 							const char *infofile = "cardpage.data" 
 							);
 
-	DLL_EXPORT int __stdcall iCreatePubSysCardData( 
+	DLL_EXPORT int __stdcall iCreateCardDataForEncry( 
 							const char *filename, 
 							const char *license,
 							const char *datafile = "card.data", 

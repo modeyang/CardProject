@@ -137,24 +137,51 @@ struct ServiceIndex
 	BYTE valideflag;
 };
 
-struct XmlColumnS
+
+struct SegmentHosServ
 {
 	int		ID;
 	char	Source[30];
 
-	int		Offset;
-	int		ColumnByte;
-	BYTE	*value;
+	struct XmlColumnS	*ColumnHeader;
+	struct XmlColumnS   *ColumnTailer;
+	struct SegmentHosServ	*Next;
+};
+
+typedef enum eFileType
+{
+	eBinType =0,   
+	eRecType,       
+	eCycType,            //循环文件，利用appendRec
+	eSureType            //定长文件,利用SignRec
+}eFileType;
+
+//每个字段的类型
+typedef enum eItemType
+{
+	eAnsType,
+	eCnType,
+	eBType,
+}eItemType;
+
+struct XmlColumnS
+{
+	int			ID;
+	char		Source[30];
+	eItemType	itemtype;
+	int			Offset;
+	int			ColumnByte;
+	BYTE		*value;
 
 	struct XmlColumnS	*Next;
 };
 
 struct XmlSegmentS
 {
-	int		ID;
-	int		datatype;	//1:记录文件 0:二进制文件
-	int		offset;
-	BYTE	Target[30];
+	int		        ID;	
+	int		        offset;
+	eFileType		datatype;
+	BYTE	        Target[30];
 
 	struct XmlColumnS	*ColumnHeader;
 	struct XmlColumnS   *ColumnTailer;
@@ -167,29 +194,16 @@ struct XmlProgramS
 	struct XmlSegmentS *SegTailer;
 };
 
-struct SegmentHosServ
-{
-	int		ID;
-	char	Source[30];
-
-	struct XmlColumnS	*ColumnHeader;
-	struct XmlColumnS   *ColumnTailer;
-	struct SegmentHosServ	*Next;
-};
-
-
-
-
-
 
 struct RWRequestS
 {
-	int	mode;	// 读写请求标志]
-	int nID;
-	int	datatype;	//1:记录文件 0:二进制文件
-
+	int	mode;	// 读写请求标志
+	int nID;    // 编号
+	int nColumID;  
 	int offset;	// 绝对地址偏移量
 	int	length;	// 该元素的长度
+	eFileType	datatype;
+	eItemType   itemtype;
 	unsigned char *value;
 
 	struct RWRequestS *agent;	// 真实的读写代理
@@ -206,10 +220,11 @@ struct RWRequestS
 
 //对于记录文件的描述
 struct RecFolder{
-	BYTE	section[10];
-	BYTE    subSection[10];
-	BYTE	fileName[10];
+	BYTE	section[10];      //DDF
+	BYTE    subSection[10];   //DF
+	BYTE	fileName[10];     //EF, ED....
 };
+
 
 #pragma pack(pop)
 
@@ -217,25 +232,29 @@ struct RecFolder{
 extern "C" {
 #endif
 
-int __stdcall CreateCPUData(char *configXML);
-char* ReadConfigFromReg();
+//读取安装配置
+int ReadConfigFromReg(char *);
 
+//复制Segment
 struct XmlSegmentS *CloneSegment(struct XmlSegmentS *SegmentElement);
 
+//根据ID号获取Segment元素
 struct XmlSegmentS *GetXmlSegmentByFlag(int nID);
 
-void DestroyList(struct XmlSegmentS *node);
+int __stdcall CreateCPUData(char *configXML);
+//mode 1:free数据内存  0：无数据
+void DestroyList(struct XmlSegmentS *node, int mode);
 
+//mode/flag 1:free数据内存  0：无数据
 struct RWRequestS* __stdcall CreateRequest(struct XmlSegmentS *listHead, int mode);
-struct RWRequestS* __stdcall CreateRWRequest(struct XmlColumnS *listHead, int mode);
-
 void __stdcall DestroyRequest(struct RWRequestS *list, int flag);
-void __stdcall DestroyRWRequest(struct RWRequestS *list, int flag);
+
+//xml文件与链表列表相互转化
+int iConvertXmlByList(struct XmlSegmentS*, char *, int *);
+struct XmlSegmentS* ConvertXmltoList(char *xml);
 
 int CheckCardXMLValid(char *pszCardXml);
 
-int iConvertXmlByList(struct XmlSegmentS*, char *, int *);
-struct XmlSegmentS* ConvertXmltoList(char *xml);
 
 #ifdef  __cplusplus
 };

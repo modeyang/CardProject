@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<SEGMENTS PROGRAMID="001">
+    <SEGMENT ID="15">
+        <COLUMN ID="1" VALUE="北京协和" />
+        <COLUMN ID="2" VALUE="1123221" />
+        <COLUMN ID="3" VALUE="20120903" />
+        <COLUMN ID="4" VALUE="3" />
+        <COLUMN ID="5" VALUE="杨噶发达发达" />
+        <COLUMN ID="6" VALUE="知春路" />
+        <COLUMN ID="7" VALUE="1" />
+        <COLUMN ID="8" VALUE="破伤风" />
+        <COLUMN ID="9" VALUE="231213" />
+    </SEGMENT>
+</SEGMENTS>

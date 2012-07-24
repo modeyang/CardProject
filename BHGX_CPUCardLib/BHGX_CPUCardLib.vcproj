@@ -275,6 +275,14 @@
 			Name="public"
 			>
 			<File
+				RelativePath=".\public\algorithm.c"
+				>
+			</File>
+			<File
+				RelativePath=".\public\algorithm.h"
+				>
+			</File>
+			<File
 				RelativePath=".\public\debug.c"
 				>
 				<FileConfiguration
