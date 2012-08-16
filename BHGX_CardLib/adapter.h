@@ -16,10 +16,6 @@ struct RWRequestS
 
 	void *pri;	
 
-	// 对该请求的数据进行加解密
-	//void encode(struct RWRequest *);
-	//void decode(struct RWRequest *);
-
 	// 下一个元素
 	struct RWRequestS	*Next;
 };

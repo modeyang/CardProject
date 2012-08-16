@@ -188,137 +188,157 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="src"
+			Name="public"
 			>
 			<File
-				RelativePath=".\src\adapter.c"
+				RelativePath=".\public\algorithm.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\adapter.h"
+				RelativePath=".\public\algorithm.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\algorithm.c"
+				RelativePath=".\public\Authority.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\algorithm.h"
+				RelativePath=".\public\Authority.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\BHGX_CardLib.cpp"
+				RelativePath=".\public\ConvertUtil.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\BHGX_CardLib.h"
+				RelativePath=".\public\ConvertUtil.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\BHGX_Printer.cpp"
+				RelativePath=".\public\debug.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\BHGX_Printer.h"
+				RelativePath=".\public\debug.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ConvertUtil.cpp"
+				RelativePath=".\public\liberr.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ConvertUtil.h"
+				RelativePath=".\public\liberr.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\debug.c"
+				RelativePath=".\public\Markup.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\debug.h"
+				RelativePath=".\public\Markup.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\device.c"
+				RelativePath=".\public\ZTime.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\device.h"
+				RelativePath=".\public\ZTime.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\liberr.c"
+				RelativePath=".\public\ZTimeSpan.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\liberr.h"
+				RelativePath=".\public\ZTimeSpan.h"
 				>
 			</File>
-			<File
-				RelativePath=".\src\WebServiceAssist.h"
-				>
-			</File>
-			<Filter
-				Name="Encry"
-				>
-				<File
-					RelativePath=".\src\Encry\DES.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\Encry\DES.h"
-					>
-				</File>
-				<File
-					RelativePath=".\src\Encry\DESEncry.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\Encry\DESEncry.h"
-					>
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
-			Name="WebService"
+			Name="Encry"
 			>
 			<File
-				RelativePath=".\src\ns_pipeClient\Markup.cpp"
+				RelativePath=".\Encry\DES.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ns_pipeClient\Markup.h"
+				RelativePath=".\Encry\DES.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ns_pipeClient\soapC.cpp"
+				RelativePath=".\Encry\DESEncry.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ns_pipeClient\soapClient.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\src\ns_pipeClient\soapH.h"
-				>
-			</File>
-			<File
-				RelativePath=".\src\ns_pipeClient\soapn_USCOREapiSoapProxy.h"
-				>
-			</File>
-			<File
-				RelativePath=".\src\ns_pipeClient\soapStub.h"
-				>
-			</File>
-			<File
-				RelativePath=".\src\ns_pipeClient\stdsoap2.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\src\ns_pipeClient\stdsoap2.h"
+				RelativePath=".\Encry\DESEncry.h"
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="webservice"
+			>
+			<File
+				RelativePath=".\ns_pipeClient\soapC.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ns_pipeClient\soapClient.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ns_pipeClient\soapH.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ns_pipeClient\soapn_USCOREapiSoapProxy.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ns_pipeClient\soapStub.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ns_pipeClient\stdsoap2.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ns_pipeClient\stdsoap2.h"
+				>
+			</File>
+		</Filter>
+		<File
+			RelativePath=".\adapter.c"
+			>
+		</File>
+		<File
+			RelativePath=".\adapter.h"
+			>
+		</File>
+		<File
+			RelativePath=".\BHGX_CardLib.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\BHGX_CardLib.h"
+			>
+		</File>
+		<File
+			RelativePath=".\BHGX_Printer.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\BHGX_Printer.h"
+			>
+		</File>
+		<File
+			RelativePath=".\device.c"
+			>
+		</File>
+		<File
+			RelativePath=".\device.h"
+			>
+		</File>
 		<File
 			RelativePath=".\program.xml"
 			>
@@ -329,6 +349,14 @@
 		</File>
 		<File
 			RelativePath=".\resource.h"
+			>
+		</File>
+		<File
+			RelativePath=".\WebServiceAssist.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\WebServiceAssist.h"
 			>
 		</File>
 	</Files>

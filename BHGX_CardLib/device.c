@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "device.h"
-#include "debug.h"
+#include "public/debug.h"
 #pragma warning (disable : 4996)
 #pragma warning (disable : 4020)
 #pragma warning (disable : 4013)
@@ -81,14 +81,6 @@ static struct CardDevice *_InitDevice(HINSTANCE hInstLibrary)
 	return result;
 }
 
-int SaveXML(char *filename, const char *xml)
-{
-	FILE *handle;
-	fopen_s(&handle,filename, "w");
-	fwrite(xml, strlen(xml), 1, handle);
-	fclose(handle);
-	return 1;
-}
 
 /**
  * º¯Êý: getCardDevice 

@@ -76,6 +76,8 @@ extern "C" {
 	// 得到卡版本号
 	DLL_EXPORT int __stdcall iGetCardVersion(char *pszVersion);
 
+	DLL_EXPORT int __stdcall iCardCompany(char *szCompanyXml);
+
 	// 动态链接库初始化函数
 	DLL_EXPORT int __stdcall iCardInit(char *xml = "");
 

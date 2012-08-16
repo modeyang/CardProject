@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "DESEncry.h"
 #include "DES.h"
-#include "../ns_pipeClient/Markup.h"
+#include "../public/Markup.h"
 
 using namespace std;
 #pragma warning (disable : 4996)

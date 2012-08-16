@@ -2,9 +2,9 @@
 #include <string.h>
 #include "adapter.h"
 #include "device.h"
-#include "liberr.h"
-#include "algorithm.h"
-#include "debug.h"
+#include "public/liberr.h"
+#include "public/algorithm.h"
+#include "public/debug.h"
 #include <windows.h>
 #include <time.h>
 #include <stdio.h>
@@ -15,15 +15,14 @@
 #define DEFAULT_CONTROL	0		//默认配置 KeyA读 KeyB写
 #define KEYA_CONTROL	1		//KeyA读写
 #define KEYB_CONTROL	2		//KeyB读写
-char atmp[64];
+char atmp[256];
 time_t at;
 #define DBGADAP(format, ...) \
 	at = time(0);\
 	memset(atmp,0, sizeof(atmp));\
 	strftime( atmp, sizeof(atmp), "%Y-%m-%d %X  adapter: ",localtime(&at));\
+	sprintf(atmp, "%s %s", atmp, format); \
 	LogMessage(atmp ,__VA_ARGS__);		\
-	LogMessage(format ,__VA_ARGS__);		\
-
 /**
  * @ID 
  * @MASK 
@@ -698,6 +697,54 @@ int  __stdcall repairKeyForFault(unsigned char *ctrlword)
 	return nRet;
 
 }
+
+int __stdcall repairKeyBAllF(unsigned char *ctrlword)
+{
+	unsigned char seed[32];
+	unsigned char tmp[32];
+	unsigned char oldKeyB[6];
+	unsigned char newKeyB[0x6];
+	unsigned char KeyA[6] = {0x43, 0x97, 0x04, 0x47, 0x20, 0x47};
+	int i=0, nRet = 0;
+	unsigned char changeflag=2;
+	memset(oldKeyB, 0xFF, sizeof(oldKeyB));
+	memset(seed, 0, sizeof(seed));
+	memset(tmp, 0, sizeof(tmp));
+
+	//没有寻到卡
+	if(!Instance || !Instance->iRead)
+		return -1;
+
+	if (iCoreFindCard() != 0)
+		return CardScanErr;
+
+	//读出卡号,得出旧的KeyB
+	Instance->iRead(KeyA, tmp, 56, 640);
+	bcd2str(tmp, seed, 14);
+	iGetKeyBySeed(seed, newKeyB);
+
+	if (!IsGWCard(seed)) {
+
+		//得到以农合号为依据的keyB
+		memset(newKeyB, 0, sizeof(newKeyB));
+		memset(seed, 0, sizeof(seed));
+		memset(tmp, 0, sizeof(tmp));
+		Instance->iRead(KeyA, tmp, 72, 792);
+		bcd2str(tmp, seed, 18);
+		iGetKeyBySeed(seed, newKeyB);
+	}
+
+	printf("修补密码:");
+	for (i=0; i<16; ++i){
+		nRet = aChangePwdEx(KeyA, ctrlword, newKeyB, oldKeyB, i, 0, changeflag);
+		printf("%d", nRet);
+		if (nRet)
+			break;
+	}
+	DBGADAP("修补密码:%d\n", nRet);
+
+	return nRet;
+}
 int __stdcall repairKeyB(unsigned char *ctrlword)
 {
 	unsigned char seed[32];
@@ -832,6 +879,7 @@ static int _iWriteCard(struct RWRequestS *list)
 	if(!Instance)
 		return CardInitErr;
 
+	//获取控制位，判断卡片读写形式
 	aGetControlBuff(pControl, 0);
 	nWriteControl = GetWriteWord(pControl);
 
@@ -839,8 +887,11 @@ static int _iWriteCard(struct RWRequestS *list)
 	while (faile_retry < FAILE_RETRY)
 	{
 		memset(seed, 0, 32);
-		iGetKeySeed(seed);
 
+		//根据卡号首位获取生成Keyb的种子
+		iGetKeySeed(seed);   
+
+		//全FF/00的情况视为初始密码为全F
 		if (IsAllTheSameFlag(seed, 14, 0x3f) == 0)
 		{
 			memcpy(Key, keyNewB, sizeof(keyNewB));
@@ -851,6 +902,7 @@ static int _iWriteCard(struct RWRequestS *list)
 		}
 		else
 		{
+			//默认读写形式
 			if (nWriteControl == DEFAULT_CONTROL)
 			{
 				iGetKeyBySeed(seed, keyNewB);
@@ -858,6 +910,7 @@ static int _iWriteCard(struct RWRequestS *list)
 			}
 			else
 			{
+				//KeyA有全部读写权限
 				nWriteControl = KEYA_CONTROL;
 				memcpy(Key, KeyA, sizeof(KeyA));
 			}
@@ -869,7 +922,8 @@ static int _iWriteCard(struct RWRequestS *list)
 		CurrRequest = list;
 		while(CurrRequest)
 		{
-			bool_test = Instance->iWrite(Key, CurrRequest->value, nWriteControl , CurrRequest->length, CurrRequest->offset);
+			bool_test = Instance->iWrite(Key, CurrRequest->value, nWriteControl , 
+										CurrRequest->length, CurrRequest->offset);
 			CurrRequest = CurrRequest->Next;
 			if (bool_test)
 			{
@@ -883,9 +937,15 @@ static int _iWriteCard(struct RWRequestS *list)
 		//对于keyb错误的写操作，修补密码
 		if (bool_test)
 		{
-			bool_test = repairKeyB(pControl);
-			if (bool_test)
+			bool_test = repairKeyBAllF(pControl);
+			if (bool_test) {
+				//修补农合卡KeyB错误
+				bool_test = repairKeyB(pControl);
+			}
+			if (bool_test) {
+				//修补新疆密码为0x75的错误
 				bool_test = repairKeyForFault(pControl);
+			}
 			if (!bool_test)
 			{
 				DBGADAP( "修补密码成功，重新写卡\n");

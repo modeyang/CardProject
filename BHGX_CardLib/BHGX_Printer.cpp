@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <Windows.h>
 #include <winspool.h>
-#include "../tinyxml/headers/tinyxml.h"
+#include "tinyxml/headers/tinyxml.h"
 using namespace std;
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 #pragma comment(lib, "winspool.lib")

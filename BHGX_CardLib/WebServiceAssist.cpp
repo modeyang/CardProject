@@ -1,13 +1,8 @@
-#ifndef _WEBASSIST_H
-#define _WEBASSIST_H
-
-#include <map>
-#include <string>
+#include "WebServiceAssist.h"
 
 #pragma warning (disable : 4996)
 
-//#include "Markup.h"
-#include "../tinyxml/headers/tinyxml.h"
+#include "tinyxml/headers/tinyxml.h"
 
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 
@@ -223,7 +218,7 @@ int GetCheckRetDesc(const std::string &strStatus, std::string &strDesc)
 
 int GetCardStatus(int nStatus, std::string &strStatus)
 {
-	
+
 	if (m_mapCardStatus.size() == 0)
 	{
 		m_mapCardStatus[0] = "¿¨Õý³£";
@@ -256,5 +251,3 @@ bool IsMedicalID(const std::string &strID)
 	}
 	return false;
 }
-
-#endif

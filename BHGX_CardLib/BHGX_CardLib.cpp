@@ -7,18 +7,18 @@
 #include "BHGX_CardLib.h"
 #include "ns_pipeClient/n_USCOREapiSoap.nsmap"
 #include "ns_pipeClient/soapn_USCOREapiSoapProxy.h"
-#include "debug.h"
-#include "liberr.h"
-#include "../tinyxml/headers/tinyxml.h"
+#include "public/debug.h"
+#include "public/liberr.h"
+#include "tinyxml/headers/tinyxml.h"
 #include "adapter.h"
-#include "algorithm.h"
-#include "../resource.h"
+#include "public/algorithm.h"
+#include "resource.h"
 #include "BHGX_Printer.h"
-#include "ConvertUtil.h"
+#include "public/ConvertUtil.h"
 #include "WebServiceAssist.h"
-#include "ns_pipeClient/Markup.h"
+#include "public/Markup.h"
 #include "Encry/DESEncry.h"
-
+#include "public/Authority.h"
 
 using namespace std;
 #pragma warning (disable : 4996)
@@ -26,18 +26,15 @@ using namespace std;
 #pragma warning (disable : 4020)
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 
-#define MainKey "Software\\北航冠新\\CardProcess"
-#define CONFIG  "C:\\WINDOWS\\system32\\"
-#define MAXTRY   80
 
-char tmp[64];
+char tmp[256];
 time_t t;
 #define DBGCore(format, ...) \
 	t = time(0);\
 	memset(tmp,0, sizeof(tmp));\
 	strftime( tmp, sizeof(tmp), "%Y-%m-%d %X  CardLib:",localtime(&t));\
+	sprintf(tmp, "%s %s", tmp, format); \
 	LogMessage(tmp ,__VA_ARGS__);		\
-	LogMessage(format ,__VA_ARGS__);	\
 
 #define TIMEOUT	15000
 
@@ -73,16 +70,6 @@ bool bTelRW = false;
 typedef  std::map<std::string, struct XmlColumnS *> XmlColumnMapT;
 XmlColumnMapT XmlColumnMap; 
 
-void SaveXML(char *xml, int len)
-{
-	FILE *fp;
-	fp = fopen("c:\\CardLibCreate.xml", "wb");
-	if (fp != NULL)
-	{
-		fwrite(xml, len, sizeof(char), fp);
-	}
-	fclose(fp);
-}
 
 static bool Is_GbkName(char *szValue)
 {
@@ -112,48 +99,8 @@ static bool Is_IntName(char *szValue)
 	return true;
 }
 
-static int  CheckLicense()
-{
-	char path[256];
-	char szCount[10];
-	char szDst[10];
-	int  nCounts;
-	CDESEncry des;
-	FILE *fp;
-	memset(szCount, 0, sizeof(szCount));
-	memset(szDst, 0, sizeof(szDst));
-	memset(path, 0, 256);
-	strcpy(path, CONFIG);
-	strcat(path,".cardLicense");
-	fp = fopen(path, "r+b");
-	if (fp == NULL) {
-		fp = fopen(path, "w+b");
-		sprintf(szCount, "%d" , 1);
-		des.EncryString(szCount, szDst);
-		fwrite(szDst, sizeof(szDst), 1, fp);
-		fclose(fp);
-		return 1;
-	}
 
-	fread(szCount, sizeof(szCount), 1, fp);
-	des.DescryString(szCount, szDst);
-	nCounts = atoi(szDst);
-	nCounts++;
-	if (nCounts > MAXTRY) {
-		printf("超过尝试最大数量,请联系供应商\n");
-		fclose(fp);
-		return 0;
-	}
-	printf("%d  ", nCounts);
-	fseek(fp, 0, SEEK_SET);
-	memset(szCount, 0, sizeof(szCount));
-	memset(szDst, 0, sizeof(szDst));
-	sprintf(szCount, "%d", nCounts);
-	des.EncryString(szCount, szDst);
-	fwrite(szDst, sizeof(szDst), 1, fp);
-	fclose(fp);
-	return 1;
-}
+
 
 static  int CheckSpace(const char *szCheck, int nLen, char *strValue)
 {
@@ -327,7 +274,8 @@ static struct XmlSegmentS *GetXmlSegmentByFlag(int flag)
  */
 
 //将两个字段的内容合并成一个字段
-static int CombineColValue(struct XmlColumnS *ColumnElement, std::pair<int,int> pairCol, char sep, struct XmlSegmentS *Segment)
+static int CombineColValue(struct XmlColumnS *ColumnElement, std::pair<int,int> pairCol, 
+						   char sep, struct XmlSegmentS *Segment)
 {
 	if (ColumnElement->ID == pairCol.first)
 	{
@@ -627,13 +575,6 @@ static struct XmlSegmentS* ConvertXmltoList(char *xml)
 			int nColumnID = atoi(Colum->Attribute("ID"));
 			ColumnElement = FindColumnByID(SegmentElement->Column, nColumnID);
 
-			//if(strlen(Colum->Attribute("VALUE")) == 0 || std::string(Colum->Attribute("VALUE")) == " ") {
-
-			//	Colum = Colum->NextSiblingElement();
-			//	continue;
-
-			//}
-
 			if (NULL == ColumnElement)
 				break;
 
@@ -644,10 +585,12 @@ static struct XmlSegmentS* ConvertXmltoList(char *xml)
 			//add 1020
 			char strCheckValue[100];
 			memset(strCheckValue, 0, sizeof(strCheckValue));
-			CheckSpace(Colum->Attribute("VALUE"), strlen(Colum->Attribute("VALUE")), strCheckValue);
+			CheckSpace(Colum->Attribute("VALUE"), 
+				strlen(Colum->Attribute("VALUE")), strCheckValue);
 
 			int nBit = TempColumnElement->ColumnBit/4;
-			if(strlen(Colum->Attribute("VALUE")) == 0 || std::string(Colum->Attribute("VALUE")) == " ") 
+			if(strlen(Colum->Attribute("VALUE")) == 0 || 
+				std::string(Colum->Attribute("VALUE")) == string(" ")) 
 			{
 				memset(strCheckValue, 'f', TempColumnElement->ColumnBit%4 ? nBit+1:nBit);
 			}
@@ -1271,6 +1214,10 @@ int __stdcall iGetCardVersion(char *pszVersion)
 	return res;
 }
 
+int __stdcall iCardCompany(char *szCompanyXml)
+{
+	return 0;
+}
 
 /**
  *
@@ -1534,7 +1481,6 @@ int __stdcall iWriteInfo(char *xml)
 
 	// 对设备进行真实的写
 	res = iWriteCard(RequestList);
-	//DBG(0, "写卡结果:%d\n", res);
 	DBGCore( "写卡结果:%d\n", res);
 
 	// 销毁读写链表
@@ -1690,7 +1636,7 @@ int __stdcall iCreateCard(char *pszCardDataXml)
 	ASSERT_OPEN(g_bCardOpen);
 	int result = 0;
 
-	//if (!CheckLicense())
+	//if (!CheckCounts(MAXTRYS))
 	//	return CardCreateErr;
 
 	if (iScanCard() != 0)
