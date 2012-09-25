@@ -5,6 +5,8 @@
 extern "C" {
 #endif	// __cplusplus
 
+	void LogWithTime(int level, char *format, ...);
+
 	void LogMessage(char *formate, ...);
 
 	void LogPrinter(char *formate, ...);
@@ -20,11 +22,11 @@ extern "C" {
 		do {										\
 			if(level < GetDbgLevel())			\
 			{										\
-				LogMessage(format,__VA_ARGS__);		\
+			LogMessage(format,##__VA_ARGS__);		\
 			}\
 			else \
 			{\
-				LogPrinter(format,__VA_ARGS__);\
+			LogPrinter(format,##__VA_ARGS__);\
 			}\
 		}while(0)\
 

@@ -4,6 +4,8 @@
 #include <windows.h>
 #include <time.h>
 
+#pragma warning (disable : 4996)
+
 #if (defined _WIN32) || (defined _WINDOWS_)
 #else
 #include <sys/sysinfo.h>

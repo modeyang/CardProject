@@ -4,8 +4,8 @@
 //#include "stdafx.h"
 // Windows 头文件:
 #include <windows.h>
-#include "../BHGX_CardLib/src/BHGX_CardLib.h"
-#include "../BHGX_CardLib/src/liberr.h"
+#include "../BHGX_CardLib/BHGX_CardLib.h"
+#include "../BHGX_CardLib/public/liberr.h"
 #include "tinyxml/headers/tinyxml.h"
 #include "resource.h"
 #include "BHGX_HISReader.h"
@@ -20,6 +20,8 @@ using namespace std;
 #endif
 
 #pragma warning (disable : 4996)
+
+#define LICENSEFILE	"北航冠新HIS.license"
 
 #define SAFE_DELETE(a)\
 	if (a != NULL)\
@@ -235,8 +237,13 @@ int __stdcall iReadHISInfo(char *pszCardCheckWSDL, char *pszCardServerURL, char 
 	}
 
 	mapHISReader.clear();
+	int nInit= iCheckLicense(LICENSEFILE, OTHERLICENSE);
+	if (nInit != 0) {
+		CreateResponXML(CardAuthExpired, err(CardAuthExpired), xml);
+		return CardAuthExpired;
+	}
 
-	int nInit = iCardInit();
+	nInit = iCardInit();
 	if (nInit != 0)
 	{
 		CreateResponXML(CardInitErr, err(CardInitErr), xml);
@@ -290,8 +297,12 @@ int __stdcall iReadOnlyHIS(char *xml)
 	}
 
 	mapHISReader.clear();
-
-	int nInit = iCardInit();
+	int nInit= iCheckLicense(LICENSEFILE, OTHERLICENSE);
+	if (nInit != 0) {
+		CreateResponXML(CardAuthExpired, err(CardAuthExpired), xml);
+		return CardAuthExpired;
+	}
+	nInit = iCardInit();
 	if (nInit != 0)
 	{
 		CreateResponXML(CardInitErr, err(CardInitErr), xml);
@@ -340,8 +351,12 @@ int __stdcall iReadInfoForXJ(char *pszCardCheckWSDL, char *pszCardServerURL, cha
 	}
 
 	mapHISReader.clear();
-
-	int nInit = iCardInit();
+	int nInit= iCheckLicense(LICENSEFILE, OTHERLICENSE);
+	if (nInit != 0) {
+		CreateResponXML(CardAuthExpired, err(CardAuthExpired), xml);
+		return CardAuthExpired;
+	}
+	nInit = iCardInit();
 	if (nInit != 0)
 	{
 		CreateResponXML(CardInitErr, err(CardInitErr), xml);

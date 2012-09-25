@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0366 */
-/* at Wed Jun 27 10:50:43 2012
+/* at Mon Aug 20 09:14:42 2012
  */
 /* Compiler settings for .\BHGX_CardActiveX.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -187,6 +187,10 @@ EXTERN_C const IID IID_ICardProcess;
         virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLCardDeinit( 
             /* [retval][out] */ LONG *Ret) = 0;
         
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLCreateLicense( 
+            BSTR timeFMT,
+            LONG *ret) = 0;
+        
     };
     
 #else 	/* C style interface */
@@ -358,6 +362,11 @@ EXTERN_C const IID IID_ICardProcess;
             ICardProcess * This,
             /* [retval][out] */ LONG *Ret);
         
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLCreateLicense )( 
+            ICardProcess * This,
+            BSTR timeFMT,
+            LONG *ret);
+        
         END_INTERFACE
     } ICardProcessVtbl;
 
@@ -468,6 +477,9 @@ EXTERN_C const IID IID_ICardProcess;
 
 #define ICardProcess_iATLCardDeinit(This,Ret)	\
     (This)->lpVtbl -> iATLCardDeinit(This,Ret)
+
+#define ICardProcess_iATLCreateLicense(This,timeFMT,ret)	\
+    (This)->lpVtbl -> iATLCreateLicense(This,timeFMT,ret)
 
 #endif /* COBJMACROS */
 
@@ -793,6 +805,19 @@ void __RPC_STUB ICardProcess_iATLCardOpen_Stub(
 
 
 void __RPC_STUB ICardProcess_iATLCardDeinit_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLCreateLicense_Proxy( 
+    ICardProcess * This,
+    BSTR timeFMT,
+    LONG *ret);
+
+
+void __RPC_STUB ICardProcess_iATLCreateLicense_Stub(
     IRpcStubBuffer *This,
     IRpcChannelBuffer *_pRpcChannelBuffer,
     PRPC_MESSAGE _pRpcMessage,

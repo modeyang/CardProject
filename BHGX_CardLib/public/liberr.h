@@ -27,6 +27,10 @@ enum ErrType
 	DescryFileError,
 	CardIsNotEmpty,
 	CardNotOpen,
+	CardNoAuthority,
+	CardAuthExpired,
+	CardCreateLicenseFailed,
+	CardUAuthFailed,
 };
 
 static char *errString[] =
@@ -49,6 +53,10 @@ static char *errString[] =
 	"解密文件失败",				//-15
 	"卡不是空卡",
 	"设备没有被打开",
+	"没有被授权操作，请联系供应商",
+	"授权已经过期，请联系供应商",
+	"生成license文件错误，请检查时间格式",
+	"设备没有被授权，请插入U盾",
 };
 
 char *_err(int errcode);

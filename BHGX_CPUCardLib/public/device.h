@@ -40,8 +40,8 @@ typedef int (_stdcall  *DllAppendRec)(unsigned char *, unsigned char *, unsigned
 
 
 typedef int (_stdcall  *DllSignRec)(unsigned char *pFID, 
-								 int		iRecNo,
-								 int		sign );
+									int		iRecNo,
+									int		sign );
 
 /**
  * strurct 

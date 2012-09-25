@@ -43,6 +43,7 @@ interface ICardProcess : IDispatch{
 	[id(24), helpstring("方法iATLReadOnlyHIS")] HRESULT iATLReadOnlyHIS([out,retval] BSTR* bstrHISInfo);
 	[id(25), helpstring("方法iATLCardOpen")] HRESULT iATLCardOpen([out,retval] LONG* Ret);
 	[id(26), helpstring("方法iATLCardDeinit")] HRESULT iATLCardDeinit([out,retval] LONG* Ret);
+	[id(27), helpstring("方法iATLCreateLicense")] HRESULT iATLCreateLicense(BSTR timeFMT, LONG* ret);
 };
 [
 	uuid(892D8909-1013-42C0-86C3-62653E0797B3),

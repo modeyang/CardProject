@@ -110,7 +110,7 @@ struct CardDevice *getCardDevice(const char *System)
 
 	// ¿ªÊ¼²éÕÒ
 	strcpy(Pattern, "..\\Debug\\");
-	strcat(Pattern, "BHGX_MF_*.dll");
+	strcat(Pattern, "HDZB_Cardlib.dll");
 	hFind = FindFirstFile(Pattern, &FindFileData);
 	while (hFind != INVALID_HANDLE_VALUE)
 	{

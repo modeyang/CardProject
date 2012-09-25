@@ -3,7 +3,7 @@
 #include "stdafx.h"   
 #include "CardProcess.h"
 #include "../BHGX_HISReader/BHGX_HISReader.h"
-#include "../BHGX_CardLib/src/BHGX_CardLib.h"
+#include "../BHGX_CardLib/BHGX_CardLib.h"
 #include "tinyxml/headers/tinyxml.h"
 #include <comutil.h>
 #include <comdef.h>
@@ -18,6 +18,8 @@
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 
 #pragma comment(lib, "comsupp.lib")    
+
+#pragma warning (disable : 4996)
 
 #define SAFE_DELETE(a)\
 	if (a != NULL)\
@@ -189,7 +191,6 @@ STDMETHODIMP CCardProcess::iATLWriteInfo(BSTR szXML, LONG* nRet)
 STDMETHODIMP CCardProcess::iATLQueryInfo(BSTR szQuerySource, BSTR* szResult)
 {
 	// TODO: 在此添加实现代码
-	LONG n;
 	char strXML[8092];
 	memset(strXML, 0, sizeof(strXML));
 	_bstr_t bstr(szQuerySource, true);
@@ -429,5 +430,13 @@ STDMETHODIMP CCardProcess::iATLGetPrinterList(BSTR* bstrPrinterXML)
 }
 
 
+#define LICENSEFILE	"北航冠新.license"
 
-
+STDMETHODIMP CCardProcess::iATLCreateLicense(BSTR timeFMT, LONG* ret)
+{
+	// TODO: 在此添加实现代码
+	_bstr_t bstr(timeFMT);
+	char *strTime = (char*)bstr;
+	*ret = iCreateLicense(LICENSEFILE, strTime);
+	return S_OK;
+}

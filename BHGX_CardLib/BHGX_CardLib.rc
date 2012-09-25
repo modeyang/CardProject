@@ -53,8 +53,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,23
- PRODUCTVERSION 1,0,0,23
+ FILEVERSION 1,0,0,26
+ PRODUCTVERSION 1,0,0,26
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -71,12 +71,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "北航冠新"
             VALUE "FileDescription", "BHGX_CardLib 动态链接库"
-            VALUE "FileVersion", "1, 0, 0, 23"
+            VALUE "FileVersion", "1, 0, 0, 26"
             VALUE "InternalName", "BHGX_CardLib"
             VALUE "LegalCopyright", "Copyright (C) 2011@yanggx"
             VALUE "OriginalFilename", "BHGX_CardLib.dll"
             VALUE "ProductName", " BHGX_CardLib 动态链接库"
-            VALUE "ProductVersion", "1, 0, 0, 23"
+            VALUE "ProductVersion", "1, 0, 0, 26"
         END
     END
     BLOCK "VarFileInfo"

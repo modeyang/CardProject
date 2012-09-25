@@ -352,6 +352,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\StringUtil.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\StringUtil.h"
+			>
+		</File>
+		<File
 			RelativePath=".\WebServiceAssist.cpp"
 			>
 		</File>

@@ -3,6 +3,7 @@
 #ifndef ACC_DEVICE_H
 #define ACC_DEVICE_H
 
+
 #include <windows.h>
      
 /**
@@ -20,13 +21,17 @@ enum {
 typedef int (__stdcall *DllProbe)(void);
 typedef int (__stdcall *DllOpen)(void);
 typedef int (__stdcall *DllClose)(void);
+
+typedef BOOL (__stdcall *DllAuthUDev)(void);
 typedef int (__stdcall *DllScanCard)(void);
 typedef int (__stdcall *DLLIOCtl)(int, void *);
 typedef int (__stdcall *DllRead)(const unsigned char *, unsigned char *, int, int);
 typedef int (__stdcall *DllWrite)(const unsigned char *, unsigned char *, int ,int, int);
-typedef unsigned char (__stdcall *DLLChangePwdEx)(const unsigned char * pNewKeyA ,const unsigned char * ctrlword,\
-												  const unsigned char * pNewKeyB,const unsigned char * poldPin ,\
+typedef unsigned char (__stdcall *DLLChangePwdEx)(const unsigned char * pNewKeyA ,const unsigned char * ctrlword,
+												  const unsigned char * pNewKeyB,const unsigned char * poldPin ,
 												  unsigned char nsector,unsigned char keyA1B0,unsigned char changeflag);
+
+
 
 /**
  * strurct 
@@ -55,6 +60,12 @@ struct CardDevice
 	DLLChangePwdEx  iChangePwdEx;
 };
 
+
+struct CardAuth 
+{
+	HINSTANCE	hAuthLibrary;
+	DllAuthUDev iAuthUDev;
+};
 /*
  * 成功： 返回抽象卡设备
  * 失败： NULL
@@ -70,6 +81,10 @@ struct CardDevice* getCardDevice(const char *System);
  * 失败： 非零
  */
 int putCardDevice(struct CardDevice *device);
+
+
+//U盾验证
+int authUDev(const char *System);
 
 
 #endif	//ACC_DEVICE_H

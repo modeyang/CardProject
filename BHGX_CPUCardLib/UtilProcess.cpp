@@ -300,7 +300,8 @@ struct XmlSegmentS *CloneSegment(struct XmlSegmentS *SegmentElement)
 		result->Next = NULL;
 
 		// 复制下边的链表结构
-		for(OrigColumnElement = SegmentElement->ColumnHeader; OrigColumnElement; OrigColumnElement = OrigColumnElement->Next)
+		for(OrigColumnElement = SegmentElement->ColumnHeader; OrigColumnElement; 
+			OrigColumnElement = OrigColumnElement->Next)
 		{
 			TempColumnElement = CloneColmn(OrigColumnElement);
 

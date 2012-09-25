@@ -11,65 +11,6 @@
 #define F4		0x08		//补偿日志
 #define F5		0x10		//健康档案信息
 
-/**
- * @ID 
- * @MASK 
- * @TYPE 
- * @CHECK 
- * @SOURCE 
- * @TARGET
- * @DEFAULT 
- * @ISWRITE 
- * @OFFSET 
- * @COLUMNBIT 
- * @INULLABLE= 
- * @WRITEBACK
- */
-struct XmlColumnS
-{
-	int		ID;
-	char	Source[50];
-	char	Target[50];
-	char	Value[100];
-	char	Mask		:1;
-	char	Type		:3;
-	char	Check		:1;
-	char	IsWrite		:1;
-	char	INullLable	:1;
-	char	WriteBack	:1;
-
-	int		Offset;
-	int		ColumnBit;
-
-	struct XmlColumnS	*Next;
-};
-
-/**
- * @ID
- * @TARGET
- */
-struct XmlSegmentS
-{
-	int		ID;
-	char	Target[50];
-
-	struct XmlColumnS	*Column;
-	struct XmlSegmentS	*Next;
-};
-
-/**
- *@ID 
- *@TARGET
- */
-struct XmlProgramS
-{
-	int		ID;
-	char	Target[50];
-
-	struct XmlSegmentS		*Segment;
-	struct XmlProgramS		*Next;
-};
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -157,6 +98,20 @@ extern "C" {
 		);
 
 	DLL_EXPORT int __stdcall iEncryFile(char *filename);
+
+	DLL_EXPORT int __stdcall iCreateLicense(
+		char *filename, 
+		char *timeStr=NULL
+		);
+
+#define TIMELICENSE		0
+#define OTHERLICENSE	1
+#define COUNTS			2
+	DLL_EXPORT int __stdcall iCheckLicense(
+		char *filename,
+		int type,					//0按时间  1其他 2次数
+		int counts
+		);
 
 
 #ifdef __cplusplus

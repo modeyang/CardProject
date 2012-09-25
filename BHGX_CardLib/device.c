@@ -81,6 +81,24 @@ static struct CardDevice *_InitDevice(HINSTANCE hInstLibrary)
 	return result;
 }
 
+static struct CardAuth *InitAuthDev(const char *System)
+{
+	char Pattern[MAX_PATH];
+	HINSTANCE hInstLibrary;
+	struct CardAuth *pAuth = NULL;
+	pAuth = (struct CardAuth*)malloc(sizeof(struct CardAuth));
+	memset(pAuth, 0, sizeof(struct CardAuth));
+
+	memset(Pattern, 0, MAX_PATH);
+	strcpy(Pattern, System);
+	strcat(Pattern, "BHGX_HHUkey.dll");
+	hInstLibrary = LoadLibrary(Pattern);
+	if (hInstLibrary != NULL) {
+		pAuth->hAuthLibrary = hInstLibrary;
+		pAuth->iAuthUDev = (DllAuthUDev)GetProcAddress(hInstLibrary, "AuthenticDevice");
+	} 
+	return pAuth;
+}
 
 /**
  * º¯Êý: getCardDevice 
@@ -94,6 +112,7 @@ struct CardDevice *getCardDevice(const char *System)
 {
 	DllProbe FunProbe;
 	struct CardDevice *result = NULL;
+
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;
 	char Pattern[MAX_PATH];
@@ -110,9 +129,8 @@ struct CardDevice *getCardDevice(const char *System)
 		if (hInstLibrary != NULL)
 		{
 			FunProbe = (DllProbe)GetProcAddress(hInstLibrary, "bProbe");
-			printf("%s:Probeº¯ÊýµØÖ·:%ll\n", FindFileData.cFileName, &FunProbe);
 			nProbe = FunProbe();
-			printf("bProbe:%d\n",nProbe);
+			LogPrinter("bProbe:%d\n",nProbe);
 			DBG(0, "%s bProbe:%d\n", FindFileData.cFileName,nProbe);
 			if((FunProbe != NULL) && nProbe)
 			{
@@ -131,8 +149,8 @@ struct CardDevice *getCardDevice(const char *System)
 	// */
 	if(result)
 	{
-		int ret = result->iOpen();
-	}
+		result->iOpen();
+	}	
 	return result;
 }
 
@@ -158,4 +176,23 @@ int putCardDevice(struct CardDevice *device)
 	}
 
 	return result;
+}
+
+
+int authUDev(const char *System)
+{
+	struct CardAuth *pAuth = NULL;
+	int status = 0;
+	pAuth = InitAuthDev(System);
+
+	if (pAuth == NULL || !pAuth->iAuthUDev()) {
+		status = -1;
+	}
+
+	if (pAuth) {
+		FreeLibrary(pAuth->hAuthLibrary);
+		free(pAuth);
+	}
+
+	return status;
 }

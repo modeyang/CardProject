@@ -29,6 +29,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BHGX_MF_VCard", "VCard\BHGX
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HDZB_Cardlib_Test", "..\CPU\HuaHong\HDZB_Cardlib_Test\HDZB_Cardlib_Test.vcproj", "{BACE1F1B-38CE-43AC-A7F7-3B0F854B41C5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RepairKeyTool", "RepairKeyTool\RepairKeyTool.vcproj", "{5C5313BD-A938-476D-B380-153DC799CA70}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CreateLicenseTool", "CreateLicenseTool\CreateLicenseTool.vcproj", "{58CC8634-96DD-4FC6-B261-B5A140FCBA64}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -91,6 +95,14 @@ Global
 		{BACE1F1B-38CE-43AC-A7F7-3B0F854B41C5}.Debug|Win32.Build.0 = Debug|Win32
 		{BACE1F1B-38CE-43AC-A7F7-3B0F854B41C5}.Release|Win32.ActiveCfg = Release|Win32
 		{BACE1F1B-38CE-43AC-A7F7-3B0F854B41C5}.Release|Win32.Build.0 = Release|Win32
+		{5C5313BD-A938-476D-B380-153DC799CA70}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5C5313BD-A938-476D-B380-153DC799CA70}.Debug|Win32.Build.0 = Debug|Win32
+		{5C5313BD-A938-476D-B380-153DC799CA70}.Release|Win32.ActiveCfg = Release|Win32
+		{5C5313BD-A938-476D-B380-153DC799CA70}.Release|Win32.Build.0 = Release|Win32
+		{58CC8634-96DD-4FC6-B261-B5A140FCBA64}.Debug|Win32.ActiveCfg = Debug|Win32
+		{58CC8634-96DD-4FC6-B261-B5A140FCBA64}.Debug|Win32.Build.0 = Debug|Win32
+		{58CC8634-96DD-4FC6-B261-B5A140FCBA64}.Release|Win32.ActiveCfg = Release|Win32
+		{58CC8634-96DD-4FC6-B261-B5A140FCBA64}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

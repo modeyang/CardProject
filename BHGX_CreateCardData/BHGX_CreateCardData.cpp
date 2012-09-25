@@ -6,11 +6,12 @@
 #include "BHGX_CreateCardData.h"
 
 #include "Encry/DESEncry.h"
-#include "../BHGX_CardLib/src/BHGX_CardLib.h"
-#include "../BHGX_CardLib/src/algorithm.h"
+#include "../BHGX_CardLib/BHGX_CardLib.h"
+#include "../BHGX_CardLib/public/algorithm.h"
 #include "tinyxml/headers/tinyxml.h"
 #include "algorithm.h"
 #include "Resource.h"
+
 
 #ifdef _DEBUG
 #pragma comment(lib, "../Debug/BHGX_CardLib.lib")
@@ -26,6 +27,8 @@
 #endif
 
 using namespace std;
+
+#define MAXTRY 1000
 
 /**
 *
@@ -370,7 +373,7 @@ static int iWriteKey(unsigned char *seed)
 * @license: 校验的对象
 * @return: 如果正确返回0，其他返回负值
 */
-static int iCheckLicense(const char *license)
+static int iCheckCreateDataLicense(const char *license)
 {
 	return strcmp("北航冠新.license", (const char *)license);
 }
@@ -434,11 +437,11 @@ int __stdcall iCreateCardData(
 	if(filename == NULL || license == NULL)
 		return -1;
 
-	result = iCardInit();
+	result = iCheckCreateDataLicense(license);
 	if(result)
 		return result;
 
-	result = iCheckLicense(license);
+	result = iCardInit();
 	if(result)
 		return result;
 
@@ -454,6 +457,10 @@ int __stdcall iCreateCardData(
 	{
 		while(in.getline(lines, 1024))
 		{
+			if (!iCheckLicense(NULL, 2, MAXTRY)) {
+				return -18;
+			}
+
 			mbstowcs(wlines, lines, sizeof(lines));
 
 			// 定义变量，组织vector信息
@@ -540,15 +547,15 @@ DLL_EXPORT int __stdcall iCreateCardDataForEncry(
 	if(filename == NULL || license == NULL)
 		return -1;
 
+	result = iCheckCreateDataLicense(license);
+	if(result)
+		return result;
+
 	result = iCardInit();
 	if (result != 0)
 	{
 		return result;
 	}
-
-	result = iCheckLicense(license);
-	if(result)
-		return result;
 
 	// 改变卡数据文件
 	iCardCtlCard(3, (void*)datafile);
@@ -564,6 +571,10 @@ DLL_EXPORT int __stdcall iCreateCardDataForEncry(
 		encry.DesryFile((char*)filename);
 		for (int i=0; i<encry.GetMaxLines(); ++i)
 		{
+			if (!iCheckLicense(NULL, 2, MAXTRY)) {
+				return -18;
+			}
+
 			encry.GetlineInfo(lines, i);
 			
 			mbstowcs(wlines, lines, sizeof(lines));

@@ -6,8 +6,6 @@
 #include "public/algorithm.h"
 #include "public/debug.h"
 #include <windows.h>
-#include <time.h>
-#include <stdio.h>
 #pragma warning (disable : 4020)
 #pragma warning (disable : 4996)
 
@@ -15,82 +13,67 @@
 #define DEFAULT_CONTROL	0		//默认配置 KeyA读 KeyB写
 #define KEYA_CONTROL	1		//KeyA读写
 #define KEYB_CONTROL	2		//KeyB读写
-char atmp[256];
-time_t at;
-#define DBGADAP(format, ...) \
-	at = time(0);\
-	memset(atmp,0, sizeof(atmp));\
-	strftime( atmp, sizeof(atmp), "%Y-%m-%d %X  adapter: ",localtime(&at));\
-	sprintf(atmp, "%s %s", atmp, format); \
-	LogMessage(atmp ,__VA_ARGS__);		\
-/**
- * @ID 
- * @MASK 
- * @TYPE 
- * @CHECK 
- * @SOURCE 
- * @TARGET
- * @DEFAULT 
- * @ISWRITE 
- * @OFFSET 
- * @COLUMNBIT 
- * @INULLABLE= 
- * @WRITEBACK
- */
-struct XmlColumnS
-{
-	int		ID;
-	char	Source[50];
-	char	Target[50];
-	char	Value[100];
-	char	Mask		:1;
-	char	Type		:3;
-	char	Check		:1;
-	char	IsWrite		:1;
-	char	INullLable	:1;
-	char	WriteBack	:1;
 
-	int		Offset;
-	int		ColumnBit;
+#define KEY_LEN			16
+#define BLK_LEN			16
 
-	struct XmlColumnS	*Next;
-};
+#define KEYA			0
+#define KEYB			1
 
-/**
- * @ID
- * @TARGET
- */
-struct XmlSegmentS
-{
-	int		ID;
-	char	Target[50];
+#define DEFAULT			0
+#define NHCARD			1
+#define GWCARD			2
 
-	struct XmlColumnS	*Column;
-	struct XmlSegmentS	*Next;
-};
+#define DBGADAP(format, ...)  LogWithTime(0, format)
 
-/**
- *@ID 
- *@TARGET
- */
-struct XmlProgramS
-{
-	int		ID;
-	char	Target[50];
+static unsigned char defKey[6] = 
+{0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
-	struct XmlSegmentS		*Segment;
-	struct XmlProgramS		*Next;
-};
+static unsigned char defKeyA[0x6] = 
+{0x43, 0x97, 0x04, 0x47, 0x20, 0x47};
+
+static unsigned char defCtrl[0x4]=
+{0x08,0x77,0x8f,0x69};
+
+static unsigned char initCtrl[0x4]=
+{0xff, 0x07, 0x80, 0x69};
+
+#define ISGWCARD(cardno)   (cardno == 1) 
 
 static struct CardDevice *Instance = NULL;
 
-//公卫卡为1  否则为0 
-int IsGWCard(char *cardID)
-{
-	if (cardID == NULL)
-		return 0;
+static int GetControlBuff(unsigned char *pControl, int nSecr);
+static int GetWriteWord(const unsigned char *pControl);
+static int iGetKeySeed(int type, unsigned char *seed);
+static int repairKeyForFault(unsigned char *ctrlword);
+static int repairKeyB(unsigned char *ctrlword);
+static int repairKeyBAllF(unsigned char *ctrlword);
+static int ChangePwdEx(const unsigned char * pNewKeyA ,
+					   const unsigned char * ctrlword,
+					   const unsigned char * pNewKeyB,
+					   const unsigned char * poldPin ,
+				       unsigned char nsector,
+					   unsigned char keyA1B0,
+					   unsigned char changeflag);
 
-	return cardID[0]=='1'? 1:0;
+
+static int _FormatCard(unsigned char *pControl, 
+					   unsigned char* szFormat, 
+					   int nBlk, 
+					   unsigned char *keyB);
+
+
+int __stdcall IsAllTheSameFlag(const unsigned char *szBuf, int nLen, unsigned char cflag)
+{
+	int i=0;
+	for (; i<nLen; ++i)
+	{
+		if (szBuf[i] != cflag)
+		{
+			return -1;
+		}
+	}
+	return 0;
 }
 
 /**
@@ -106,12 +89,10 @@ static int str2bcd(const char *str, unsigned  char *bcd, int len)
 		
 		if(i & 1) 
 		{
-			//bcd[j] |= (str[i] - 48) << 4;
 			bcd[j] |= (str[i-1] - 48) << 4;
 		}
 		else
 		{
-			//bcd[j] = str[i] - 48;
 			bcd[j]=str[i+1] -48;
 		}
 	}
@@ -131,18 +112,371 @@ static int bcd2str(const unsigned char *bcd, char *str, int len)
 		j = i >> 1;
 		if(i & 1) 
 		{
-			//str[i] = (bcd[j] >> 4) + 48;
 			str[i] |= (bcd[j] & 0x0f) + 48;
 		}	
 		else 
 		{
-			//str[i] = (bcd[j] & 0x0f) + 48;
 			str[i] = (bcd[j] >> 4) + 48;
 		}
 	}
 
 	return i;
 }
+
+//获取写控制， 初始化的控制位时返回1，其他情况为0
+static int GetWriteWord(const unsigned char *pControl)
+{
+	int nRet = 0;
+	int i = 0;
+
+	for (; i<4; ++i)
+	{
+		if (initCtrl[i] != pControl[i])
+		{
+			return DEFAULT_CONTROL;
+		}
+	}
+	return KEYA_CONTROL;
+}
+
+static int GetControlBuff(unsigned char *pControl, int nSecr)
+{
+	//439704472047
+	unsigned char keyA[6];
+	unsigned char bRead = 0;
+	int BlkNr = 0;
+
+	/* 如果没有读卡设备接入*/
+	if(!Instance) 
+		return CardInitErr;
+
+	if (iCoreFindCard() != 0)
+		return CardScanErr;
+
+	BlkNr = nSecr * 4 + 3;
+	memcpy(keyA, defKeyA, sizeof(keyA));
+	bRead = Instance->iRead(keyA, pControl, 4*8, BlkNr * 128 + 6*8);
+	if (bRead != 0)
+	{
+		if (iCoreFindCard() != 0)
+			return CardScanErr;
+
+		memset(keyA, 0xff, sizeof(keyA));
+		bRead = Instance->iRead(keyA, pControl, 4*8, BlkNr * 128 + 6*8);
+	}
+	return bRead;
+}
+
+
+#define FAILE_RETRY  2
+int __stdcall aFormatCard(unsigned char cFlag)
+{
+	char seed[20];
+	unsigned char keyB[6];
+	unsigned char newKeyA[0x6];
+	unsigned char newKeyB[0x6];
+	unsigned char changeflag=2;
+	unsigned char ctrlWork[0x4]={0x08,0x77,0x8f,0x69};//
+	unsigned char szFormat[KEY_LEN];
+	int nLen=0, i;
+	int faile_retry = 0;
+	int nRet = 0;
+	memset(newKeyA, 0xff, 6);
+	memset(newKeyB, 0xff, 6);
+	memset(seed, sizeof(seed), 0);
+	nLen = iGetKeySeed(DEFAULT, seed);
+	if (nRet == -1 || nLen == 0 ||
+		IsAllTheSameFlag((unsigned char*)seed, nLen/2, 0x30)== 0 ||
+		IsAllTheSameFlag((unsigned char*)seed, nLen/2, 0x3f)== 0 )
+	{
+		memset(keyB, 0xff, 6);
+	}
+	else
+	{
+		iGetKeyBySeed((unsigned char*)seed, keyB);
+	}
+
+	LogPrinter("开始格式化数据:");
+	GetControlBuff(ctrlWork, 0);
+	memset(szFormat, cFlag, KEY_LEN);
+	while (faile_retry < FAILE_RETRY)
+	{
+		for (i=4; i<64; ++i)
+		{
+			if ((i+1) % 4 == 0)
+			{
+				continue;
+			}
+			nRet = _FormatCard(ctrlWork, szFormat, i, keyB);
+			if (nRet)
+			{
+				faile_retry++;
+				DBGADAP( "格式化失败，需要修补密码\n");
+				break;
+			}
+		}
+		if (nRet)
+		{
+			nRet = repairKeyB(ctrlWork);
+			if (nRet)
+				nRet = repairKeyForFault(ctrlWork);
+			if (!nRet)
+			{
+				faile_retry = FAILE_RETRY-1;
+				DBGADAP( "修补密码成功，重新格式化数据\n");
+				LogPrinter("\n重新格式化数据:");
+			}
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	if (nRet)
+		goto done;
+
+	LogPrinter("格式化密码:");
+	for (i=0; i<BLK_LEN; ++i)
+	{
+		nRet = ChangePwdEx(newKeyA, ctrlWork, newKeyB, keyB, i, 0, changeflag);
+		if (nRet != 0)
+			break;
+	}
+	DBGADAP( "格式化密码结果:%d\n", nRet);
+	LogPrinter("%d\n", nRet);
+
+done:
+	return nRet==0?CardProcSuccess:CardFormatErr;
+}
+
+
+static int _FormatCard(unsigned char *pControl, unsigned char* szFormat, int nBlk, unsigned char *keyB)
+{
+	int nOffset = 128*nBlk;
+	unsigned char bool_test = 0;
+
+	if(!Instance)
+		return CardInitErr;
+
+	if (GetWriteWord(pControl) == DEFAULT_CONTROL)
+	{
+		bool_test = Instance->iWrite(keyB, szFormat, DEFAULT_CONTROL, 128, nOffset);
+	}
+	else
+	{
+		bool_test = Instance->iWrite(defKeyA, szFormat,  KEYA_CONTROL ,128, nOffset);
+	}
+	LogPrinter("%d", bool_test);
+	return  bool_test==0 ? 0:-1;
+}
+
+static int ChangePwdEx(const unsigned char * pNewKeyA ,const unsigned char * ctrlword,
+					   const unsigned char * pNewKeyB,const unsigned char * poldPin ,
+					   unsigned char nsector,unsigned char keyA1B0,unsigned char changeflag)
+{
+	unsigned char  nRet = 0;
+	unsigned char KeyA[6] = {0x43, 0x97, 0x04, 0x47, 0x20, 0x47};
+	if (GetWriteWord(ctrlword) == DEFAULT_CONTROL)
+	{
+		nRet = Instance->iChangePwdEx(pNewKeyA, ctrlword, pNewKeyB, poldPin, nsector, keyA1B0, changeflag);
+	}
+	else
+	{
+		if (0 == IsAllTheSameFlag(pNewKeyA, 6, 0xff))
+		{
+			nRet = Instance->iChangePwdEx(pNewKeyA, ctrlword, pNewKeyB, KeyA, nsector, 1, changeflag);
+		}
+		else
+		{
+			memset(KeyA, 0xff, 6);
+			nRet = Instance->iChangePwdEx(pNewKeyA, ctrlword, pNewKeyB, KeyA, nsector, 1, changeflag);
+		}
+	}
+
+	return nRet ==0 ? 0:-1;
+}
+static int iGetKeySeed(int type, unsigned char *seed)
+{
+	unsigned char tmp[32];
+	int cardtype = 0;
+
+	//没有寻到卡
+	if(!Instance || !Instance->iRead)
+		return -1;
+
+	//读取seed
+	memset(tmp, 0, 32);
+	Instance->iRead(defKeyA, tmp, 56, 640);
+	cardtype = tmp[0] >> 4;
+	if (type == GWCARD) {
+		bcd2str(tmp, seed, 14);
+		goto done;
+	} else if (type == NHCARD) {
+		memset(tmp, 0, sizeof(tmp));
+		Instance->iRead(defKeyA, tmp, 72, 792);
+		bcd2str(tmp, seed, 18);
+		goto done;
+	} else {
+		if (tmp[0]>>4 == 0)
+		{
+			memset(tmp, 0, sizeof(tmp));
+			Instance->iRead(defKeyA, tmp, 72, 792);
+			bcd2str(tmp, seed, 18);
+		}
+		else
+		{
+			bcd2str(tmp, seed, 14);
+		}
+	}
+
+done:
+	return cardtype;
+}
+
+
+static int repairKeyForFault(unsigned char *ctrlword)
+{
+	unsigned char seed[32];
+	unsigned char oldKeyB[6];  //变成原来的KeyB
+	unsigned char curKeyB[0x6];//当前错误的keyB
+	unsigned char NHKyeB[6];
+	int i=0, nRet = 0, type;
+	unsigned char changeflag=2;
+	memset(curKeyB, 0x75, sizeof(curKeyB));
+
+	//没有寻到卡
+	if(!Instance || !Instance->iRead)
+		return -1;
+
+	if (iCoreFindCard() != 0)
+		return CardScanErr;
+
+	//读出卡号,得出旧的KeyB
+	memset(oldKeyB, 0, sizeof(oldKeyB));
+	memset(seed, 0, sizeof(seed));
+	type = iGetKeySeed(GWCARD, seed);
+	iGetKeyBySeed(seed, oldKeyB);
+
+	//如果是农合卡，直接失败
+	if (!ISGWCARD(type)) {
+		LogPrinter("此卡为农合卡，直接失败\n");
+		return -1;
+	}
+
+	//得到以农合号为依据的keyB
+	memset(seed, 0, sizeof(seed));
+	memset(NHKyeB, 0, sizeof(NHKyeB));
+	iGetKeySeed(NHCARD, seed);
+	iGetKeyBySeed(seed, NHKyeB);
+
+	LogPrinter("[6-4新疆错误修补密码]:");
+	for (i=0; i<BLK_LEN; ++i)
+	{
+		nRet = ChangePwdEx(defKeyA, ctrlword, oldKeyB, curKeyB, i, 0, changeflag);
+		if (nRet) {
+			if (iCoreFindCard() != 0)
+				break;
+			nRet = ChangePwdEx(defKeyA, ctrlword, oldKeyB, NHKyeB, i, 0, changeflag);
+		}
+		LogPrinter(" %d", nRet);
+		if (nRet)
+			break;
+	}
+	LogPrinter("\n");
+	return nRet;
+
+}
+
+static int repairKeyBAllF(unsigned char *ctrlword)
+{
+	unsigned char seed[32];
+	unsigned char oldKeyB[6];
+	unsigned char newKeyB[6];
+	int i=0, nRet = 0, type;
+	unsigned char changeflag=2;
+	memset(oldKeyB, 0xFF, sizeof(oldKeyB));
+
+	//没有寻到卡
+	if(!Instance || !Instance->iRead)
+		return -1;
+
+	if (iCoreFindCard() != 0)
+		return CardScanErr;
+
+	//读出卡号,得出旧的KeyB
+	memset(newKeyB, 0, sizeof(newKeyB));
+	memset(seed, 0, sizeof(seed));
+	type = iGetKeySeed(GWCARD, seed);
+	iGetKeyBySeed(seed, newKeyB);
+
+	if (!ISGWCARD(type)) {
+
+		//得到以农合号为依据的keyB
+		memset(newKeyB, 0, sizeof(newKeyB));
+		memset(seed, 0, sizeof(seed));
+		iGetKeySeed(NHCARD, seed);
+		iGetKeyBySeed(seed, newKeyB);
+	}
+
+	LogPrinter("修补密码:");
+	for (i=0; i<BLK_LEN; ++i){
+		nRet = ChangePwdEx(defKeyA, ctrlword, newKeyB, oldKeyB, i, 0, changeflag);
+		LogPrinter("%d", nRet);
+		if (nRet)
+			break;
+	}
+	DBGADAP("修补密码:%d\n", nRet);
+
+	return nRet;
+}
+
+static int repairKeyB(unsigned char *ctrlword)
+{
+	unsigned char seed[32];
+	unsigned char oldKeyB[6];
+	unsigned char newKeyB[0x6];
+	int i=0, nRet = 0, type;
+	unsigned char changeflag=2;
+
+	//没有寻到卡
+	if(!Instance || !Instance->iRead)
+		return -1;
+
+	if (iCoreFindCard() != 0)
+		return CardScanErr;
+
+	//读出卡号,得出旧的KeyB
+	memset(oldKeyB, 0, sizeof(oldKeyB));
+	memset(seed, 0, sizeof(seed));
+	type = iGetKeySeed(GWCARD, seed);
+	iGetKeyBySeed(seed, oldKeyB);
+
+	if (ISGWCARD(type)) {
+		LogPrinter("如果是公卫卡，直接失败\n");
+		return -1;
+	}
+
+	//得到以农合号为依据的keyB
+	memset(newKeyB, 0, sizeof(newKeyB));
+	memset(seed, 0, sizeof(seed));
+	iGetKeySeed(NHCARD, seed);
+	iGetKeyBySeed(seed, newKeyB);
+
+	LogPrinter("修补密码:");
+	for (i=0; i<BLK_LEN; ++i)
+	{
+		nRet = ChangePwdEx(defKeyA, ctrlword, newKeyB, oldKeyB, i, 0, changeflag);
+		LogPrinter("%d", nRet);
+		if (nRet)
+			break;
+	}
+	DBGADAP("修补密码:%d\n", nRet);
+
+	return nRet;
+}
+
+
 
 /**
  * 函数： initCoreDevice
@@ -157,7 +491,7 @@ int __stdcall initCoreDevice(const char *System)
 	if(!Instance) 
 		Instance = getCardDevice(System);
 
-	return (Instance == NULL?-1:0);
+	return (Instance != NULL ? 0:-1);
 }
 
 /**
@@ -207,10 +541,15 @@ int __stdcall iCoreFindCard(void)
 
 	// 探测卡，如果没有卡，自动退出
 	unsigned char ret = (unsigned char)Instance->iScanCard();
-	printf("ScanCard: %d\n", ret);
+	LogPrinter("ScanCard: %d\n", ret);
 	if(ret != 0)
 		return CardScanErr; 
 	return 0;
+}
+
+int __stdcall authUCard(const char *System)
+{
+	return authUDev(System);
 }
 /**
  *
@@ -307,49 +646,6 @@ void __stdcall DestroyRWRequest(struct RWRequestS *list, int flag)
 	return;
 }
 
-//获取写控制， 初始化的控制位时返回1，其他情况为0
-int __stdcall GetWriteWord(const unsigned char *pControl)
-{
-	unsigned char pInitControl[6] = {0xff, 0x07, 0x80, 0x69};
-	int nRet = 0;
-	int i = 0;
-
-	for (; i<4; ++i)
-	{
-		if (pInitControl[i] != pControl[i])
-		{
-			return DEFAULT_CONTROL;
-		}
-	}
-	return KEYA_CONTROL;
-}
-
-int __stdcall aGetControlBuff(unsigned char *pControl, int nSecr)
-{
-	//439704472047
-	unsigned char keyA[] = {0x43, 0x97, 0x04, 0x47, 0x20, 0x47};
-	unsigned char bRead = 0;
-	int BlkNr = 0;
-
-	/* 如果没有读卡设备接入*/
-	if(!Instance) 
-		return CardInitErr;
-
-	if (iCoreFindCard() != 0)
-		return CardScanErr;
-
-	BlkNr = nSecr * 4 + 3;
-	bRead = Instance->iRead(keyA, pControl, 4*8, BlkNr * 128 + 6*8);
-	if (bRead != 0)
-	{
-		if (iCoreFindCard() != 0)
-			return CardScanErr;
-
-		memset(keyA, 0xff, sizeof(keyA));
-		bRead = Instance->iRead(keyA, pControl, 4*8, BlkNr * 128 + 6*8);
-	}
-	return bRead;
-}
 /**
 
  *
@@ -486,7 +782,6 @@ static void ListParseContent(struct RWRequestS *list)
 static int _iReadCard(struct RWRequestS *list)
 {
 	//439704472047
-	unsigned char keyA[] = {0x43, 0x97, 0x04, 0x47, 0x20, 0x47};
 	unsigned char bRead = 0;
 
 	struct RWRequestS *CurrRequest= NULL;
@@ -500,7 +795,7 @@ static int _iReadCard(struct RWRequestS *list)
 	while(CurrRequest)
 	{
 		memset(CurrRequest->value, 0, (CurrRequest->length + 7)/8);
-		bRead = Instance->iRead(keyA, CurrRequest->value, CurrRequest->length, CurrRequest->offset);
+		bRead = Instance->iRead(defKeyA, CurrRequest->value, CurrRequest->length, CurrRequest->offset);
 
 		// 向后迭代
 		CurrRequest = CurrRequest->Next;
@@ -509,9 +804,7 @@ static int _iReadCard(struct RWRequestS *list)
 	return bRead==0 ? 0:CardReadErr;
 }
 
-/**
- *
- */
+
 int __stdcall iReadCard(struct RWRequestS *list)
 {
 	struct RWRequestS *AgentList = NULL;
@@ -535,9 +828,6 @@ int __stdcall iReadCard(struct RWRequestS *list)
 }
 
 
-/**
- *
- */
 
 static void ParseWriteContent(struct RWRequestS *list)
 {
@@ -610,266 +900,12 @@ static void ParseWriteContent(struct RWRequestS *list)
 	return;
 }
 
-/**
- *
- */
-static int iGetKeySeed(unsigned char *seed)
-{
-	unsigned char keyA[] = {0x43, 0x97, 0x04, 0x47, 0x20, 0x47};
-	unsigned char tmp[32];
 
-	//没有寻到卡
-	if(!Instance || !Instance->iRead)
-		return -1;
-
-	//读取seed
-	memset(tmp, 0, 32);
-	Instance->iRead(keyA, tmp, 56, 640);
-	if (tmp[0]>>4 == 0)
-	{
-		memset(tmp, 0, sizeof(tmp));
-		Instance->iRead(keyA, tmp, 72, 792);
-		bcd2str(tmp, seed, 18);
-	}
-	else
-	{
-		bcd2str(tmp, seed, 14);
-	}
-	
-	return 0;
-}
-
-int  __stdcall repairKeyForFault(unsigned char *ctrlword)
-{
-	unsigned char seed[32];
-	unsigned char tmp[32];
-	unsigned char oldKeyB[6];  //变成原来的KeyB
-	unsigned char curKeyB[0x6];//当前错误的keyB
-	unsigned char NHKyeB[6];
-	unsigned char KeyA[6] = {0x43, 0x97, 0x04, 0x47, 0x20, 0x47};
-	int i=0, nRet = 0;
-	unsigned char changeflag=2;
-	memset(oldKeyB, 0, sizeof(oldKeyB));
-	memset(seed, 0, sizeof(seed));
-	memset(tmp, 0, sizeof(tmp));
-	memset(curKeyB, 0x75, sizeof(curKeyB));
-	memset(NHKyeB, 0, sizeof(NHKyeB));
-
-	//没有寻到卡
-	if(!Instance || !Instance->iRead)
-		return -1;
-
-	if (iCoreFindCard() != 0)
-		return CardScanErr;
-
-	//读出卡号,得出旧的KeyB
-	Instance->iRead(KeyA, tmp, 56, 640);
-	bcd2str(tmp, seed, 14);
-	iGetKeyBySeed(seed, oldKeyB);
-
-	//如果是农合卡，直接失败
-	if (!IsGWCard(seed)) {
-		printf("此卡为农合卡，直接失败\n");
-		return -1;
-	}
-
-	//得到以农合号为依据的keyB
-	memset(seed, 0, sizeof(seed));
-	memset(tmp, 0, sizeof(tmp));
-	Instance->iRead(KeyA, tmp, 72, 792);
-	bcd2str(tmp, seed, 18);
-	iGetKeyBySeed(seed, NHKyeB);
-
-	printf("[6-4新疆错误修补密码]:");
-	for (i=0; i<16; ++i)
-	{
-		nRet = aChangePwdEx(KeyA, ctrlword, oldKeyB, curKeyB, i, 0, changeflag);
-		if (nRet) {
-			if (iCoreFindCard() != 0)
-				break;
-			nRet = aChangePwdEx(KeyA, ctrlword, oldKeyB, NHKyeB, i, 0, changeflag);
-		}
-		printf(" %d", nRet);
-		if (nRet)
-			break;
-	}
-	printf("\n");
-	return nRet;
-
-}
-
-int __stdcall repairKeyBAllF(unsigned char *ctrlword)
-{
-	unsigned char seed[32];
-	unsigned char tmp[32];
-	unsigned char oldKeyB[6];
-	unsigned char newKeyB[0x6];
-	unsigned char KeyA[6] = {0x43, 0x97, 0x04, 0x47, 0x20, 0x47};
-	int i=0, nRet = 0;
-	unsigned char changeflag=2;
-	memset(oldKeyB, 0xFF, sizeof(oldKeyB));
-	memset(seed, 0, sizeof(seed));
-	memset(tmp, 0, sizeof(tmp));
-
-	//没有寻到卡
-	if(!Instance || !Instance->iRead)
-		return -1;
-
-	if (iCoreFindCard() != 0)
-		return CardScanErr;
-
-	//读出卡号,得出旧的KeyB
-	Instance->iRead(KeyA, tmp, 56, 640);
-	bcd2str(tmp, seed, 14);
-	iGetKeyBySeed(seed, newKeyB);
-
-	if (!IsGWCard(seed)) {
-
-		//得到以农合号为依据的keyB
-		memset(newKeyB, 0, sizeof(newKeyB));
-		memset(seed, 0, sizeof(seed));
-		memset(tmp, 0, sizeof(tmp));
-		Instance->iRead(KeyA, tmp, 72, 792);
-		bcd2str(tmp, seed, 18);
-		iGetKeyBySeed(seed, newKeyB);
-	}
-
-	printf("修补密码:");
-	for (i=0; i<16; ++i){
-		nRet = aChangePwdEx(KeyA, ctrlword, newKeyB, oldKeyB, i, 0, changeflag);
-		printf("%d", nRet);
-		if (nRet)
-			break;
-	}
-	DBGADAP("修补密码:%d\n", nRet);
-
-	return nRet;
-}
-int __stdcall repairKeyB(unsigned char *ctrlword)
-{
-	unsigned char seed[32];
-	unsigned char tmp[32];
-	unsigned char oldKeyB[6];
-	unsigned char newKeyB[0x6];
-	unsigned char KeyA[6] = {0x43, 0x97, 0x04, 0x47, 0x20, 0x47};
-	int i=0, nRet = 0;
-	unsigned char changeflag=2;
-	memset(oldKeyB, 0, sizeof(oldKeyB));
-	memset(seed, 0, sizeof(seed));
-	memset(tmp, 0, sizeof(tmp));
-
-	//没有寻到卡
-	if(!Instance || !Instance->iRead)
-		return -1;
-
-	if (iCoreFindCard() != 0)
-		return CardScanErr;
-
-	//读出卡号,得出旧的KeyB
-	Instance->iRead(KeyA, tmp, 56, 640);
-	bcd2str(tmp, seed, 14);
-	iGetKeyBySeed(seed, oldKeyB);
-
-	if (IsGWCard(seed)) {
-		printf("如果是公卫卡，直接失败\n");
-		return -1;
-	}
-
-	//得到以农合号为依据的keyB
-	memset(newKeyB, 0, sizeof(newKeyB));
-	memset(seed, 0, sizeof(seed));
-	memset(tmp, 0, sizeof(tmp));
-	Instance->iRead(KeyA, tmp, 72, 792);
-	bcd2str(tmp, seed, 18);
-	iGetKeyBySeed(seed, newKeyB);
-
-	printf("修补密码:");
-	for (i=0; i<16; ++i)
-	{
-		nRet = aChangePwdEx(KeyA, ctrlword, newKeyB, oldKeyB, i, 0, changeflag);
-		printf("%d", nRet);
-		if (nRet)
-			break;
-	}
-	DBGADAP("修补密码:%d\n", nRet);
-
-	return nRet;
-}
-
-int __stdcall aFormatCard(unsigned char *pControl, unsigned char* szFormat, int nBlk, unsigned char *keyB)
-{
-	int nOffset = 128*nBlk;
-	unsigned char bool_test = 0;
-	unsigned char KeyA[6] = {0x43, 0x97, 0x04, 0x47, 0x20, 0x47};
-
-	if(!Instance)
-		return CardInitErr;
-
-	if (GetWriteWord(pControl) == DEFAULT_CONTROL)
-	{
-		bool_test = Instance->iWrite(keyB, szFormat, DEFAULT_CONTROL, 128, nOffset);
-	}
-	else
-	{
-		bool_test = Instance->iWrite(KeyA, szFormat,  KEYA_CONTROL ,128, nOffset);
-	}
-	printf("%d", bool_test);
-	return  bool_test==0 ? 0:-1;
-}
-
-int __stdcall aChangePwdEx(const unsigned char * pNewKeyA ,const unsigned char * ctrlword,
-						 const unsigned char * pNewKeyB,const unsigned char * poldPin ,
-						 unsigned char nsector,unsigned char keyA1B0,unsigned char changeflag)
-{
-	unsigned char  nRet = 0;
-	unsigned char KeyA[6] = {0x43, 0x97, 0x04, 0x47, 0x20, 0x47};
-	if (GetWriteWord(ctrlword) == DEFAULT_CONTROL)
-	{
-		nRet = Instance->iChangePwdEx(pNewKeyA, ctrlword, pNewKeyB, poldPin, nsector, keyA1B0, changeflag);
-	}
-	else
-	{
-		if (0 == IsAllTheSameFlag(pNewKeyA, 6, 0xff))
-		{
-			nRet = Instance->iChangePwdEx(pNewKeyA, ctrlword, pNewKeyB, KeyA, nsector, 1, changeflag);
-		}
-		else
-		{
-			memset(KeyA, 0xff, 6);
-			nRet = Instance->iChangePwdEx(pNewKeyA, ctrlword, pNewKeyB, KeyA, nsector, 1, changeflag);
-		}
-	}
-		
-	return nRet ==0 ? 0:-1;
-}
-
-int __stdcall IsAllTheSameFlag(unsigned char *szBuf, int nLen, unsigned char cflag)
-{
-	int i=0;
-	for (; i<nLen; ++i)
-	{
-		if (szBuf[i] != cflag)
-		{
-			return -1;
-		}
-	}
-	return 0;
-}
-
-
-
-
-/**
- *
- */
-
-#define FAILE_RETRY  2
 static int _iWriteCard(struct RWRequestS *list)
 {
 	unsigned char seed[32];
 	unsigned char  bool_test = -1;
 	unsigned char keyNewB[6]={0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-	unsigned char KeyA[6] = {0x43, 0x97, 0x04, 0x47, 0x20, 0x47};
 	unsigned char Key[6];
 	unsigned char pControl[4];
 	int nWriteControl = DEFAULT_CONTROL;
@@ -880,7 +916,7 @@ static int _iWriteCard(struct RWRequestS *list)
 		return CardInitErr;
 
 	//获取控制位，判断卡片读写形式
-	aGetControlBuff(pControl, 0);
+	GetControlBuff(pControl, 0);
 	nWriteControl = GetWriteWord(pControl);
 
 	
@@ -889,14 +925,11 @@ static int _iWriteCard(struct RWRequestS *list)
 		memset(seed, 0, 32);
 
 		//根据卡号首位获取生成Keyb的种子
-		iGetKeySeed(seed);   
+		iGetKeySeed(DEFAULT, seed);   
 
 		//全FF/00的情况视为初始密码为全F
-		if (IsAllTheSameFlag(seed, 14, 0x3f) == 0)
-		{
-			memcpy(Key, keyNewB, sizeof(keyNewB));
-		}
-		else if (IsAllTheSameFlag(seed, 14, 0x30) == 0)
+		if (IsAllTheSameFlag(seed, 14, 0x3f) == 0 ||
+			IsAllTheSameFlag(seed, 14, 0x30) == 0)
 		{
 			memcpy(Key, keyNewB, sizeof(keyNewB));
 		}
@@ -912,7 +945,7 @@ static int _iWriteCard(struct RWRequestS *list)
 			{
 				//KeyA有全部读写权限
 				nWriteControl = KEYA_CONTROL;
-				memcpy(Key, KeyA, sizeof(KeyA));
+				memcpy(Key, defKeyA, sizeof(defKeyA));
 			}
 		}
 
@@ -928,7 +961,7 @@ static int _iWriteCard(struct RWRequestS *list)
 			if (bool_test)
 			{
 				DBGADAP("写卡失败，需要修补密码\n");
-				printf("写卡失败，需要修补密码\n");
+				LogPrinter("写卡失败，需要修补密码\n");
 				faile_retry++;
 				break;
 			}
@@ -949,7 +982,7 @@ static int _iWriteCard(struct RWRequestS *list)
 			if (!bool_test)
 			{
 				DBGADAP( "修补密码成功，重新写卡\n");
-				printf("修补密码成功，重新写卡\n");
+				LogPrinter("修补密码成功，重新写卡\n");
 				faile_retry = FAILE_RETRY-1;
 			}
 		}
@@ -961,9 +994,7 @@ static int _iWriteCard(struct RWRequestS *list)
 	return bool_test==0 ? 0:CardWriteErr;
 }
 
-/**
- *
- */
+
 int __stdcall iWriteCard(struct RWRequestS *list)
 {
 	struct RWRequestS *AgentList = NULL;
@@ -984,5 +1015,27 @@ int __stdcall iWriteCard(struct RWRequestS *list)
 	DestroyRWRequest(AgentList, 1);
 
 	return res;
+}
+
+int __stdcall InitPwd(unsigned char *newKeyB)
+{
+	unsigned char oldKeyB[6], ctrlWord[6];
+	unsigned char changeflag=2, i, nRet;
+	memset(oldKeyB, 0xff, 6);
+	memset(ctrlWord, 0, 6);
+
+	LogPrinter("重置密码:");
+	GetControlBuff(ctrlWord, 0);
+	for (i=0; i<BLK_LEN; ++i)
+	{
+		nRet = ChangePwdEx(defKeyA, ctrlWord, newKeyB, 
+							oldKeyB, i, 0, changeflag);
+
+		LogPrinter("%d", nRet); 
+		if (nRet != 0)
+			break;
+	}
+	LogPrinter("\n");
+	return nRet;
 }
 

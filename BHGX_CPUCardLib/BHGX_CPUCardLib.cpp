@@ -145,8 +145,6 @@ int __stdcall iWriteInfo(char *xml)
 
 	if (XmlList == NULL)
 	{
-		// Ïú»ÙXMLÁ´±í
-		DestroyList(XmlList, 1);
 		return CardXmlErr;
 	}
 

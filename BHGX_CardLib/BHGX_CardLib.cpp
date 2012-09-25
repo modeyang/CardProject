@@ -19,6 +19,7 @@
 #include "public/Markup.h"
 #include "Encry/DESEncry.h"
 #include "public/Authority.h"
+#include "StringUtil.h"
 
 using namespace std;
 #pragma warning (disable : 4996)
@@ -26,17 +27,18 @@ using namespace std;
 #pragma warning (disable : 4020)
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 
+#define DBGCore(format, ...) LogWithTime(0, format)
 
-char tmp[256];
-time_t t;
-#define DBGCore(format, ...) \
-	t = time(0);\
-	memset(tmp,0, sizeof(tmp));\
-	strftime( tmp, sizeof(tmp), "%Y-%m-%d %X  CardLib:",localtime(&t));\
-	sprintf(tmp, "%s %s", tmp, format); \
-	LogMessage(tmp ,__VA_ARGS__);		\
+#define TIMEOUT		15000
+#define ASSERT_INIT(a)      \
+	if (a != TRUE){         \
+	return -1;				\
+	}                       \
 
-#define TIMEOUT	15000
+
+#define ASSERT_OPEN(a)      \
+	if (!a)                 \
+	return CardNotOpen;		\
 
 struct CreateKeyInfoS
 {
@@ -70,101 +72,62 @@ bool bTelRW = false;
 typedef  std::map<std::string, struct XmlColumnS *> XmlColumnMapT;
 XmlColumnMapT XmlColumnMap; 
 
+static struct XmlColumnS  
+*CloneColmn(struct XmlColumnS *ColmnElement);
 
-static bool Is_GbkName(char *szValue)
-{
-	int i = 0;
-	while (szValue[i] != 0)
-	{
-		if(szValue[i] > 0x30 && szValue[i] < 0x39)
-		{
-			return false;
-		}
-		++i;
-	}
-	return true;
-}
+static struct XmlSegmentS 
+*CloneSegment(struct XmlSegmentS *SegmentElement);
 
-static bool Is_IntName(char *szValue)
-{
-	int i=0;
-	while (szValue[i] != 0)
-	{
-		if (szValue[i] < 0)
-		{
-			return false;
-		}
-		++i;
-	}
-	return true;
-}
+static struct XmlSegmentS *
+GetXmlSegmentByFlag(int flag);
 
+static struct XmlSegmentS *
+FindSegmentByID(struct XmlSegmentS *listHead, int ID);
 
+static struct XmlColumnS *
+FindColumnByID(struct XmlColumnS *listHead, int ID);
 
+static int 
+CombineColValue(struct XmlColumnS *ColumnElement, 
+				std::pair<int,int> pairCol, 
+				char sep, struct XmlSegmentS *Segment);
 
-static  int CheckSpace(const char *szCheck, int nLen, char *strValue)
-{
-	int newlen = 0; 
-	for (int i=0; i<nLen; ++i)
-	{
-		if (szCheck[i] != 0x20)
-		{
-			strValue[newlen] = szCheck[i];
-			++newlen;
-		}
-	}
-	strValue[newlen] = 0;
-	return newlen;
-}
+static int 
+InsertColumnBySplite(struct XmlSegmentS *SegmentElement, 
+					 std::map<int,std::string> &mapSplite, 
+					 struct XmlSegmentS *pSeg, 
+					 std::pair<int,int> pairCol);
 
-typedef basic_string<char>::size_type S_T;
-static const S_T npos = -1;
+static int 
+iConvertXmlByList(struct XmlSegmentS *listHead, char *xml, int *length);
 
-/**
-*
-*/
-void trim(string & str)
-{
-	string::size_type pos = str.find_last_not_of(' ');
-	if(pos != string::npos)
-	{
-		str.erase(pos + 1);
-		pos = str.find_first_not_of(' ');
-		if(pos != string::npos) str.erase(0, pos);
-	}
-	else str.erase(str.begin(), str.end());
-}
+static struct XmlSegmentS* 
+ConvertXmltoList(char *xml);
 
+static int 
+InitionGList(char *xml);
 
-//delimit为一个字符，严格分割
-vector<string> split(const string& src, string delimit, string null_subst="")  
-{  
-	vector<string> v; 
-	if( src.empty() || delimit.empty() ) 
-		return v;
-	//throw "split:empty string\0";    
+static void 
+DestroyList(struct XmlSegmentS *listHead);
 
-	S_T deli_len = delimit.size();  
-	long index = npos, last_search_position = 0;  
-	while( (index=(long)src.find(delimit,last_search_position))!=npos )  
-	{  
+static void 
+ReadConfigFromReg(char *name);
 
-		if(index==last_search_position)  
-			v.push_back(null_subst);  
-		else 
-		{
-			string tmp = src.substr(last_search_position, index-last_search_position);
-			trim(tmp);
-			v.push_back(tmp);
-		}
+static int 
+iGetKeyValue(const unsigned char *seed,  unsigned char *key);
 
-		last_search_position = (long)(index + deli_len);  
-	}  
-	string last_one = src.substr(last_search_position);  
-	v.push_back( last_one.empty()? null_subst:last_one );  
+static int 
+_iQueryInfo(const char *name, char *xml, int &nLen, QueryColum &stQuery);
 
-	return v;  
-}
+static int 
+iCreateXmlByVector(const vector<QueryColum>&  v, char *xml, int *length);
+
+static struct CreateKeyInfoS* 
+CreateCardKeyInfo(unsigned char *seed);
+
+static int 
+CheckCardXMLValid(char *pszCardXml);
+
 
 /**
  * CloneColmn - 克隆XmlColmn元素的数据结构
@@ -478,8 +441,10 @@ static struct XmlColumnS *FindColumnByID(struct XmlColumnS *listHead, int ID)
 }
 
 
-static 	int InsertColumnBySplite(struct XmlSegmentS *SegmentElement, std::map<int,std::string> &mapSplite, 
-								 struct XmlSegmentS *pSeg, std::pair<int,int> pairCol)
+static int InsertColumnBySplite(struct XmlSegmentS *SegmentElement, 
+								std::map<int,std::string> &mapSplite, 
+								struct XmlSegmentS *pSeg, 
+								std::pair<int,int> pairCol)
 {
 	struct XmlSegmentS *TempSegmentElement = NULL;
 	struct XmlColumnS  *pColNext = pSeg->Column;
@@ -826,7 +791,7 @@ static void DestroyList(struct XmlSegmentS *listHead)
 
 
 
-static std::string ReadConfigFromReg()
+static void ReadConfigFromReg(char *name)
 {
 	HKEY RootKey;
 	HKEY hKey;
@@ -842,13 +807,13 @@ static std::string ReadConfigFromReg()
 			KEY_READ | KEY_WRITE, NULL, &hKey, &dwDesc))
 		{
 			RegCloseKey(hKey);
-			return NULL;
+			return;
 		}
 
 		if (ERROR_SUCCESS != RegSetValueEx(hKey, "Config", NULL, dwType, (PBYTE)CONFIG, (DWORD)strlen(CONFIG)))
 		{
 			RegCloseKey(hKey);
-			return NULL;
+			return;
 		}
 	}
 
@@ -856,12 +821,11 @@ static std::string ReadConfigFromReg()
 	if (ERROR_SUCCESS != RegQueryValueEx(hKey, "Config", NULL, &dwType, (PBYTE)szValue,&dwLen))
 	{
 		RegCloseKey(hKey);
-		return NULL;
+		return;
 	}
 	szValue[dwLen] = 0;
 	RegCloseKey(hKey);
-
-	return std::string(szValue);
+	strcpy_s(name, NAME_MAX_LEN, szValue);
 }
 
 /**
@@ -885,7 +849,7 @@ static int iGetKeyValue(const unsigned char *seed,  unsigned char *key)
 	return 0;
 }
 
-static int __stdcall _iQueryInfo(const char *name, char *xml, int &nLen, QueryColum &stQuery)
+static int  _iQueryInfo(const char *name, char *xml, int &nLen, QueryColum &stQuery)
 {
 	struct RWRequestS	*RequestList = NULL;
 	RequestList = (struct RWRequestS *)malloc(sizeof(struct RWRequestS));
@@ -953,107 +917,6 @@ static int __stdcall _iQueryInfo(const char *name, char *xml, int &nLen, QueryCo
 	return nRet;
 }
 
-static int  __stdcall _iGetKeySeed(char *Seed, int &nLen)
-{
-	QueryColum stQuery;
-	int nRet = _iQueryInfo("CARDNO", Seed, nLen, stQuery);
-	if (Seed[0] == '0')
-	{
-		nRet = _iQueryInfo("MEDICARECERTIFICATENO", Seed, nLen, stQuery);
-	}
-	return nRet;
-}
-
-#define FAILE_RETRY  2
-static int _FormatCard(unsigned char cFlag)
-{
-	char OldKey[20];
-	unsigned char keyB[6] = {0x88, 0x69, 0x79, 0x47, 0x79, 0x39};
-	unsigned char oldKeyA[0x6]=  {0x43, 0x97, 0x04, 0x47, 0x20, 0x47};
-	QueryColum stQuery;
-	int nLen;
-	memset(OldKey, 0, sizeof(OldKey));
-	int nRet = _iGetKeySeed(OldKey, nLen);
-	if (nRet == -1 || nLen == 0 || IsAllTheSameFlag((unsigned char*)OldKey, nLen/2, 0x30)== 0
-		|| IsAllTheSameFlag((unsigned char*)OldKey, nLen/2, 0x3f)== 0)
-	{
-		memset(keyB, 0xff, 6);
-		memset(oldKeyA, 0xff, 6);
-	}
-	else
-	{
-		iGetKeyBySeed((unsigned char*)OldKey, keyB);
-	}
-	printf("开始格式化数据:");
-	unsigned char ctrlWork[0x4]={0x08,0x77,0x8f,0x69};//
-	aGetControlBuff(ctrlWork, 0);
-	unsigned char szFormat[16];
-	memset(szFormat, cFlag, 16);
-	int faile_retry = 0;
-	while (faile_retry < FAILE_RETRY)
-	{
-		for (int i=4; i<64; ++i)
-		{
-			if ((i+1) % 4 == 0)
-			{
-				continue;
-			}
-			nRet = aFormatCard(ctrlWork, szFormat, i, keyB);
-			if (nRet)
-			{
-				faile_retry++;
-				DBGCore( "格式化失败，需要修补密码\n");
-				break;
-			}
-		}
-		if (nRet)
-		{
-			nRet = repairKeyB(ctrlWork);
-			if (nRet)
-				nRet = repairKeyForFault(ctrlWork);
-			if (!nRet)
-			{
-				faile_retry = FAILE_RETRY-1;
-				DBGCore( "修补密码成功，重新格式化数据\n");
-				printf("\n重新格式化数据:");
-			}
-		}
-		else
-		{
-			break;
-		}
-	}
-
-	if (nRet)
-		goto done;
-	
-	unsigned char newKeyA[0x6];//= {0x43, 0x97, 0x04, 0x47, 0x20, 0x47};
-	memset(newKeyA, 0xff, 6);
-	unsigned char newKeyB[0x6];
-	memset(newKeyB, 0xff, 6);
-	unsigned char changeflag=2;
-	printf("格式化密码:");
-	for (int i=0; i<16; ++i)
-	{
-		nRet = aChangePwdEx(newKeyA, ctrlWork, newKeyB, keyB, i, 0, changeflag);
-	}
-	DBGCore( "格式化密码结果:%d\n", nRet);
-	printf("%d\n", nRet);
-
-done:
-	return nRet==0?CardProcSuccess:CardFormatErr;
-}
-
-
-
-static void iCreateSegment(const vector<QueryColum> &vecQuery, std::map<int,std::vector<QueryColum> > &mapSeg)
-{
-	for (size_t i=0; i<vecQuery.size(); ++i)
-	{
-		QueryColum stQuery = vecQuery[i];
-		mapSeg[stQuery.nSegID].push_back(stQuery);
-	}
-}
 /**
 *
 */
@@ -1170,34 +1033,21 @@ static struct CreateKeyInfoS* CreateCardKeyInfo(unsigned char *seed)
 	memset(OldKey, 0, 20);
 
     // 获得原始密码
-	char OldKeyXML[1024];
+	//char OldKeyXML[1024];
 	int nLen = 0;
 	//res->offset = 792;
 	//res->length = 72;
 	//iQueryInfo("MEDICARECERTIFICATENO", OldKeyXML);
-	_iGetKeySeed(OldKeyXML, nLen);
+	//_iGetKeySeed(OldKeyXML, nLen);
 
 	iGetKeyBySeed((unsigned char *)OldKey, res->token);
-	printf("%s\n", OldKey);
+	LogPrinter("%s\n", OldKey);
 
 	int length = 18;
 	Str2Bcd((char*)seed, res->ID, &length);
 	iGetKeyValue(seed, res->key);
 	return res;
 }
-
-
-#define ASSERT_INIT(a)      \
-	if (a != TRUE)          \
-	{                       \
-		return -1;          \
-	}                       \
-
-
-#define ASSERT_OPEN(a)       \
-	 if (!a)                 \
-	     return CardNotOpen; \
-
 
 
 
@@ -1224,8 +1074,14 @@ int __stdcall iCardCompany(char *szCompanyXml)
  */
 int __stdcall iCardInit(char *xml)
 {
-	if (g_bPreLoad == TRUE)
-	{
+	char szSystem[NAME_MAX_LEN];
+	ZeroMemory(szSystem, sizeof(szSystem));
+	ReadConfigFromReg(szSystem);
+
+	if (g_bPreLoad == TRUE){
+		if (authUCard(szSystem)) {
+			return CardUAuthFailed;
+		}
 		return 0;
 	}
 
@@ -1237,24 +1093,26 @@ int __stdcall iCardInit(char *xml)
 	char *pvRes = (char *)::LockResource(hgRes);
 	if(!pvRes)
 	{	
-		printf("加载xml文件错误\n");
+		LogPrinter("加载xml文件错误\n");
 		DBGCore( "加载xml文件错误\n");
 		return CardInitErr;
 	}
 
 	// 如果已经分配了链表
 	if(XmlListHead)
-		return -2;
+		return CardXmlErr;
 
 	// 初始化全局列表
 	InitionGList(pvRes);
 
-	std::string szSystem = ReadConfigFromReg();
+	if (authUCard(szSystem)) {
+		return CardUAuthFailed;
+	}
 
 	// 对设备进行初始化
-	g_bPreLoad = (initCoreDevice(szSystem.c_str())==0);
+	g_bPreLoad = (initCoreDevice(szSystem)==0);
 	g_bCardOpen = g_bPreLoad;
-	return g_bPreLoad==TRUE ? 0:-1;
+	return g_bPreLoad==TRUE ? CardProcSuccess:CardInitErr;
 }
 
 int __stdcall iCardDeinit()
@@ -1455,7 +1313,7 @@ int __stdcall iWriteInfo(char *xml)
 
 	if (CheckCardXMLValid(xml) < 0)
 	{
-		printf("CardXML:Check Error\n");
+		LogPrinter("CardXML:Check Error\n");
 		DBGCore( "CardXML Check Error\n");
 		return CardXmlErr;
 	}
@@ -1644,7 +1502,7 @@ int __stdcall iCreateCard(char *pszCardDataXml)
 
 	if (CheckCardXMLValid(pszCardDataXml) < 0)
 	{
-		printf("CardXML:Check Error\n");
+		LogPrinter("CardXML:Check Error\n");
 		DBGCore( "CardXML Check Error\n");
 		return CardXmlErr;
 	}
@@ -1662,23 +1520,14 @@ int __stdcall iCreateCard(char *pszCardDataXml)
 		}
 		iGetKeyBySeed((unsigned char *)stColumn->Value, KeyB);
 
-		unsigned char oldKeyB[6];
-		memset(oldKeyB, 0xff, 6);
-		unsigned char newKeyA[0x6] = {0x43, 0x97, 0x04, 0x47, 0x20, 0x47};
-		unsigned char ctrlWork[0x4]={0x08,0x77,0x8f,0x69};
-		unsigned char changeflag=2;
 		nRet = iWriteInfo(pszCardDataXml);
 		DBGCore( "写卡数据结果:%d\n", nRet);
-		printf("回写数据：%d\n", nRet);
-		printf("重置密码:");
-		aGetControlBuff(ctrlWork, 0);
-		for (int i=0; i<16; ++i)
-		{
-			nRet = aChangePwdEx(newKeyA, ctrlWork, KeyB, oldKeyB, i, 0, changeflag);
-			printf("%d", nRet); 
-		}
+		LogPrinter("回写数据：%d\n", nRet);
+
+		nRet = InitPwd(KeyB);
 		DBGCore( "重置密码结果%d\n", nRet);
-		printf("\n");
+		LogPrinter( "重置密码结果%d\n", nRet);
+
 	}
 	else
 	{
@@ -1693,7 +1542,7 @@ int __stdcall iFormatCard()
 	if (iScanCard() != 0)
 		return CardScanErr;
 
-	return _FormatCard(0xff);
+	return aFormatCard(0xff);
 }
 
 
@@ -1996,7 +1845,7 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 		{   
 			bSuccessed = false;
 			CreateResponXML(3, "与服务器连接失败", strResult);
-			printf("soap error:%d,%s,%s\n", m_CardObj.soap->error, *soap_faultcode(m_CardObj.soap),
+			LogPrinter("soap error:%d,%s,%s\n", m_CardObj.soap->error, *soap_faultcode(m_CardObj.soap),
 				*soap_faultstring(m_CardObj.soap));  
 
 			DBGCore( "soap error:%d,%s,%s/n", m_CardObj.soap->error, *soap_faultcode(m_CardObj.soap),
@@ -2059,7 +1908,7 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 		{   
 			bSuccessed = false;
 			CreateResponXML(3, "与服务器连接失败", strResult);
-			printf("soap error:%d,%s,%s\n", m_CardObj.soap->error,
+			LogPrinter("soap error:%d,%s,%s\n", m_CardObj.soap->error,
 				*soap_faultcode(m_CardObj.soap), *soap_faultstring(m_CardObj.soap));   
 
 			DBGCore( "soap error:%d,%s,%s\n", m_CardObj.soap->error,
@@ -2121,3 +1970,29 @@ int __stdcall iEncryFile(char *filename)
 }
 
 
+int __stdcall iCreateLicense(char *filename, char *timeStr)
+{
+	if (timeStr == NULL || strlen(timeStr) == 0) {
+		return InitFullLicense(filename);
+	}else {
+		return InitTimeLicense(filename, timeStr);
+	}
+	return 0;
+}
+
+int __stdcall iCheckLicense(char *filename,int type, int counts)
+{
+	int status = 0;
+	if (type == 0) {
+		status = CheckTimeLicense(filename);
+		status = (status == 0 ? 0 : CardAuthExpired);
+	} else if (type == 1){
+		status = CheckFullLicense(filename);
+		status = (status == 0 ? 0 : CardNoAuthority);
+	} else {
+		status = CheckCounts(counts);
+		status = (status == 0 ? 0 : CardNoAuthority);
+	}
+
+	return status;
+}

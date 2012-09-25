@@ -1,12 +1,29 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <windows.h>
-
+#include <time.h>
 #include "debug.h"
+#include <stdio.h>
 
+#pragma warning (disable : 4996)
 #define DBGFILE		"c:\\log.txt"
 
 static int DbgLevel = 7;
+char tmp[256];
+
+void LogWithTime(int level, char *format, ...)
+{
+	time_t at;
+	at = time(0);
+	memset(tmp,0, sizeof(tmp));
+	strftime( tmp, sizeof(tmp), "%Y-%m-%d %X",localtime(&at));
+	sprintf_s(tmp, sizeof(tmp), "%s %s:%d:%s\n", tmp, __FILE__,__LINE__, format); 
+	if (DbgLevel > GetDbgLevel()) {
+		LogPrinter(tmp);
+	} else {
+		LogMessage(tmp);
+	}
+}
 
 /**
  *

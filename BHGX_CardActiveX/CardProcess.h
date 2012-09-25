@@ -27,7 +27,7 @@ class ATL_NO_VTABLE CCardProcess :
 public:
 	CCardProcess()
 	{
-		strcpy(m_strErr, "卡操作成功");
+		strcpy_s(m_strErr, sizeof(m_strErr), "卡操作成功");
 	}
 
 DECLARE_REGISTRY_RESOURCEID(IDR_CARDPROCESS)
@@ -90,6 +90,8 @@ protected:
 
 protected:
 	char m_strErr[1024];
+public:
+	STDMETHOD(iATLCreateLicense)(BSTR timeFMT, LONG* ret);
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(CardProcess), CCardProcess)

@@ -25,3 +25,5 @@ EXPORTS
 	iGetPrinterList @21
 	iCardOpen        @22
 	iCardDeinit      @23
+	iCreateLicense   @24
+	iCheckLicense     @25

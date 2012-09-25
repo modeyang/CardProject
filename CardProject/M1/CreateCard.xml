@@ -24,13 +24,13 @@
         <COLUMN ID="21" VALUE="2012" />
         <COLUMN ID="22" VALUE="13070010600/234243" />
         <COLUMN ID="23" VALUE="" />
-        <COLUMN ID="24" VALUE="Ð¡ÕÔ" />
+        <COLUMN ID="24" VALUE="fasfas" />
         <COLUMN ID="25" VALUE="13070010672/3243432" />
         <COLUMN ID="26" VALUE="" />
         <COLUMN ID="27" VALUE="" />
         <COLUMN ID="28" VALUE="" />
     </SEGMENT>
-<!--      <SEGMENT ID="5">
+    <SEGMENT ID="5">
         <COLUMN ID="1" VALUE="65282201010100201" />
-    </SEGMENT> -->
+    </SEGMENT>
 </SEGMENTS>
