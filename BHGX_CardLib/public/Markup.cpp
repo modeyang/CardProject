@@ -4191,6 +4191,20 @@ MCD_STR CMarkup::x_GetTagName( int iPos ) const
 	return token.GetTokenText();
 }
 
+bool CMarkup::FindAttrib(MCD_PCSZ pAttrib) const
+{
+	TokenPos token( m_strDoc, m_nDocFlags );
+	int iPos = m_iPos;
+	if ( iPos && m_nNodeType == MNT_ELEMENT )
+		token.m_nNext = ELEM(iPos).nStart + 1;
+	else if (m_nNodeLength && m_nNodeType == MNT_PROCESSING_INSTRUCTION )
+		token.m_nNext = m_nNodeOffset + 2;
+	else
+		return false;
+
+	return (pAttrib && token.FindAttrib(pAttrib));
+}
+
 MCD_STR CMarkup::x_GetAttrib( int iPos, MCD_PCSZ pAttrib ) const
 {
 	// Return the value of the attrib

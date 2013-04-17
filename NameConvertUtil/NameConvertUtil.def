@@ -1,6 +1,0 @@
-;NameConvertUtil.def
-LIBRARY NameConvertUtil.dll
-DESCIPTION	'北航冠新卡驱动程序'
-EXPORTS
-	Name2Code	@1
-	Code2Name	@2

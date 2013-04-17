@@ -269,6 +269,7 @@ public:
 	MCD_STR GetChildData() { return x_GetData(m_iPosChild); };
 	MCD_STR GetElemContent() const { return x_GetElemContent(m_iPos); };
 	MCD_STR GetAttrib( MCD_CSTR szAttrib ) const { return x_GetAttrib(m_iPos,szAttrib); };
+	bool	FindAttrib(MCD_PCSZ pAttrib) const;
 	MCD_STR GetChildAttrib( MCD_CSTR szAttrib ) const { return x_GetAttrib(m_iPosChild,szAttrib); };
 	MCD_STR GetAttribName( int n ) const;
 	int FindNode( int nType=0 );

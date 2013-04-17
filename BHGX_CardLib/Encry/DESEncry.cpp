@@ -7,12 +7,7 @@
 using namespace std;
 #pragma warning (disable : 4996)
 
-#define SAFE_DELETE(a)\
-	if (a != NULL)\
-{\
-	free(a);\
-	a = NULL;\
-}\
+#define SAFE_DELETE(a)  if (a != NULL) { free(a);a = NULL;}
 
 const char C_Key[] = 
 {

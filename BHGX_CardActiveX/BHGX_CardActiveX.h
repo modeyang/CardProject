@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0366 */
-/* at Mon Aug 20 09:14:42 2012
+/* at Tue Jan 08 00:13:02 2013
  */
 /* Compiler settings for .\BHGX_CardActiveX.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -191,6 +191,25 @@ EXTERN_C const IID IID_ICardProcess;
             BSTR timeFMT,
             LONG *ret) = 0;
         
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLFormatHospInfo( 
+            /* [retval][out] */ LONG *pRet) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLWriteHospInfo( 
+            BSTR xml,
+            LONG *pRet) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadClinicInfo( 
+            BSTR pszCode,
+            /* [retval][out] */ BSTR *readXML) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadMedicalInfo( 
+            BSTR pszCode,
+            /* [retval][out] */ BSTR *readXML) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadFeeInfo( 
+            BSTR pszCode,
+            /* [retval][out] */ BSTR *readXML) = 0;
+        
     };
     
 #else 	/* C style interface */
@@ -367,6 +386,30 @@ EXTERN_C const IID IID_ICardProcess;
             BSTR timeFMT,
             LONG *ret);
         
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLFormatHospInfo )( 
+            ICardProcess * This,
+            /* [retval][out] */ LONG *pRet);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLWriteHospInfo )( 
+            ICardProcess * This,
+            BSTR xml,
+            LONG *pRet);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadClinicInfo )( 
+            ICardProcess * This,
+            BSTR pszCode,
+            /* [retval][out] */ BSTR *readXML);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadMedicalInfo )( 
+            ICardProcess * This,
+            BSTR pszCode,
+            /* [retval][out] */ BSTR *readXML);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadFeeInfo )( 
+            ICardProcess * This,
+            BSTR pszCode,
+            /* [retval][out] */ BSTR *readXML);
+        
         END_INTERFACE
     } ICardProcessVtbl;
 
@@ -480,6 +523,21 @@ EXTERN_C const IID IID_ICardProcess;
 
 #define ICardProcess_iATLCreateLicense(This,timeFMT,ret)	\
     (This)->lpVtbl -> iATLCreateLicense(This,timeFMT,ret)
+
+#define ICardProcess_iATLFormatHospInfo(This,pRet)	\
+    (This)->lpVtbl -> iATLFormatHospInfo(This,pRet)
+
+#define ICardProcess_iATLWriteHospInfo(This,xml,pRet)	\
+    (This)->lpVtbl -> iATLWriteHospInfo(This,xml,pRet)
+
+#define ICardProcess_iATLReadClinicInfo(This,pszCode,readXML)	\
+    (This)->lpVtbl -> iATLReadClinicInfo(This,pszCode,readXML)
+
+#define ICardProcess_iATLReadMedicalInfo(This,pszCode,readXML)	\
+    (This)->lpVtbl -> iATLReadMedicalInfo(This,pszCode,readXML)
+
+#define ICardProcess_iATLReadFeeInfo(This,pszCode,readXML)	\
+    (This)->lpVtbl -> iATLReadFeeInfo(This,pszCode,readXML)
 
 #endif /* COBJMACROS */
 
@@ -818,6 +876,70 @@ void __RPC_STUB ICardProcess_iATLCardDeinit_Stub(
 
 
 void __RPC_STUB ICardProcess_iATLCreateLicense_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLFormatHospInfo_Proxy( 
+    ICardProcess * This,
+    /* [retval][out] */ LONG *pRet);
+
+
+void __RPC_STUB ICardProcess_iATLFormatHospInfo_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLWriteHospInfo_Proxy( 
+    ICardProcess * This,
+    BSTR xml,
+    LONG *pRet);
+
+
+void __RPC_STUB ICardProcess_iATLWriteHospInfo_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadClinicInfo_Proxy( 
+    ICardProcess * This,
+    BSTR pszCode,
+    /* [retval][out] */ BSTR *readXML);
+
+
+void __RPC_STUB ICardProcess_iATLReadClinicInfo_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadMedicalInfo_Proxy( 
+    ICardProcess * This,
+    BSTR pszCode,
+    /* [retval][out] */ BSTR *readXML);
+
+
+void __RPC_STUB ICardProcess_iATLReadMedicalInfo_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadFeeInfo_Proxy( 
+    ICardProcess * This,
+    BSTR pszCode,
+    /* [retval][out] */ BSTR *readXML);
+
+
+void __RPC_STUB ICardProcess_iATLReadFeeInfo_Stub(
     IRpcStubBuffer *This,
     IRpcChannelBuffer *_pRpcChannelBuffer,
     PRPC_MESSAGE _pRpcMessage,

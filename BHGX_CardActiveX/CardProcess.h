@@ -80,6 +80,12 @@ public:
 	STDMETHOD(iATLReadOnlyHIS)(BSTR* bstrHISInfo);
 	STDMETHOD(iATLCardOpen)(LONG* Ret);
 	STDMETHOD(iATLCardDeinit)(LONG* Ret);
+	STDMETHOD(iATLCreateLicense)(BSTR timeFMT, LONG* ret);
+	STDMETHOD(iATLFormatHospInfo)(LONG* pRet);
+	STDMETHOD(iATLWriteHospInfo)(BSTR xml, LONG* pRet);
+	STDMETHOD(iATLReadClinicInfo)(BSTR pszCode, BSTR* readXML);
+	STDMETHOD(iATLReadMedicalInfo)(BSTR pszCode, BSTR* readXML);
+	STDMETHOD(iATLReadFeeInfo)(BSTR pszCode, BSTR* readXML);
 
 protected:
 	void GetErrInfo(int nProcRet, LONG &nRet);
@@ -90,8 +96,6 @@ protected:
 
 protected:
 	char m_strErr[1024];
-public:
-	STDMETHOD(iATLCreateLicense)(BSTR timeFMT, LONG* ret);
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(CardProcess), CCardProcess)

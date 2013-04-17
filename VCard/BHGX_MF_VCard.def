@@ -7,5 +7,5 @@ EXPORTS
 	iClose		@3
 	iScanCard	@4
 	iIOCtl		@5
-	iRead		@6
-	iWrite		@7
+	iReadBin		@6
+	iWriteBin		@7

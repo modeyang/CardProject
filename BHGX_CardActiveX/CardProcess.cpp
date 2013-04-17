@@ -4,15 +4,18 @@
 #include "CardProcess.h"
 #include "../BHGX_HISReader/BHGX_HISReader.h"
 #include "../BHGX_CardLib/BHGX_CardLib.h"
+#include "../BHGX_HospitalProcess/BHGX_HospitalProcess.h"
 #include "tinyxml/headers/tinyxml.h"
 #include <comutil.h>
 #include <comdef.h>
 #ifdef _DEBUG
 #pragma comment(lib, "../debug/BHGX_CardLib.lib")
 #pragma comment(lib, "../debug/BHGX_HISReader.lib")
+#pragma comment(lib, "../debug/BHGX_HospitalProcess.lib")
 #else
 #pragma comment(lib, "../release/BHGX_CardLib.lib")
 #pragma comment(lib, "../release/BHGX_HISReader.lib")
+#pragma comment(lib, "../release/BHGX_HospitalProcess.lib")
 #endif
 
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
@@ -21,12 +24,16 @@
 
 #pragma warning (disable : 4996)
 
-#define SAFE_DELETE(a)\
-	if (a != NULL)\
-{\
-	delete a;\
-	a = NULL;\
-}\
+#define SAFE_DELETE(a)		\
+	if (a != NULL)			\
+{							\
+	delete a;				\
+	a = NULL;				\
+}							\
+
+
+#define BUFFSIZE	8096
+char g_ReadBuff[BUFFSIZE];
 
 std::map<std::string, std::string> m_mapCodeDesc;
 
@@ -89,9 +96,7 @@ void CCardProcess::CreateResponXML(int nID, const char *szResult, char *RetXML)
 
 void CCardProcess::GetErrInfo(int nProcRet, LONG &nRet)
 {
-	if (nProcRet != 0)
-	{
-		//CreateResponXML(-1, (const char*)err(nProcRet), m_strErr);
+	if (nProcRet != 0){
 		strcpy(m_strErr, err(nProcRet));
 	}
 	nRet = nProcRet;
@@ -99,8 +104,7 @@ void CCardProcess::GetErrInfo(int nProcRet, LONG &nRet)
 
 char *CCardProcess::GetErrInfo(int nProcRet)
 {
-	if (nProcRet !=0 )
-	{
+	if (nProcRet !=0 ){
 		strcpy(m_strErr, err(nProcRet));
 		return m_strErr;
 	}
@@ -163,16 +167,14 @@ STDMETHODIMP CCardProcess::iATLCardDeinit(LONG* Ret)
 STDMETHODIMP CCardProcess::iATLReadInfo(LONG nFlag, BSTR* szReadXML)
 {
 	// TODO: 在此添加实现代码
-	char strXML[8092];
-	memset(strXML, 0,sizeof(strXML));
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int ret = 0;
-	ret = iReadInfo(nFlag, strXML);
-	if (ret != 0)
-	{
-		memset(strXML, 0 ,sizeof(strXML));
-		CreateResponXML(-1, GetErrInfo(ret), strXML);
+	ret = iReadInfo(nFlag, g_ReadBuff);
+	if (ret != 0){
+		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
+		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
 	}
-	_bstr_t bstr(strXML);
+	_bstr_t bstr(g_ReadBuff);
 	*szReadXML = bstr.Detach();
 	return S_OK;
 }
@@ -190,18 +192,16 @@ STDMETHODIMP CCardProcess::iATLWriteInfo(BSTR szXML, LONG* nRet)
 
 STDMETHODIMP CCardProcess::iATLQueryInfo(BSTR szQuerySource, BSTR* szResult)
 {
-	// TODO: 在此添加实现代码
-	char strXML[8092];
-	memset(strXML, 0, sizeof(strXML));
+	memset(g_ReadBuff, 0, sizeof(g_ReadBuff));
 	_bstr_t bstr(szQuerySource, true);
 	int ret = 0;
 	char *strINXML = (char*)bstr;
-	ret = iQueryInfo(strINXML, strXML);
-	if (ret != 0)
-	{
-		strcpy(strXML, GetErrInfo(ret));
+	ret = iQueryInfo(strINXML, g_ReadBuff);
+	if (ret != 0){
+		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
+		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
 	}
-	bstr = strXML;
+	bstr = g_ReadBuff;
 	*szResult = bstr.Detach();
 	return S_OK;
 }
@@ -221,13 +221,10 @@ STDMETHODIMP CCardProcess::iATLCreateCard(BSTR szCardXML, LONG* nRet)
 	// TODO: 在此添加实现代码
 	_bstr_t bstr(szCardXML);
 	char *strINXML = (char*)bstr;
-	if (strINXML != NULL)
-	{
+	if (strINXML != NULL){
 		int ret = iCreateCard(strINXML);
 		GetErrInfo(ret, (*nRet));
-	}
-	else
-	{
+	}else{
 		*nRet = -1;
 	}
 
@@ -244,13 +241,10 @@ STDMETHODIMP CCardProcess::iATLPrintCard(BSTR pszPrinterType, BSTR pszCardCoverD
 	char *szType = (char*)Typebstr;
 	char *szCardData = (char*)CardDatabstr;
 	char *szCover = (char*)CardCoverbstr;
-	if (szType != NULL && szCardData != NULL && szCover != NULL)
-	{
+	if (szType != NULL && szCardData != NULL && szCover != NULL){
 		int ret = iPrintCard(szType, szCardData, szCover);
 		GetErrInfo(ret, (*nRet));
-	}
-	else
-	{
+	}else{
 		*nRet = -1;
 	}
 
@@ -270,13 +264,11 @@ STDMETHODIMP CCardProcess::iATLPatchCard(BSTR szCardXML, BSTR pszCardCoverDataXm
 	char *szType = (char*)Typebstr;
 	char *szCardData = (char*)CardDatabstr;
 	char *szCover = (char*)CardCoverbstr;
-	if (szType != NULL && szCardData != NULL && szCover != NULL && strINXML != NULL)
-	{
+	if (szType != NULL && szCardData != NULL && 
+		szCover != NULL && strINXML != NULL){
 		int ret = iPatchCard(strINXML, szCardData, szType, szCover);
 		GetErrInfo(ret, (*nRet));
-	}
-	else
-	{
+	}else{
 		*nRet = -7;
 	}
 	
@@ -310,6 +302,10 @@ STDMETHODIMP CCardProcess::iATLReadCardMessageForNH(BSTR pszCardCheckWSDL, BSTR 
 	char strResult[4096];
 	memset(strResult, 0, sizeof(strResult));
 	int ret = iReadCardMessageForNH(strCheckWSDL, strRewriteWSDL, strResult);
+	if (ret != 0) {
+		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
+		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	}
 	_bstr_t bstr = strResult;
 	*pszXml = bstr.Detach();
 	return S_OK;
@@ -322,23 +318,28 @@ STDMETHODIMP CCardProcess::iATLReadHISInfo(BSTR pszCardCheckWSDL, BSTR pszCardRe
 	_bstr_t bstrRewriteWSDL(pszCardRewritePackageWSDL);
 	char* strCheckWSDL = (char*)bstrCheckWSDL;
 	char* strRewriteWSDL = (char*)bstrRewriteWSDL;
-	char strXML[8092];
-	memset(strXML, 0,sizeof(strXML));
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int ret = 0;
-	ret = iReadHISInfo(strCheckWSDL, strRewriteWSDL, strXML);
-	_bstr_t bstr(strXML);
+	ret = iReadHISInfo(strCheckWSDL, strRewriteWSDL, g_ReadBuff);
+	if (ret) {
+		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
+		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	}
+	_bstr_t bstr(g_ReadBuff);
 	*szXML = bstr.Detach();
 	return S_OK;
 }
 
 STDMETHODIMP CCardProcess::iATLReadOnlyHIS(BSTR* bstrHISInfo)
 {
-	// TODO: 在此添加实现代码
-	char strXML[8092];
-	memset(strXML, 0,sizeof(strXML));
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int ret = 0;
-	ret = iReadOnlyHIS(strXML);
-	_bstr_t bstr(strXML);
+	ret = iReadOnlyHIS(g_ReadBuff);
+	if (ret) {
+		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
+		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	}
+	_bstr_t bstr(g_ReadBuff);
 	*bstrHISInfo = bstr.Detach();
 	return S_OK;
 }
@@ -350,11 +351,13 @@ STDMETHODIMP CCardProcess::iATLReadInfoForXJ(BSTR pszCardCheckWSDL, BSTR pszCard
 	_bstr_t bstrRewriteWSDL(pszCardRewritePackageWSDL);
 	char* strCheckWSDL = (char*)bstrCheckWSDL;
 	char* strRewriteWSDL = (char*)bstrRewriteWSDL;
-	char strXML[8092];
-	memset(strXML, 0,sizeof(strXML));
-	int ret = 0;
-	ret = iReadInfoForXJ(strCheckWSDL, strRewriteWSDL, strXML);
-	_bstr_t bstr(strXML);
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
+	int ret = iReadInfoForXJ(strCheckWSDL, strRewriteWSDL, g_ReadBuff);
+	if (ret) {
+		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
+		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	}
+	_bstr_t bstr(g_ReadBuff);
 	*szXML = bstr.Detach();
 	return S_OK;
 }
@@ -375,10 +378,9 @@ STDMETHODIMP CCardProcess::iATLCheckMsgForNH(BSTR bstrCheckWSDL, BSTR bstrServer
 	_bstr_t bstrRewriteWSDL(bstrServerURL);
 	char* strCheckWSDL = (char*)_bstrCheckWSDL;
 	char* strRewriteWSDL = (char*)bstrRewriteWSDL;
-	char szRead[8092];
-	memset(szRead, 0, sizeof(szRead));
-	iCheckMsgForNH(strCheckWSDL, strRewriteWSDL, szRead);
-	_bstr_t bstr(szRead);
+	memset(g_ReadBuff, 0, sizeof(g_ReadBuff));
+	iCheckMsgForNH(strCheckWSDL, strRewriteWSDL, g_ReadBuff);
+	_bstr_t bstr(g_ReadBuff);
 	*strCheckRet = bstr.Detach();
 	return S_OK;
 }
@@ -388,10 +390,13 @@ STDMETHODIMP CCardProcess::iATLReadConfigMsg(BSTR bstrConfigInfo, BSTR* bstrRead
 	// TODO: 在此添加实现代码
 	_bstr_t bstrCheckWSDL(bstrConfigInfo);  
 	char* strCheckWSDL = (char*)bstrCheckWSDL;
-	char strXML[8092];
-	memset(strXML, 0,sizeof(strXML));
-	iReadConfigMsg(strCheckWSDL, strXML);
-	_bstr_t bstr(strXML);
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
+	int ret = iReadConfigMsg(strCheckWSDL, g_ReadBuff);
+	if (ret) {
+		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
+		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	}
+	_bstr_t bstr(g_ReadBuff);
 	*bstrReadXML = bstr.Detach();
 	return S_OK;
 }
@@ -401,10 +406,13 @@ STDMETHODIMP CCardProcess::iATLRegMsgForNH(BSTR bstrServerURL, BSTR* bstrReadXML
 	// TODO: 在此添加实现代码 
 	_bstr_t bstrRewriteWSDL(bstrServerURL);
 	char* strRewriteWSDL = (char*)bstrRewriteWSDL;
-	char strXML[8092];
-	memset(strXML, 0,sizeof(strXML));
-	iRegMsgForNH(strRewriteWSDL, strXML);
-	_bstr_t bstr(strXML);
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
+	int ret = iRegMsgForNH(strRewriteWSDL, g_ReadBuff);
+	if (ret) {
+		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
+		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	}
+	_bstr_t bstr(g_ReadBuff);
 	*bstrReadXML = bstr.Detach();
 	return S_OK;
 }
@@ -420,11 +428,9 @@ STDMETHODIMP CCardProcess::iATLEncryFile(BSTR bstrfilename, LONG* nProCode)
 
 STDMETHODIMP CCardProcess::iATLGetPrinterList(BSTR* bstrPrinterXML)
 {
-	// TODO: 在此添加实现代码
-	char strXML[2048];
-	memset(strXML, 0,sizeof(strXML));
-	iGetPrinterList(strXML);
-	_bstr_t bstr(strXML);
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
+	iGetPrinterList(g_ReadBuff);
+	_bstr_t bstr(g_ReadBuff);
 	*bstrPrinterXML = bstr.Detach();
 	return S_OK;
 }
@@ -437,6 +443,67 @@ STDMETHODIMP CCardProcess::iATLCreateLicense(BSTR timeFMT, LONG* ret)
 	// TODO: 在此添加实现代码
 	_bstr_t bstr(timeFMT);
 	char *strTime = (char*)bstr;
-	*ret = iCreateLicense(LICENSEFILE, strTime);
+	int nRet = iCreateLicense(LICENSEFILE, strTime);
+	GetErrInfo(nRet, (*ret));
+	return S_OK;
+}
+
+
+STDMETHODIMP CCardProcess::iATLFormatHospInfo(LONG* pRet)
+{
+	int ret = 0;
+	ret = iFormatCard();
+	GetErrInfo(ret, (*pRet));
+	return S_OK;
+}
+
+STDMETHODIMP CCardProcess::iATLWriteHospInfo(BSTR xml, LONG* pRet)
+{
+	_bstr_t bstr(xml);
+	char *strInXML = (char*)bstr;
+	int ret = iWriteHospInfo(strInXML);
+	GetErrInfo(ret, (*pRet));
+	return S_OK;
+}
+
+STDMETHODIMP CCardProcess::iATLReadClinicInfo(BSTR pszCode, BSTR* readXML)
+{
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
+	_bstr_t bszCode(pszCode);
+	int ret = iReadClinicInfo((char*)bszCode, g_ReadBuff);
+	if (ret) {
+		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
+		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	}
+	_bstr_t bstr(g_ReadBuff);
+	*readXML = bstr.Detach();
+	return S_OK;
+}
+
+STDMETHODIMP CCardProcess::iATLReadMedicalInfo(BSTR pszCode, BSTR* readXML)
+{
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
+	_bstr_t bszCode(pszCode);
+	int ret = iReadMedicalInfo((char*)bszCode, g_ReadBuff);
+	if (ret) {
+		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
+		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	}
+	_bstr_t bstr(g_ReadBuff);
+	*readXML = bstr.Detach();
+	return S_OK;
+}
+
+STDMETHODIMP CCardProcess::iATLReadFeeInfo(BSTR pszCode, BSTR* readXML)
+{
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
+	_bstr_t bszCode(pszCode);
+	int ret = iReadFeeInfo((char*)bszCode, g_ReadBuff);
+	if (ret) {
+		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
+		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	}
+	_bstr_t bstr(g_ReadBuff);
+	*readXML = bstr.Detach();
 	return S_OK;
 }

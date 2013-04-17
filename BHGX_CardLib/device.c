@@ -75,30 +75,28 @@ static struct CardDevice *_InitDevice(HINSTANCE hInstLibrary)
 	result->iClose = (DllClose)GetProcAddress(hInstLibrary, "iClose");
 	result->iScanCard = (DllScanCard)GetProcAddress(hInstLibrary,"iScanCard");
 	result->iIOCtl = (DLLIOCtl)GetProcAddress(hInstLibrary, "iIOCtl");
-	result->iRead = (DllRead)GetProcAddress(hInstLibrary, "iRead");
-	result->iWrite = (DllWrite)GetProcAddress(hInstLibrary, "iWrite");
 	result->iChangePwdEx = (DLLChangePwdEx)GetProcAddress(hInstLibrary, "iChangePwdEx");
+
+	result->iReadBin = (DllReadBin)GetProcAddress(hInstLibrary, "iReadBin");
+	result->iWriteBin = (DllWriteBin)GetProcAddress(hInstLibrary, "iWriteBin");
+
+	//cpu
+	result->ICCSet = (DLLICCSet)GetProcAddress(hInstLibrary, "ICCSet");
+	result->iGetDevAuthGene = (DLLGetDevAuthGene)GetProcAddress(hInstLibrary, "iGetDevAuthGene");
+	result->iDevAuthSys = (DLLDevAuthSys)GetProcAddress(hInstLibrary, "iDevAuthSys");
+	result->iSysAuthDev = (DLLSysAuthDev)GetProcAddress(hInstLibrary,"iSysAuthDev");
+	result->iGetRandom = (DLLGetRandom)GetProcAddress(hInstLibrary, "iGetRandom");
+	result->iSelectFile = (DLLSelectFile)GetProcAddress(hInstLibrary, "iSelectFile");
+	result->iSysAuthUCard = (DLLSysAuthUCard)GetProcAddress(hInstLibrary, "iSysAuthUCard");
+	result->iUCardAuthSys = (DLLUCardAuthSys)GetProcAddress(hInstLibrary,"iUCardAuthSys");
+	result->iReadRec = (DllReadRec)GetProcAddress(hInstLibrary, "iReadRec");
+	result->iWriteRec = (DllWriteRec)GetProcAddress(hInstLibrary, "iWriteRec");
+
+	result->iAppendRec = (DllAppendRec)GetProcAddress(hInstLibrary, "iAppendRec");
+	result->iSignRec = (DllSignRec)GetProcAddress(hInstLibrary, "iSignRec");
 	return result;
 }
 
-static struct CardAuth *InitAuthDev(const char *System)
-{
-	char Pattern[MAX_PATH];
-	HINSTANCE hInstLibrary;
-	struct CardAuth *pAuth = NULL;
-	pAuth = (struct CardAuth*)malloc(sizeof(struct CardAuth));
-	memset(pAuth, 0, sizeof(struct CardAuth));
-
-	memset(Pattern, 0, MAX_PATH);
-	strcpy(Pattern, System);
-	strcat(Pattern, "BHGX_HHUkey.dll");
-	hInstLibrary = LoadLibrary(Pattern);
-	if (hInstLibrary != NULL) {
-		pAuth->hAuthLibrary = hInstLibrary;
-		pAuth->iAuthUDev = (DllAuthUDev)GetProcAddress(hInstLibrary, "AuthenticDevice");
-	} 
-	return pAuth;
-}
 
 /**
  * 函数: getCardDevice 
@@ -112,7 +110,6 @@ struct CardDevice *getCardDevice(const char *System)
 {
 	DllProbe FunProbe;
 	struct CardDevice *result = NULL;
-
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;
 	char Pattern[MAX_PATH];
@@ -120,7 +117,7 @@ struct CardDevice *getCardDevice(const char *System)
 
 	// 开始查找
 	strcpy(Pattern, System);
-	strcat(Pattern, "BHGX_MF_*.dll");
+	strcat(Pattern, "BHGX_CARD_*");
 	hFind = FindFirstFile(Pattern, &FindFileData);
 	while (hFind != INVALID_HANDLE_VALUE)
 	{
@@ -129,9 +126,9 @@ struct CardDevice *getCardDevice(const char *System)
 		if (hInstLibrary != NULL)
 		{
 			FunProbe = (DllProbe)GetProcAddress(hInstLibrary, "bProbe");
+			printf("%s:Probe函数地址:%ll\n", FindFileData.cFileName, &FunProbe);
 			nProbe = FunProbe();
-			LogPrinter("bProbe:%d\n",nProbe);
-			DBG(0, "%s bProbe:%d\n", FindFileData.cFileName,nProbe);
+			printf("bProbe:%d\n",nProbe);
 			if((FunProbe != NULL) && nProbe)
 			{
 				result = _InitDevice(hInstLibrary);
@@ -144,13 +141,13 @@ struct CardDevice *getCardDevice(const char *System)
 	}
 	FindClose(hFind);
 
-	///**
-	// * 如果设备找到，就打开并且嗡鸣一下
-	// */
+	/**
+	 * 如果设备找到，就打开并且嗡鸣一下
+	 */
 	if(result)
 	{
-		result->iOpen();
-	}	
+		int ret = result->iOpen();
+	}
 	return result;
 }
 
@@ -176,23 +173,4 @@ int putCardDevice(struct CardDevice *device)
 	}
 
 	return result;
-}
-
-
-int authUDev(const char *System)
-{
-	struct CardAuth *pAuth = NULL;
-	int status = 0;
-	pAuth = InitAuthDev(System);
-
-	if (pAuth == NULL || !pAuth->iAuthUDev()) {
-		status = -1;
-	}
-
-	if (pAuth) {
-		FreeLibrary(pAuth->hAuthLibrary);
-		free(pAuth);
-	}
-
-	return status;
 }

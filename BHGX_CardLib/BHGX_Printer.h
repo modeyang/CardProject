@@ -9,14 +9,6 @@
 
 using namespace std;
 
-
-#define SAFE_DELETE(a)\
-	if (a != NULL)\
-{\
-	delete a;\
-	a = NULL;\
-}\
-
 //Ñ°ÕÒ´òÓ¡»ú
 typedef int (__stdcall *ProbePrinter)();
 

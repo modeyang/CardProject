@@ -1,6 +1,7 @@
 #pragma once
 #define MainKey "Software\\北航冠新\\CardProcess"
 #define CONFIG  "C:\\WINDOWS\\system32\\"
+#define MAXTRY   80
 #define LICENSESTR	"北航冠新.license"
 
 #ifdef __cplusplus

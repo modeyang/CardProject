@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include "algorithm.h"
 
+#pragma warning (disable : 4996)
+
 /**
  *
  */
@@ -61,7 +63,7 @@ int StrCh2Bcd(unsigned char ch, unsigned  char *bcd, int rem)
 /**
  *
  */
-int Str2Bcd(const char *str, unsigned  char *bcd, int *len)
+int Str2Bcd(const unsigned char *str, unsigned  char *bcd, int *len)
 {
 	unsigned char low, high;
 	int rem;
@@ -137,10 +139,11 @@ int Str2Bcd(const char *str, unsigned  char *bcd, int *len)
 	 return 0;
 }
 
-int Bcd2Ch(char *str, const unsigned char *bcd, int nOffSet)
+int Bcd2Ch(unsigned char *str, const unsigned char *bcd, int nOffSet)
 {
 	if((str==NULL) || (bcd==NULL))
 		return -1;
+
 	if(nOffSet == 0)
 	{
 		str[0]= (bcd[0]>>4) > 9 ? (bcd[0]>>4)-10+'A' : (bcd[0]>>4)+'0';
@@ -154,7 +157,7 @@ int Bcd2Ch(char *str, const unsigned char *bcd, int nOffSet)
 /**
  *
  */
-int Bcd2Str(char *str, const unsigned char *bcd, int len)
+int Bcd2Str(unsigned char *str, const unsigned char *bcd, int len)
 {	
 	int i,j;
 
@@ -173,7 +176,7 @@ int Bcd2Str(char *str, const unsigned char *bcd, int len)
 }
 
 
-int Bcd2StrOffSet(char *str ,const unsigned char *bcd, int len, int nOffset)
+int Bcd2StrOffSet(unsigned char *str ,const unsigned char *bcd, int len, int nOffset)
 {
 	int i,j,offset;
 	int nSpareLen = len%2;
@@ -390,4 +393,62 @@ int iGetKeyBySeed(const unsigned char *_seed, unsigned char *key)
 	printf("[iGetKeyBySeed tkey]:");
 	printf("%s\n", tkey);
 	return 0;
+}
+
+int BinToHexstr(BYTE *HexStr, BYTE *Bin,int BinLen)
+{
+	char Temp1[3];
+	char *result = NULL;
+	int ret, i;
+
+	for (i=0; i<BinLen; i++)
+	{
+		memset(Temp1,0,sizeof(Temp1));
+		ret=sprintf(Temp1,"%X",Bin[i]);
+		if (strlen(Temp1)==1) {
+			Temp1[1]=Temp1[0];
+			Temp1[0]='0';
+		}
+		strcat((char *)HexStr,Temp1);
+	}
+	HexStr[BinLen * 2] = 0;
+	return 0;
+}
+
+int HexstrToBin(BYTE *bin, BYTE *asc,int len)
+{
+	char ucChar;
+
+	while(len--){
+		ucChar=(*asc<='9'&& *asc>='0')? *asc-'0': *asc-'A'+10;
+		ucChar<<=4;
+		asc++;
+		ucChar |= ((*asc<='9'&& *asc>='0')? *asc-'0': *asc-'A'+10) & 0xf;
+		asc++;
+		len--;
+		*bin++ = ucChar;
+	}
+	return len;
+}
+
+int trimRightF(unsigned char *bin, int len)
+{
+	int i=0;
+	for (; i<len; ++i)
+	{
+		if (bin[i] == 'f' || bin[i] == 'F')
+			bin[i] = 0x0;
+	}
+	return i;
+}
+
+int clearFF(unsigned char *bin, int len)
+{
+	int i=0;
+	for (; i<len; ++i)
+	{
+		if (bin[i] == 0x36)
+			bin[i] = 0x0;
+	}
+	return i;
 }
