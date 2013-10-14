@@ -3,6 +3,7 @@
 #ifndef ACC_DEVICE_H
 #define ACC_DEVICE_H
 
+
 #include <windows.h>
      
 /**
@@ -17,36 +18,20 @@ enum {
 	CMD_MAX
 };
 
-typedef int (__stdcall *DllProbe)();
+typedef int (__stdcall *DllProbe)(void);
 typedef int (__stdcall *DllOpen)(void);
 typedef int (__stdcall *DllClose)(void);
+
+typedef BOOL (__stdcall *DllAuthUDev)(void);
 typedef int (__stdcall *DllScanCard)(void);
-typedef unsigned char (__stdcall *DLLChangePwdEx)(const unsigned char * pNewKeyA ,const unsigned char * ctrlword,\
-												  const unsigned char * pNewKeyB,const unsigned char * poldPin ,\
+typedef int (__stdcall *DLLIOCtl)(int, void *);
+typedef int (__stdcall *DllRead)(const unsigned char *, unsigned char *, int, int);
+typedef int (__stdcall *DllWrite)(const unsigned char *, unsigned char *, int ,int, int);
+typedef unsigned char (__stdcall *DLLChangePwdEx)(const unsigned char * pNewKeyA ,const unsigned char * ctrlword,
+												  const unsigned char * pNewKeyB,const unsigned char * poldPin ,
 												  unsigned char nsector,unsigned char keyA1B0,unsigned char changeflag);
 
-typedef int (__stdcall *DLLIOCtl)(int, void *,int);
-typedef int (__stdcall *DLLICCSet)(unsigned char , unsigned char*, unsigned char*);
-typedef int (__stdcall *DLLGetDevAuthGene)(unsigned char *);
-typedef int (__stdcall *DLLDevAuthSys)(unsigned char *);
-typedef int (__stdcall *DLLSysAuthDev)(unsigned char *, unsigned char *);
-typedef int (__stdcall *DLLGetRandom)(unsigned char, unsigned char, unsigned char *);
-typedef int (__stdcall *DLLSelectFile)(unsigned char, unsigned char *);
-typedef int (__stdcall *DLLSysAuthUCard)(unsigned char *, unsigned char *, unsigned char *);
-typedef int (__stdcall *DLLUCardAuthSys)(int);
-typedef int (__stdcall *DllReadBin)(unsigned char ,unsigned char *, unsigned char *, int, int);
-typedef int (__stdcall *DllWriteBin)(unsigned char, unsigned char *, unsigned char *,unsigned char , int ,int);
-typedef int (__stdcall *DllReadRec)(unsigned char ,unsigned char *, unsigned char *, unsigned long, int, int);
-typedef int (__stdcall *DllWriteRec)(unsigned char, unsigned char *, unsigned char *, unsigned long ,int, int);
 
-//add at 0624
-
-typedef int (_stdcall  *DllAppendRec)(unsigned char *, unsigned char *, unsigned long);
-
-
-typedef int (_stdcall  *DllSignRec)(unsigned char *pFID, 
-									int		iRecNo,
-									int		sign );
 
 /**
  * strurct 
@@ -64,30 +49,23 @@ typedef int (_stdcall  *DllSignRec)(unsigned char *pFID,
 struct CardDevice
 {
 	HINSTANCE	hInstLibrary;
-	int         type;
 
-	DllProbe			iProbe;
-	DllOpen				iOpen;
-	DllClose			iClose;
-	DllScanCard			iScanCard;
-	DLLIOCtl			iIOCtl;
-	DLLChangePwdEx		iChangePwdEx;
-	DLLICCSet			ICCSet;
-	DLLGetDevAuthGene	iGetDevAuthGene;
-	DLLDevAuthSys		iDevAuthSys;
-	DLLSysAuthDev		iSysAuthDev;
-	DLLGetRandom		iGetRandom;
-	DLLSelectFile		iSelectFile;
-	DLLSysAuthUCard		iSysAuthUCard;
-	DLLUCardAuthSys     iUCardAuthSys;
-	DllReadRec			iReadRec;
-	DllWriteRec			iWriteRec;
-	DllReadBin			iReadBin;
-	DllWriteBin			iWriteBin;
-	DllAppendRec        iAppendRec;
-	DllSignRec          iSignRec;
+	DllProbe	iProbe;
+	DllOpen		iOpen;
+	DllClose	iClose;
+	DllScanCard	iScanCard;
+	DLLIOCtl	iIOCtl;
+	DllRead		iRead;
+	DllWrite	iWrite;
+	DLLChangePwdEx  iChangePwdEx;
 };
 
+
+struct CardAuth 
+{
+	HINSTANCE	hAuthLibrary;
+	DllAuthUDev iAuthUDev;
+};
 /*
  * 成功： 返回抽象卡设备
  * 失败： NULL
@@ -103,6 +81,10 @@ struct CardDevice* getCardDevice(const char *System);
  * 失败： 非零
  */
 int putCardDevice(struct CardDevice *device);
+
+
+//U盾验证
+int authUDev(const char *System);
 
 
 #endif	//ACC_DEVICE_H

@@ -41,11 +41,14 @@ void CreateResponXML(int nID, const char *szResult, char *RetXML)
 int GetCheckState(const std::string &strXML, std::string &strRetCode, std::string &strSec)
 {
 	size_t nPos = strXML.find("\t");
-	if (nPos != -1){
+	if (nPos != -1)
+	{
 		strRetCode = strXML.substr(0, nPos);
 		strSec = strXML.substr(nPos+1, strXML.size());
 		return 0;
-	} else {
+	}
+	else
+	{
 		strRetCode = strXML;
 	}
 	return -1;
@@ -100,10 +103,12 @@ int FormatWriteInfo(const char *strWrite, char *strFMTWrite)
 	RootElement = XmlDoc.RootElement();
 	Segment = RootElement->FirstChildElement();
 	int nSegID = atoi(Segment->Attribute("ID"));
-	if(Segment){
+	if(Segment)
+	{
 		Colum = Segment->FirstChildElement();
 		std::string strValue;
-		while (Colum){
+		while (Colum)
+		{
 			int nID = atoi(Colum->Attribute("ID"));
 			strValue = Colum->Attribute("VALUE");
 			mapAll[nID] = strValue;
@@ -125,9 +130,11 @@ int GetQueryMapInfo(char *QueryXML, std::map<std::string,std::string> &mapQuery)
 	XmlDoc.Parse(QueryXML);
 	RootElement = XmlDoc.RootElement();
 	Segment = RootElement->FirstChildElement();
-	if(Segment){
+	if(Segment)
+	{
 		Colum = Segment->FirstChildElement();
-		if (Colum){
+		if (Colum)
+		{
 			std::string szValue = Colum->Attribute("VALUE");
 			std::string szName = Colum->Attribute("Source");
 			mapQuery[szName] = szValue;
@@ -146,9 +153,11 @@ int GetQueryInfo(char *QueryXML, std::string &szCardNO)
 	XmlDoc.Parse(QueryXML);
 	RootElement = XmlDoc.RootElement();
 	Segment = RootElement->FirstChildElement();
-	if(Segment){
+	if(Segment)
+	{
 		Colum = Segment->FirstChildElement();
-		if (Colum){
+		if (Colum)
+		{
 			szCardNO = Colum->Attribute("VALUE");
 			return 0;
 		}
@@ -176,7 +185,8 @@ int CreateRegWsdlParams(const char *CardID, char *strParams)
 
 int GetCheckRetDesc(const std::string &strStatus, std::string &strDesc)
 {
-	if (m_mapCodeDesc.size() == 0){
+	if (m_mapCodeDesc.size() == 0)
+	{
 		m_mapCodeDesc["I710000"] = "卡校验成功";
 		m_mapCodeDesc["E710001"] = "卡号不能为空";
 		m_mapCodeDesc["E710002"] = "WSDL地址不能为空";
@@ -198,7 +208,9 @@ int GetCheckRetDesc(const std::string &strStatus, std::string &strDesc)
 	if (iter != m_mapCodeDesc.end())
 	{
 		strDesc = iter->second;
-	} else {
+	}
+	else
+	{
 		strDesc = strStatus;
 	}
 	return (strStatus == std::string("I710000") || strStatus == std::string("I720000"));
@@ -207,7 +219,8 @@ int GetCheckRetDesc(const std::string &strStatus, std::string &strDesc)
 int GetCardStatus(int nStatus, std::string &strStatus)
 {
 
-	if (m_mapCardStatus.size() == 0){
+	if (m_mapCardStatus.size() == 0)
+	{
 		m_mapCardStatus[0] = "卡正常";
 		m_mapCardStatus[1] = "由于卡损坏或已补发新卡，此卡已被注销";
 		m_mapCardStatus[2] = "此卡已办理挂失业务，暂不能使用";
@@ -215,9 +228,12 @@ int GetCardStatus(int nStatus, std::string &strStatus)
 	}
 	std::map<int,std::string>::iterator iter = m_mapCardStatus.begin();
 	iter = m_mapCardStatus.find(nStatus);
-	if (iter != m_mapCardStatus.end()){
+	if (iter != m_mapCardStatus.end())
+	{
 		strStatus = iter->second;
-	}else{
+	}
+	else
+	{
 		strStatus = "未知错误";
 	}
 	return (nStatus == 0);
@@ -228,7 +244,8 @@ bool IsMedicalID(const std::string &strID)
 	for (size_t i=0; i<strID.size(); ++i)
 	{
 		char ID = strID[i];
-		if (ID != 0x30){
+		if (ID != 0x30)
+		{
 			return true;
 		}
 	}

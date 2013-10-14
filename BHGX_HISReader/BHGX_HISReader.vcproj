@@ -61,7 +61,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
-				IgnoreDefaultLibraryNames="libcmtd.lib"
+				IgnoreDefaultLibraryNames=""
 				ModuleDefinitionFile="BHGX_HISReader.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -232,6 +232,42 @@
 			>
 			<File
 				RelativePath=".\BHGX_HISReader.rc"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="sendmsg"
+			>
+			<File
+				RelativePath=".\sendmsg2\sendmsg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\sendmsg2\soapC.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\sendmsg2\soapcardSendMessageSoapBindingProxy.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\sendmsg2\soapcardSendMessageSoapBindingProxy.h"
+				>
+			</File>
+			<File
+				RelativePath=".\sendmsg2\soapH.h"
+				>
+			</File>
+			<File
+				RelativePath=".\sendmsg2\soapStub.h"
+				>
+			</File>
+			<File
+				RelativePath=".\sendmsg2\stdsoap2.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\sendmsg2\stdsoap2.h"
 				>
 			</File>
 		</Filter>

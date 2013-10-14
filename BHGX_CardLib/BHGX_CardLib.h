@@ -101,14 +101,17 @@ extern "C" {
 
 	DLL_EXPORT int __stdcall iCreateLicense(
 		char *filename, 
-		char *timeStr
-		);  
+		char *timeStr=NULL,
+		int  counts = 0
+		);
 
 #define TIMELICENSE		0
 #define OTHERLICENSE	1
+#define COUNTS			2
 	DLL_EXPORT int __stdcall iCheckLicense(
 		char *filename,
-		int type					//0按时间  1其他
+		int type,					//0按时间  1其他 2次数
+		int counts
 		);
 
 

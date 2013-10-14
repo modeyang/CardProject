@@ -15,6 +15,7 @@ using namespace std;
 #pragma warning (disable : 4267)
 #pragma warning (disable : 4020)
 
+#define PREFIX      "#df%(IW$#f"
 #define PADDING		"Card"
 #define TIMEFMT		"2012-8-19_16:20:23"
 
@@ -22,6 +23,46 @@ using namespace std;
 std::vector<std::string> g_vecCompany;
 static int isTimeExpired(const char *cTime);
 static int isTimeFormat(const char *time);
+
+char EncryArray[11] = {'k', 'f', 'e', 't', 'y', 'u', 'i', 'l', 'p', 'n'};
+int getEncry(int counts, char *encry) 
+{
+	char countStr[20];
+	memset(countStr, 0, sizeof(countStr));
+	sprintf(countStr, "%d", counts);
+
+	char intArray[2];
+	memset(intArray, 0, sizeof(intArray));
+	memset(encry, 0, sizeof(encry));
+	for (int i=0; i<strlen(countStr); i++) {
+		sprintf(intArray, "%c", countStr[i]);
+		int num = atoi(intArray);
+		encry[i] = EncryArray[num];
+	}
+	return strlen(encry);
+}
+
+int getIndex(char c) 
+{
+	for (int i=0; i<sizeof(EncryArray); i++) {
+		if (c == EncryArray[i]) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+int getDecry(char *encry)
+{
+	char intArray[20];
+	memset(intArray, 0, sizeof(intArray));
+	for (int i=0; i<strlen(encry); i++) {
+		int index = getIndex(encry[i]);
+		sprintf(intArray, "%s%d", intArray, index);
+	}
+	int count = atoi(intArray);
+	return count;
+}
 
 int __stdcall InitCompanyList(const char *namelist)
 {
@@ -38,7 +79,58 @@ int __stdcall CheckCompanyInList(const char *name)
 	return 0;
 }
 
-int  __stdcall CheckCounts(int maxtrys)
+int  __stdcall CheckCounts(char *filename, int maxtrys)
+{
+	int status = 1;
+	FILE *fp = fopen(filename, "rb+");
+	if (fp == NULL) {
+		LogPrinter("License文件错误，请购买license\n");
+		return 0;
+	}
+	char desContent[30];
+	memset(desContent, 0, sizeof(desContent));
+	fread(desContent, sizeof(desContent),  1, fp);
+	strcpy(desContent, desContent+10);
+
+	char *dst = strchr(desContent, '|');
+	if (dst == NULL) {
+		LogPrinter("License文件错误，请购买license\n");
+		fclose(fp);
+		return 0;
+	}
+
+	char content[30];
+	memset(content, 0, sizeof(content));
+	memcpy(content, desContent, dst - &desContent[0]);
+
+	char behind[30];
+	memset(behind, 0, sizeof(behind));
+	strcpy(behind, dst+1);
+
+	int counts = getDecry(content);
+	//printf("before************%d, \t %s\n", counts, desContent);
+	if (counts <= 0) {
+		LogPrinter("超过尝试最大数量,请联系供应商\n");
+		status = 0;
+		goto done;
+	} else {
+		counts -= 1;
+	}
+done:
+	fseek(fp, 0, 0);
+	memset(content, 0, sizeof(content));
+	getEncry(counts, content);
+
+	char encryContent[30];
+	memset(encryContent, 0, sizeof(encryContent));
+	sprintf(encryContent, "%s%s|%s", PREFIX,  content, behind);
+	fwrite(encryContent, sizeof(encryContent), 1, fp);
+	//printf("after********** %d, \t %s\n", counts, encryContent);
+	fclose(fp);
+	return status;
+}
+
+int  __stdcall CheckCounts(void *fd)
 {
 	char path[256];
 	char szCount[10];
@@ -50,7 +142,7 @@ int  __stdcall CheckCounts(int maxtrys)
 	memset(szDst, 0, sizeof(szDst));
 	memset(path, 0, 256);
 	strcpy(path, CONFIG);
-	strcat(path,"cralbiss.cpl");
+	strcat(path,"cralbise.cpl");
 	fp = fopen(path, "rb");
 	if (fp == NULL) {
 		fp = fopen(path, "wb");
@@ -65,8 +157,8 @@ int  __stdcall CheckCounts(int maxtrys)
 	des.DescryString(szCount, szDst);
 	nCounts = atoi(szDst);
 	nCounts++;
-	if (nCounts > maxtrys) {
-		LogPrinter("%d超过尝试最大数量%d,请联系供应商\n", nCounts, maxtrys);
+	if (nCounts > 0) {
+		LogPrinter("%d超过尝试最大数量%d,请联系供应商\n", nCounts, 0);
 		fclose(fp);
 		return 0;
 	}
@@ -132,6 +224,21 @@ int __stdcall InitTimeLicense(const char *filename,const char *ctime)
 	entry.EncryString(license, enlicense);
 	return InitLicense(filename, enlicense);
 }
+
+
+int __stdcall InitCountLicense(const char *filename, int maxCounts) 
+{
+	char license[30];
+	memset(license, 0, sizeof(license));
+	getEncry(maxCounts, license);
+
+	char encryLicense[50];
+	memset(encryLicense, 0, sizeof(encryLicense));
+	sprintf(encryLicense, "%s%s|%s", PREFIX, license, "@$#q");
+	//printf("%s\n", encryLicense);
+	return InitLicense(filename, encryLicense);
+}
+
 int  __stdcall  CheckTimeLicense(const char *filename)
 {
 	char cTime[256], license[256];
@@ -159,7 +266,7 @@ int  __stdcall  CheckTimeLicense(const char *filename)
 int __stdcall InitFullLicense(const char *filename)
 {
 	char license[256], enlicense[256];
-	sprintf_s(license, sizeof(license), "%s|%s",LICENSESTR, PADDING);
+	sprintf_s(license, sizeof(license), "%s|%s", LICENSESTR, PADDING);
 	CDESEncry entry;
 	memset(enlicense, 0, sizeof(enlicense));
 	entry.EncryString(license, enlicense);

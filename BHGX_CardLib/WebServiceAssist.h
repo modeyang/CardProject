@@ -14,8 +14,6 @@ int  CreateCheckWsdlParams(const char *CardID, const char *pszCardCheckWSDL, cha
 int  CreateRegWsdlParams(const char *CardID, char *strParams);
 int  GetCheckRetDesc(const std::string &strStatus, std::string &strDesc);
 int  GetCardStatus(int nStatus, std::string &strStatus);
-
-
 bool IsMedicalID(const std::string &strID);
 
 #endif
