@@ -186,10 +186,6 @@
 				RelativePath=".\xml3.bin"
 				>
 			</File>
-			<File
-				RelativePath=".\xml4.bin"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="public"
@@ -283,31 +279,31 @@
 			Name="webservice"
 			>
 			<File
-				RelativePath=".\ns_pipeClient\soapC.cpp"
+				RelativePath=".\ns_pipeClient_1\soapC.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ns_pipeClient\soapClient.cpp"
+				RelativePath=".\ns_pipeClient_1\soapH.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ns_pipeClient\soapH.h"
+				RelativePath=".\ns_pipeClient_1\soapNHOneCardServiceSoapBindingProxy.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ns_pipeClient\soapn_USCOREapiSoapProxy.h"
+				RelativePath=".\ns_pipeClient_1\soapNHOneCardServiceSoapBindingProxy.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ns_pipeClient\soapStub.h"
+				RelativePath=".\ns_pipeClient_1\soapStub.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ns_pipeClient\stdsoap2.cpp"
+				RelativePath=".\ns_pipeClient_1\stdsoap2.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ns_pipeClient\stdsoap2.h"
+				RelativePath=".\ns_pipeClient_1\stdsoap2.h"
 				>
 			</File>
 		</Filter>
@@ -336,39 +332,11 @@
 			>
 		</File>
 		<File
-			RelativePath=".\Card.c"
-			>
-		</File>
-		<File
-			RelativePath=".\Card.h"
-			>
-		</File>
-		<File
-			RelativePath=".\CPUCard.c"
-			>
-		</File>
-		<File
-			RelativePath=".\CPUCard.h"
-			>
-		</File>
-		<File
-			RelativePath=".\cpuprogram.xml"
-			>
-		</File>
-		<File
 			RelativePath=".\device.c"
 			>
 		</File>
 		<File
 			RelativePath=".\device.h"
-			>
-		</File>
-		<File
-			RelativePath=".\M1Card.c"
-			>
-		</File>
-		<File
-			RelativePath=".\M1Card.h"
 			>
 		</File>
 		<File
@@ -389,14 +357,6 @@
 		</File>
 		<File
 			RelativePath=".\StringUtil.h"
-			>
-		</File>
-		<File
-			RelativePath=".\VirtualXML.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\VirtualXML.h"
 			>
 		</File>
 		<File

@@ -4,4 +4,5 @@ DESCIPTION	'北航冠新卡驱动程序'
 EXPORTS
 	iReadHISInfo	@1
 	iReadInfoForXJ	@2  
-	iReadOnlyHIS    @3	iSendMessage	@4
+	iReadOnlyHIS    @3
+	iSendMessage	@4

@@ -1006,7 +1006,6 @@ static int CheckCardXMLValid(std::string &pszCardXml)
 		return -1;
 	}
 
-	//if (xml.GetAttrib("ID").size() > 0 ||
 	xml.OutOfElem();
 	xml.OutOfElem();
 	return 0;
@@ -1550,69 +1549,63 @@ DLL_EXPORT int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServ
 	int nCheckCode = CardProcSuccess;
 
 	bool bSuccessed = true;
-	n_USCOREapiSoap m_CardObj;
-	m_CardObj.endpoint = strServerURL.c_str();
-	soap_init(m_CardObj.soap);
-	soap_set_mode(m_CardObj.soap,SOAP_C_UTFSTRING);
+	NHOneCardServiceSoapBindingProxy  proxy;
+	proxy.soap_endpoint = strServerURL.c_str();
 
-	char *strCheckParams = (char*)malloc(sizeof(char)*2048);
-	memset(strCheckParams, 0, 1024*2);
+	char *strCheckParams = new char[1024];
+	memset(strCheckParams, 0, 1024);
 	CreateCheckWsdlParams(strCardNO.c_str(), strCheckWSDL.c_str(), strCheckParams);
+	ns1__nh_USCOREpipe pCheck;
+	pCheck.ns1__parms = strCheckParams;
 
-	_ns1__nh_USCOREpipe pCheck;
-	pCheck.parms = strCheckParams;
+	ns1__nh_USCOREpipeResponse pReturn;
+	pReturn.ns1__out = new char[1024];
 
-	_ns1__nh_USCOREpipeResponse pReturn;// = new _ns1__nh_USCOREpipeResponse;
-
-	pReturn.nh_USCOREpipeResult = (char*)malloc(sizeof(char)*1024);
-
-	m_CardObj.__ns2__nh_USCOREpipe(&pCheck, &pReturn);
-	if(m_CardObj.soap->error)   
-	{   
+	proxy.nh_USCOREpipe(&pCheck, &pReturn);
+	if(proxy.error) {   
 		bSuccessed = false;
-		DBGCore( "soap error:%d,%s,%s/n", m_CardObj.soap->error, *soap_faultcode(m_CardObj.soap),
-			*soap_faultstring(m_CardObj.soap));
-		CreateResponXML(3, *soap_faultstring(m_CardObj.soap), strResult);
+		CreateResponXML(3, "与服务器连接失败",  strResult);
 		strcpy(pszXml, strResult);
-	}
-	else
-	{
+	} else {
 		std::string strRetCode, strStatus;
-		std::string strXML = pReturn.nh_USCOREpipeResult;
+		if (pReturn.ns1__out == NULL) {
+			CreateResponXML(1, "返回值为空", strResult);
+			strcpy(pszXml, strResult);
+			bSuccessed = false;
+			goto done;
+		}
+			
+		std::string strXML = pReturn.ns1__out;
 		GetCheckState(strXML, strRetCode, strStatus);
 
 		std::string strCheckDesc;
-		if (GetCheckRetDesc(strRetCode, strCheckDesc) == 0) 
-		{
+		if (GetCheckRetDesc(strRetCode, strCheckDesc) == 0) {
 			bSuccessed = false;
 			CreateResponXML(1, strCheckDesc.c_str(), strResult);
 			strcpy(pszXml, strResult);
-		}
-		else
-		{
+		} else{
 			nCheckCode = atoi(strStatus.c_str());
 			strCheckDesc.clear();
-			if (GetCardStatus(nCheckCode, strCheckDesc) == 0)
-			{
+			if (GetCardStatus(nCheckCode, strCheckDesc) == 0){
 				bSuccessed = false;
 				CreateResponXML(1, strCheckDesc.c_str(), strResult);
 				strcpy(pszXml, strResult);
 			}
 		}
 	}
-	free(strCheckParams);
-	free(pReturn.nh_USCOREpipeResult);
 
-	if (bSuccessed)
-	{
+done:
+	delete [] strCheckParams;
+	delete [] pReturn.ns1__out;
+
+	if (bSuccessed){
 		char szRead[4096];
 		memset(szRead, 0, sizeof(szRead));
 		iReadInfo(2, szRead);
 		strcpy(pszXml, szRead);
 	}
 
-	soap_end(m_CardObj.soap);   
-	soap_done(m_CardObj.soap); 
+	proxy.destroy();
 	return bSuccessed ? 0 : CardCheckError;
 }
 
@@ -1654,7 +1647,6 @@ DLL_EXPORT int __stdcall iRegMsgForNH(char *pszCardServerURL,char* pszXml)
 {
 	ASSERT_OPEN(g_bCardOpen);
 	std::string strServerURL = pszCardServerURL;
-
 	std::string strXML;
 
 	char strResult[4096];
@@ -1679,25 +1671,19 @@ DLL_EXPORT int __stdcall iRegMsgForNH(char *pszCardServerURL,char* pszXml)
 	GetQueryInfo(szQuery, strCardNO);
 
 	bool bSuccessed = true;
-	n_USCOREapiSoap m_CardObj;
-	m_CardObj.endpoint = strServerURL.c_str();
-	soap_init(m_CardObj.soap);
-	soap_set_mode(m_CardObj.soap,SOAP_C_UTFSTRING);
+	NHOneCardServiceSoapBindingProxy  proxy(strServerURL.c_str(), SOAP_C_UTFSTRING);
 
 	char* strRegParams = new char[1024];
 	memset(strRegParams, 0, 1024);
 	CreateRegWsdlParams(strCardNO.c_str(), strRegParams); 
+	ns1__nh_USCOREpipe pCheck;
+	pCheck.ns1__parms = strRegParams;
 
-	_ns1__nh_USCOREpipe pCheck;
-	pCheck.parms = strRegParams;
+	ns1__nh_USCOREpipeResponse pReturn;
+	pReturn.ns1__out = new char[4096];
 
-	_ns1__nh_USCOREpipeResponse pReturn;// = new _ns1__nh_USCOREpipeResponse;
-
-	pReturn.nh_USCOREpipeResult = new char[4096];
-
-	m_CardObj.__ns2__nh_USCOREpipe(&pCheck, &pReturn);
-
-	if(m_CardObj.soap->error)   
+	proxy.nh_USCOREpipe(&pCheck, &pReturn);
+	if(proxy.error)   
 	{   
 		bSuccessed = false;
 		CreateResponXML(3, "与服务器连接失败", strResult); 
@@ -1706,7 +1692,13 @@ DLL_EXPORT int __stdcall iRegMsgForNH(char *pszCardServerURL,char* pszXml)
 	else
 	{
 		std::string strRetCode, strStatus;
-		strXML = pReturn.nh_USCOREpipeResult;
+		if (pReturn.ns1__out == NULL) {
+			CreateResponXML(1, "返回值为空", strResult);
+			strcpy(pszXml, strResult);
+			bSuccessed = false;
+			goto done;
+		}
+		strXML = pReturn.ns1__out;
 
 		GetCheckState(strXML, strRetCode, strStatus);
 
@@ -1733,8 +1725,10 @@ DLL_EXPORT int __stdcall iRegMsgForNH(char *pszCardServerURL,char* pszXml)
 			}
 		}
 	}
+
+done:
 	delete [] strRegParams;
-	delete [] pReturn.nh_USCOREpipeResult;
+	delete [] pReturn.ns1__out;
 
 	if (bSuccessed)
 	{
@@ -1742,8 +1736,8 @@ DLL_EXPORT int __stdcall iRegMsgForNH(char *pszCardServerURL,char* pszXml)
 		iReadInfo(2, strResult);
 		strcpy(pszXml, strResult);
 	}
-	soap_end(m_CardObj.soap);   
-	soap_done(m_CardObj.soap); 
+
+	proxy.destroy();
 	return bSuccessed ? 0 : CardRegError;
 }
 
@@ -1785,10 +1779,8 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 	GetQueryInfo(szQuery, strCardNO);
 
 	bool bSuccessed = true;
-	n_USCOREapiSoap m_CardObj;
-	m_CardObj.endpoint = strServerURL.c_str();
-	soap_init(m_CardObj.soap);
-	soap_set_mode(m_CardObj.soap,SOAP_C_UTFSTRING);
+	NHOneCardServiceSoapBindingProxy  proxy(strServerURL.c_str(), SOAP_C_UTFSTRING);
+	proxy.soap_endpoint = strServerURL.c_str();
 
 	if (IsMedicalID(strMedicalID))
 	{
@@ -1796,15 +1788,14 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 		memset(strCheckParams, 0, 1024);
 		CreateCheckWsdlParams(strCardNO.c_str(), strCheckWSDL.c_str(), strCheckParams);
 
-		_ns1__nh_USCOREpipe pCheck;
-		pCheck.parms = strCheckParams;
+		ns1__nh_USCOREpipe pCheck;
+		pCheck.ns1__parms = strCheckParams;
 
-		_ns1__nh_USCOREpipeResponse pReturn;// = new _ns1__nh_USCOREpipeResponse;
+		ns1__nh_USCOREpipeResponse pReturn;
+		pReturn.ns1__out = new char[1024];
 
-		pReturn.nh_USCOREpipeResult = new char[1024];
-
-		m_CardObj.__ns2__nh_USCOREpipe(&pCheck, &pReturn);
-		if(m_CardObj.soap->error)   
+		proxy.nh_USCOREpipe(&pCheck, &pReturn);
+		if (proxy.error)
 		{   
 			bSuccessed = false;
 			CreateResponXML(3, "与服务器连接失败", strResult);
@@ -1813,7 +1804,13 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 		else
 		{
 			std::string strRetCode, strStatus;
-			strXML = pReturn.nh_USCOREpipeResult;
+			if (pReturn.ns1__out == NULL) {
+				CreateResponXML(1, "返回值为空", strResult);
+				strcpy(pszXml, strResult);
+				bSuccessed = false;
+				goto done;
+			}
+			strXML = pReturn.ns1__out;
 			GetCheckState(strXML, strRetCode, strStatus);
 
 			std::string strCheckDesc;
@@ -1835,13 +1832,14 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 				}
 			}
 		}
+
+	done:
 		delete [] strCheckParams;
-		delete [] pReturn.nh_USCOREpipeResult;
+		delete [] pReturn.ns1__out;
 
 		if (!bSuccessed)
 		{
-			soap_end(m_CardObj.soap);   
-			soap_done(m_CardObj.soap); 
+			proxy.destroy();
 			return 1;
 		}
 	}
@@ -1852,16 +1850,15 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 		memset(strRegParams, 0, 1024);
 		CreateRegWsdlParams(strCardNO.c_str(), strRegParams); 
 
-		_ns1__nh_USCOREpipe pCheck;
-		pCheck.parms = strRegParams;
+		ns1__nh_USCOREpipe pCheck;
+		pCheck.ns1__parms = strRegParams;
 
-		_ns1__nh_USCOREpipeResponse pReturn;// = new _ns1__nh_USCOREpipeResponse;
+		ns1__nh_USCOREpipeResponse pReturn;
+		pReturn.ns1__out = new char[4096];
 
-		pReturn.nh_USCOREpipeResult = new char[4096];
+		proxy.nh_USCOREpipe(&pCheck, &pReturn);
 
-		m_CardObj.__ns2__nh_USCOREpipe(&pCheck, &pReturn);
-
-		if(m_CardObj.soap->error)   
+		if (proxy.error)
 		{   
 			bSuccessed = false;
 			CreateResponXML(3, "与服务器连接失败", strResult);
@@ -1870,7 +1867,13 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 		else
 		{
 			std::string strRetCode, strStatus;
-			strXML = pReturn.nh_USCOREpipeResult;
+			if (pReturn.ns1__out == NULL) {
+				CreateResponXML(1, "返回值为空", strResult);
+				strcpy(pszXml, strResult);
+				bSuccessed = false;
+				goto done1;
+			}
+			strXML = pReturn.ns1__out;
 
 			GetCheckState(strXML, strRetCode, strStatus);
 
@@ -1897,8 +1900,9 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 				}
 			}
 		}
+	done1:
 		delete [] strRegParams;
-		delete [] pReturn.nh_USCOREpipeResult;
+		delete [] pReturn.ns1__out;
 	}
 
 	if (bSuccessed)
@@ -1906,9 +1910,8 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 		memset(strResult, 0, sizeof(strResult));
 		iReadInfo(2, strResult);
 		strcpy(pszXml, strResult);
-	}
-	soap_end(m_CardObj.soap);   
-	soap_done(m_CardObj.soap); 
+	} 
+	proxy.destroy();
 	return bSuccessed==true ? 0 : 2;
 }
 
