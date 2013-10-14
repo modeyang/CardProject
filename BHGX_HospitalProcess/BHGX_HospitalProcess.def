@@ -1,0 +1,14 @@
+;BHGX_HospitalProcess.def
+LIBRARY BHGX_HospitalProcess.dll
+DESCIPTION	'±±º½¹ÚÐÂ¿¨CPU¶ÁÐ´³ÌÐò'
+EXPORTS
+	iFormatHospInfo		@1
+	iReadIdentify		@2
+	iReadHumanInfo		@3
+	iReadConnInfo		@4
+	iReadCardInfo		@5
+	iReadHealthInfo		@6
+	iReadClinicInfo		@7
+	iReadMedicalInfo	@8
+	iReadFeeInfo		@9
+	iWriteHospInfo		@10
