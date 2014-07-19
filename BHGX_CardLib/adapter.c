@@ -143,6 +143,7 @@ static int GetControlBuff(unsigned char *pControl, int nSecr)
 	unsigned char keyA[6];
 	unsigned char bRead = 0;
 	int BlkNr = 0;
+	memset(keyA, 0, sizeof(keyA));
 
 	/* 如果没有读卡设备接入*/
 	if(!Instance) 
@@ -169,29 +170,30 @@ static int GetControlBuff(unsigned char *pControl, int nSecr)
 #define FAILE_RETRY  2
 int __stdcall aFormatCard(unsigned char cFlag)
 {
-	char seed[20];
+	unsigned char seed[32];
 	unsigned char keyB[6];
 	unsigned char newKeyA[0x6];
 	unsigned char newKeyB[0x6];
-	unsigned char changeflag=2;
-	unsigned char ctrlWork[0x4]={0x08,0x77,0x8f,0x69};//
+	unsigned char changeflag = 2;
+	unsigned char ctrlWork[0x4]={0x08,0x77,0x8f,0x69};
 	unsigned char szFormat[KEY_LEN];
 	int nLen=0, i;
 	int faile_retry = 0;
 	int nRet = 0;
 	memset(newKeyA, 0xff, 6);
 	memset(newKeyB, 0xff, 6);
-	memset(seed, sizeof(seed), 20);
+	memset(seed, 0, sizeof(seed));
+
 	nLen = iGetKeySeed(DEFAULT, seed);
 	if (nRet == -1 || nLen == 0 ||
-		IsAllTheSameFlag((unsigned char*)seed, nLen/2, 0x30)== 0 ||
-		IsAllTheSameFlag((unsigned char*)seed, nLen/2, 0x3f)== 0 )
+		IsAllTheSameFlag(seed, nLen/2, 0x30)== 0 ||
+		IsAllTheSameFlag(seed, nLen/2, 0x3f)== 0 )
 	{
 		memset(keyB, 0xff, 6);
 	}
 	else
 	{
-		iGetKeyBySeed((unsigned char*)seed, keyB);
+		iGetKeyBySeed(seed, keyB);
 	}
 
 	LogPrinter("开始格式化数据:");
@@ -294,7 +296,6 @@ static int ChangePwdEx(const unsigned char * pNewKeyA ,const unsigned char * ctr
 static int iGetKeySeed(int type, unsigned char *seed)
 {
 	unsigned char tmp[32];
-	int cardtype = 0;
 
 	//没有寻到卡
 	if(!Instance || !Instance->iRead)
@@ -303,7 +304,6 @@ static int iGetKeySeed(int type, unsigned char *seed)
 	//读取seed
 	memset(tmp, 0, 32);
 	Instance->iRead(defKeyA, tmp, 56, 640);
-	cardtype = tmp[0] >> 4;
 	if (type == GWCARD) {
 		bcd2str(tmp, seed, 14);
 		goto done;
@@ -326,7 +326,7 @@ static int iGetKeySeed(int type, unsigned char *seed)
 	}
 
 done:
-	return cardtype;
+	return strlen(seed);
 }
 
 
@@ -737,7 +737,7 @@ static void ListParseContent(struct RWRequestS *list)
 		else
 		{
 			//add by yanggx 20110706
-			Bcd2StrOffSet(CurrRequest->value, (char *)bcd, (CurrRequest->length)/4, nOffSet);
+			Bcd2StrOffSet(CurrRequest->value, bcd, (CurrRequest->length)/4, nOffSet);
 			if (CurrRequest->offset == ID_OFFSET)
 			{
 				if (CurrRequest->value[(CurrRequest->length)/4-1] == 'D'
@@ -923,6 +923,7 @@ static int _iWriteCard(struct RWRequestS *list)
 		if (IsAllTheSameFlag(seed, 14, 0x3f) == 0 ||
 			IsAllTheSameFlag(seed, 14, 0x30) == 0)
 		{
+			//KeyA有全部读写权限
 			memcpy(Key, keyNewB, sizeof(keyNewB));
 		}
 		else
@@ -940,6 +941,9 @@ static int _iWriteCard(struct RWRequestS *list)
 				memcpy(Key, defKeyA, sizeof(defKeyA));
 			}
 		}
+
+		if (iCoreFindCard() != 0)
+			return CardScanErr;
 
 		CurrRequest = list;
 		while(CurrRequest)
@@ -1015,8 +1019,7 @@ int __stdcall InitPwd(unsigned char *newKeyB)
 	GetControlBuff(ctrlWord, 0);
 	for (i=0; i<BLK_LEN; ++i)
 	{
-		nRet = ChangePwdEx(defKeyA, ctrlWord, newKeyB, 
-							oldKeyB, i, 0, changeflag);
+		nRet = ChangePwdEx(defKeyA, ctrlWord, newKeyB, oldKeyB, i, 0, changeflag);
 
 		LogPrinter("%d", nRet); 
 		if (nRet != 0)

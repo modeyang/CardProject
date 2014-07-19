@@ -221,7 +221,7 @@ int GetCardStatus(int nStatus, std::string &strStatus)
 
 	if (m_mapCardStatus.size() == 0)
 	{
-		m_mapCardStatus[0] = "卡正常";
+		m_mapCardStatus[0] = "卡校验成功";
 		m_mapCardStatus[1] = "由于卡损坏或已补发新卡，此卡已被注销";
 		m_mapCardStatus[2] = "此卡已办理挂失业务，暂不能使用";
 		m_mapCardStatus[3] = "卡无效";

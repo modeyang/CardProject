@@ -19,6 +19,8 @@ split(const string& src,
 	  string delimit, 
 	  string null_subst="");
 
+void Utf8ToGb2312(char* pstrOut, int dwOutLen, const char* pstrIn, int dwInLen);
+
 bool inline Is_GbkName(char *szValue)
 {
 	int i = 0;

@@ -1,4 +1,7 @@
 #include "StringUtil.h"
+#include <stdio.h>
+#include <Windows.h>
+
 
 typedef basic_string<char>::size_type S_T;
 static const S_T npos = -1;
@@ -46,4 +49,115 @@ vector<string> split(const string& src, string delimit, string null_subst)
 	v.push_back( last_one.empty()? null_subst:last_one );  
 
 	return v;  
+}
+
+
+//gb2312תutf8 
+void Gb2312ToUtf8(char* pstrOut, int dwOutLen, const char* pstrIn, int dwInLen) 
+{ 
+#ifdef WIN32 
+	int i = MultiByteToWideChar(CP_ACP, 0, pstrIn, -1, NULL, 0); 
+	wchar_t * strSrc = new wchar_t[i+1]; 
+	MultiByteToWideChar(CP_ACP, 0, pstrIn, -1, strSrc, i); 
+
+	i = WideCharToMultiByte(CP_UTF8, 0, strSrc, -1, NULL, 0, NULL, NULL); 
+	if (i >= dwOutLen) 
+	{ 
+		i = dwOutLen - 1; 
+	} 
+	WideCharToMultiByte(CP_UTF8, 0, strSrc, -1, pstrOut, i, NULL, NULL); 
+	delete strSrc; 
+#else 
+	iconv_t iConv = iconv_open("utf-8", "gb2312"); 
+	iconv(iConv, (char **)&pstrIn, (size_t *)&dwInLen, (char **)&pstrOut, (size_t *)&dwOutLen); 
+	iconv_close(iConv); 
+#endif 
+} 
+
+//utf8תgb2312 
+void Utf8ToGb2312(char* pstrOut, int dwOutLen, const char* pstrIn, int dwInLen) 
+{ 
+	if (NULL == pstrOut) 
+	{ 
+		return ; 
+	} 
+#ifdef WIN32 
+	int i = MultiByteToWideChar(CP_UTF8, 0, pstrIn, -1, NULL, 0); 
+	wchar_t * strSrc = new wchar_t[i+1]; 
+	MultiByteToWideChar(CP_UTF8, 0, pstrIn, -1, strSrc, i); 
+
+	i = WideCharToMultiByte(CP_ACP, 0, strSrc, -1, NULL, 0, NULL, NULL); 
+	if (i >= dwOutLen) 
+	{ 
+		i = dwOutLen - 1; 
+	} 
+	WideCharToMultiByte(CP_ACP, 0, strSrc, -1, pstrOut, i, NULL, NULL); 
+	delete strSrc; 
+#else 
+	iconv_t iConv = iconv_open("gb2312", "utf-8"); 
+	iconv(iConv, (char **)&pstrIn, (size_t *)&dwInLen, (char **)&pstrOut, (size_t *)&dwOutLen); 
+	iconv_close(iConv); 
+#endif 
+}
+//gb2312תUnicode 
+void Gb2312ToUnicode(wchar_t* pstrOut, int dwOutLen, const char* pstrIn, int dwInLen) 
+{ 
+	if (NULL == pstrOut) 
+	{ 
+		return ; 
+	} 
+#ifdef WIN32 
+	int i = MultiByteToWideChar(CP_ACP, 0, pstrIn, -1, NULL, 0); 
+	if (i >= dwOutLen) 
+	{ 
+		i = dwOutLen - 1; 
+	} 
+	MultiByteToWideChar(CP_ACP, 0, pstrIn, -1, pstrOut, i); 
+#else 
+	iconv_t iConv = iconv_open("unicode", "gb2312"); 
+	iconv(iConv, (char**)pstrIn, &dwInLen, (char**)pstrOut, &dwOutLen); 
+	iconv_close(iConv); 
+#endif 
+} 
+
+//UnicodeתGb2312 
+void UnicodeToGb2312(char* pstrOut, int dwOutLen, const wchar_t* pstrIn, int dwInLen) 
+{ 
+	if (NULL == pstrOut) 
+	{ 
+		return ; 
+	} 
+#ifdef WIN32 
+	int i = WideCharToMultiByte(CP_ACP, 0, pstrIn, -1, NULL, 0, NULL, NULL); 
+	if (i >= dwOutLen) 
+	{ 
+		i = dwOutLen - 1; 
+	} 
+	WideCharToMultiByte(CP_ACP, 0, pstrIn, -1, pstrOut, i, 0, 0); 
+#else 
+	iconv_t iConv = iconv_open("gb2312", "unicode"); 
+	iconv(iConv, (char**)pstrIn, &dwInLen, (char**)pstrOut, &dwOutLen); 
+	iconv_close(iConv); 
+#endif 
+} 
+
+//utf8תUnicode 
+void Utf8ToUnicode(wchar_t* pstrOut, int dwOutLen, const char* pstrIn, int dwInLen) 
+{ 
+	if (NULL == pstrOut) 
+	{ 
+		return ; 
+	} 
+#ifdef WIN32 
+	int i = MultiByteToWideChar(CP_UTF8, 0, pstrIn, -1, NULL, 0); 
+	if (i >= dwOutLen) 
+	{ 
+		i = dwOutLen - 1; 
+	} 
+	MultiByteToWideChar(CP_UTF8, 0, pstrIn, -1, pstrOut, i); 
+#else 
+	iconv_t iConv = iconv_open("unicode", "utf-8"); 
+	iconv(iConv, (char**)pstrIn, &dwInLen, (char**)pstrOut, &dwOutLen); 
+	iconv_close(iConv); 
+#endif 
 }

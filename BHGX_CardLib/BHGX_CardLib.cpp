@@ -1068,12 +1068,12 @@ int __stdcall iCardInit(char *xml)
 	ZeroMemory(szSystem, sizeof(szSystem));
 	ReadConfigFromReg(szSystem);
 
-	if (g_bPreLoad == TRUE){
-		if (authUCard(szSystem)) {
-			return CardUAuthFailed;
-		}
-		return 0;
-	}
+	//if (g_bPreLoad == TRUE){
+	//	if (authUCard(szSystem)) {
+	//		return CardUAuthFailed;
+	//	}
+	//	return 0;
+	//}
 
 	// 在资源文件里边提取XML文件并且初始化他
 	HINSTANCE hInstance = ::LoadLibrary("BHGX_CardLib.dll");
@@ -1094,9 +1094,9 @@ int __stdcall iCardInit(char *xml)
 	// 初始化全局列表
 	InitionGList(pvRes);
 
-	if (authUCard(szSystem)) {
-		return CardUAuthFailed;
-	}
+	//if (authUCard(szSystem)) {
+	//	return CardUAuthFailed;
+	//}
 
 	// 对设备进行初始化
 	g_bPreLoad = (initCoreDevice(szSystem)==0);
@@ -1490,6 +1490,8 @@ int __stdcall iCreateCard(char *pszCardDataXml)
 
 		nRet = iWriteInfo(pszCardDataXml);
 		LogPrinter("回写数据：%d\n", nRet);
+		if (nRet != 0) 
+			goto done;
 
 		nRet = InitPwd(KeyB);
 		LogPrinter( "重置密码结果%d\n", nRet);
@@ -1499,6 +1501,7 @@ int __stdcall iCreateCard(char *pszCardDataXml)
 	{
 		return CardCreateErr;
 	}
+done:
 	return nRet != 0? CardCreateErr:0;
 }
 
@@ -1528,7 +1531,7 @@ DLL_EXPORT int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServ
 	memset(strResult, 0, sizeof(strResult));
 	if (iScanCard() != 0)
 	{
-		CreateResponXML(3, "寻卡失败", strResult);
+		CreateResponXML(4, "寻卡失败", strResult);
 		strcpy(pszXml, strResult);
 		return CardScanErr;
 	}
@@ -1540,14 +1543,13 @@ DLL_EXPORT int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServ
 	int n = iQueryInfo("CARDNO", szQuery);
 	if (n != 0)
 	{
-		CreateResponXML(3, "获取卡号失败", strResult);
+		CreateResponXML(5, "获取卡号失败", strResult);
 		strcpy(pszXml, strResult);
 		return CardReadErr;
 	}
 	GetQueryInfo(szQuery, strCardNO);
 	
 	int nCheckCode = CardProcSuccess;
-
 	bool bSuccessed = true;
 	NHOneCardServiceSoapBindingProxy  proxy;
 	proxy.soap_endpoint = strServerURL.c_str();
@@ -1564,12 +1566,12 @@ DLL_EXPORT int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServ
 	proxy.nh_USCOREpipe(&pCheck, &pReturn);
 	if(proxy.error) {   
 		bSuccessed = false;
-		CreateResponXML(3, "与服务器连接失败",  strResult);
+		CreateResponXML(6, "与服务器连接失败",  strResult);
 		strcpy(pszXml, strResult);
 	} else {
 		std::string strRetCode, strStatus;
 		if (pReturn.ns1__out == NULL) {
-			CreateResponXML(1, "返回值为空", strResult);
+			CreateResponXML(7, "返回值为空", strResult);
 			strcpy(pszXml, strResult);
 			bSuccessed = false;
 			goto done;
@@ -1581,29 +1583,20 @@ DLL_EXPORT int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServ
 		std::string strCheckDesc;
 		if (GetCheckRetDesc(strRetCode, strCheckDesc) == 0) {
 			bSuccessed = false;
-			CreateResponXML(1, strCheckDesc.c_str(), strResult);
+			CreateResponXML(8, strCheckDesc.c_str(), strResult);
 			strcpy(pszXml, strResult);
 		} else{
 			nCheckCode = atoi(strStatus.c_str());
 			strCheckDesc.clear();
-			if (GetCardStatus(nCheckCode, strCheckDesc) == 0){
-				bSuccessed = false;
-				CreateResponXML(1, strCheckDesc.c_str(), strResult);
-				strcpy(pszXml, strResult);
-			}
+			GetCardStatus(nCheckCode, strCheckDesc);
+			CreateResponXML(nCheckCode, strCheckDesc.c_str(), strResult);
+			strcpy(pszXml, strResult);
 		}
 	}
 
 done:
 	delete [] strCheckParams;
 	delete [] pReturn.ns1__out;
-
-	if (bSuccessed){
-		char szRead[4096];
-		memset(szRead, 0, sizeof(szRead));
-		iReadInfo(2, szRead);
-		strcpy(pszXml, szRead);
-	}
 
 	proxy.destroy();
 	return bSuccessed ? 0 : CardCheckError;
@@ -1675,7 +1668,7 @@ DLL_EXPORT int __stdcall iRegMsgForNH(char *pszCardServerURL,char* pszXml)
 
 	char* strRegParams = new char[1024];
 	memset(strRegParams, 0, 1024);
-	CreateRegWsdlParams(strCardNO.c_str(), strRegParams); 
+	CreateRegWsdlParams(strCardNO.c_str(),  strRegParams); 
 	ns1__nh_USCOREpipe pCheck;
 	pCheck.ns1__parms = strRegParams;
 
@@ -1683,14 +1676,12 @@ DLL_EXPORT int __stdcall iRegMsgForNH(char *pszCardServerURL,char* pszXml)
 	pReturn.ns1__out = new char[4096];
 
 	proxy.nh_USCOREpipe(&pCheck, &pReturn);
-	if(proxy.error)   
-	{   
+	if(proxy.error) {   
 		bSuccessed = false;
 		CreateResponXML(3, "与服务器连接失败", strResult); 
 		strcpy(pszXml, strResult);
-	} 
-	else
-	{
+	} else{
+
 		std::string strRetCode, strStatus;
 		if (pReturn.ns1__out == NULL) {
 			CreateResponXML(1, "返回值为空", strResult);
@@ -1699,24 +1690,25 @@ DLL_EXPORT int __stdcall iRegMsgForNH(char *pszCardServerURL,char* pszXml)
 			goto done;
 		}
 		strXML = pReturn.ns1__out;
-
 		GetCheckState(strXML, strRetCode, strStatus);
 
 		std::string strCheckDesc;
-		if (GetCheckRetDesc(strRetCode, strCheckDesc) == 0) 
-		{
+		if (GetCheckRetDesc(strRetCode, strCheckDesc) == 0) {
 			bSuccessed = false;
 			CreateResponXML(3, strCheckDesc.c_str(), strResult);
 			strcpy(pszXml, strResult);
-		}
-		else
-		{
-			if (strStatus.size() > 0 && CheckCardXMLValid(strStatus) == 0)
-			{
-				FormatWriteInfo(strStatus.c_str(), strResult);
+		}else{
+
+			if (strStatus.size() > 0 && CheckCardXMLValid(strStatus) == 0){
+
+				char strGB[4096];
+				memset(strGB, 0, sizeof(strGB));
+				Utf8ToGb2312(strGB, sizeof(strGB), strStatus.c_str(), strStatus.size());
+
+				FormatWriteInfo(strGB, strResult);
 				int nState = iWriteInfo(strResult);
-				if (nState != 0)
-				{
+				if (nState != 0){
+
 					bSuccessed = false;
 					memset(strResult, 0, sizeof(strResult));
 					CreateResponXML(2, "卡回写失败", strResult);
@@ -1888,7 +1880,11 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 			{
 				if (strStatus.size() > 0 && CheckCardXMLValid(strStatus) == 0)
 				{
-					FormatWriteInfo(strStatus.c_str(), strResult);
+					char strGB[4096];
+					memset(strGB, 0, sizeof(strGB));
+					Utf8ToGb2312(strGB, sizeof(strGB), strStatus.c_str(), strStatus.size());
+
+					FormatWriteInfo(strGB, strResult);
 					int nState = iWriteInfo(strResult);
 					if (nState != 0)
 					{
