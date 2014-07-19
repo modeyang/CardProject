@@ -1,0 +1,12 @@
+;BHGX_MF_HCT.def
+LIBRARY "BHGX_MF_HCT"
+DESCIPTION	'BHGX_MF_HCT  ²Ê¿¨Í¨Çý¶¯'
+EXPORTS
+	bProbe		@1
+	iOpen		@2
+	iClose		@3
+	iScanCard	@4
+	iIOCtl		@5
+	iRead		@6
+	iWrite		@7
+	iChangePwdEx	@8
