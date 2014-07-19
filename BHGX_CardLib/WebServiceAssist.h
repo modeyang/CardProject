@@ -9,7 +9,7 @@ void CreateResponXML(int nID, const char *szResult, char *RetXML);
 int  GetCheckState(const std::string &strXML, std::string &strRetCode, std::string &strSec);
 int  FormatWriteInfo(const char *strWrite, char *strFMTWrite);
 int  GetQueryMapInfo(char *QueryXML, std::map<std::string,std::string> &mapQuery);
-int  GetQueryInfo(char *QueryXML, std::string &szCardNO);
+int  GetQueryInfoForOne(char *QueryXML, std::string &szCardNO);
 int  CreateCheckWsdlParams(const char *CardID, const char *pszCardCheckWSDL, char *strParams);
 int  CreateRegWsdlParams(const char *CardID, char *strParams);
 int  GetCheckRetDesc(const std::string &strStatus, std::string &strDesc);

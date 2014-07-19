@@ -22,13 +22,15 @@ extern "C" {
 	// 设备控制数据
 	DLL_EXPORT int __stdcall iIOCtl(int cmd, void *);
 
-	// 读设备数据
+	// 读设备数据	
 	//DLL_EXPORT int iRead(unsigned char *key, unsigned char *buf, int iSizeInBits, int iOffsetInBits);
-	DLL_EXPORT int __stdcall iRead(const unsigned char *key, unsigned char *buf, int iSizeInBits, int iOffsetInBits);
+	DLL_EXPORT int __stdcall iReadBin(int type, const unsigned char *key, 
+									  unsigned char *buf, int iSizeInBits, int iOffsetInBits);
 
 	// 写设备数据
 	//DLL_EXPORT int iWrite(unsigned char *key, unsigned char *buf, int iSizeInBits, int iOffsetInBits);
-	DLL_EXPORT int __stdcall iWrite(const unsigned char *key, unsigned char *buf, int nCtrl, int iSizeInBits, int iOffsetInBits);
+	DLL_EXPORT int __stdcall iWriteBin(int type, const unsigned char *key, unsigned char *buf, 
+		                               int nCtrl, int iSizeInBits, int iOffsetInBits);
 
 #ifdef  __cplusplus
 };

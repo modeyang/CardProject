@@ -136,7 +136,7 @@ int GetQueryMapInfo(char *QueryXML, std::map<std::string,std::string> &mapQuery)
 	return mapQuery.size() > 0;
 }
 
-int GetQueryInfo(char *QueryXML, std::string &szCardNO)
+int GetQueryInfoForOne(char *QueryXML, std::string &szCardNO)
 {
 	TiXmlDocument XmlDoc;
 
@@ -195,8 +195,7 @@ int GetCheckRetDesc(const std::string &strStatus, std::string &strDesc)
 
 	std::map<std::string, std::string>::iterator iter = m_mapCodeDesc.begin();
 	iter = m_mapCodeDesc.find(strStatus);
-	if (iter != m_mapCodeDesc.end())
-	{
+	if (iter != m_mapCodeDesc.end()){
 		strDesc = iter->second;
 	} else {
 		strDesc = strStatus;
@@ -207,7 +206,7 @@ int GetCheckRetDesc(const std::string &strStatus, std::string &strDesc)
 int GetCardStatus(int nStatus, std::string &strStatus)
 {
 
-	if (m_mapCardStatus.size() == 0){
+	if (m_mapCardStatus.size() == 0) {
 		m_mapCardStatus[0] = "卡正常";
 		m_mapCardStatus[1] = "由于卡损坏或已补发新卡，此卡已被注销";
 		m_mapCardStatus[2] = "此卡已办理挂失业务，暂不能使用";

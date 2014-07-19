@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<LogConfig PROGRAMID="001">
+    <config ID="1"  DESC="config">
+        <COLUMN ID="1" DESC="log path" VALUE="c:/config/" />
+        <COLUMN ID="2" DESC="forbidden list file path" VALUE="C:\CPU-M1仿真2014-07-11\CPU文档\黑名单下发.xml" />
+        <COLUMN ID="3" DESC="warning list folder" VALUE="C:\CPU-M1仿真2014-07-11\CPU文档\" />
+	<COLUMN ID="4" DESC="forbidden log path" VALUE="c:/config/forbidden" />
+    </config>
+    <config ID="2"  DESC="params">
+        <COLUMN ID="1"  DESC="read card organization" VALUE="06521230015268" />
+        <COLUMN ID="2"  DESC="organization code" VALUE="94352432" />
+        <COLUMN ID="3"  DESC="SAM ID" VALUE="123456" />
+        <COLUMN ID="4"  DESC="area code" VALUE="000000" />
+        <COLUMN ID="5"  DESC="area name" VALUE="1" />
+		<COLUMN ID="6"  DESC="hospital name" VALUE="06521230015268" />
+		<COLUMN ID="7"  DESC="hospital code" VALUE="" />
+		<COLUMN ID="8"  DESC="card NO." VALUE="123456" />
+		<COLUMN ID="9"  DESC="identity card NO." VALUE="000000" />
+		<COLUMN ID="10"  DESC="patient name" VALUE="1" />
+    </config>
+</LogConfig>

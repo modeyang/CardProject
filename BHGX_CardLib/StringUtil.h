@@ -11,13 +11,9 @@ using namespace std;
 #define ASSCI_9			0x39
 #define NAME_MAX_LEN	256
 
-void 
-trim(string & str);
+void trim(string & str);
 
-vector<string> 
-split(const string& src, 
-	  string delimit, 
-	  string null_subst="");
+vector<string> split(const string& src, string delimit, string null_subst="");
 
 bool inline Is_GbkName(char *szValue)
 {

@@ -118,6 +118,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;BHGX_CARDLIB_EXPORTS"
+				BasicRuntimeChecks="0"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -240,6 +241,14 @@
 			</File>
 			<File
 				RelativePath=".\public\Markup.h"
+				>
+			</File>
+			<File
+				RelativePath=".\xmlUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\xmlUtils.h"
 				>
 			</File>
 			<File

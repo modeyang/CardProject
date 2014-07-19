@@ -49,6 +49,20 @@ interface ICardProcess : IDispatch{
 	[id(30), helpstring("方法iATLReadClinicInfo")] HRESULT iATLReadClinicInfo(BSTR pszCode, [out,retval] BSTR* readXML);
 	[id(31), helpstring("方法iATLReadMedicalInfo")] HRESULT iATLReadMedicalInfo(BSTR pszCode, [out,retval] BSTR* readXML);
 	[id(32), helpstring("方法iATLReadFeeInfo")] HRESULT iATLReadFeeInfo(BSTR pszCode, [out,retval] BSTR* readXML);
+	[id(33), helpstring("方法iATLReadOnlyHISLog")] HRESULT iATLReadOnlyHISLog(BSTR logConfXml, [out,retval] BSTR* bstrHISInfo);
+	[id(35), helpstring("方法iATLReadInfoForXJLog")] HRESULT iATLReadInfoForXJLog(BSTR pszCardCheckWSDL, BSTR pszCardServerURL, BSTR pszLogXml, [out,retval] BSTR* xml);
+	[id(36), helpstring("方法iATLReadHISInfoLog")] HRESULT iATLReadHISInfoLog(BSTR pszCardCheckWSDL, BSTR pszCardServerURL, BSTR pszLogXml, [out,retval] BSTR* xml);
+	[id(38), helpstring("方法iATLReadMedicalInfoLog")] HRESULT iATLReadMedicalInfoLog(BSTR pszCode, BSTR pszLogXml, [out,retval] BSTR* xml);
+	[id(39), helpstring("方法iATLReadFeeInfoLog")] HRESULT iATLReadFeeInfoLog(BSTR pszCode, BSTR pszLogXml, [out,retval] BSTR* xml);
+	[id(40), helpstring("方法iATLWriteHospInfoLog")] HRESULT iATLWriteHospInfoLog(BSTR xml, BSTR pszLogXml, [out,retval] LONG* pRet);
+	[id(41), helpstring("方法iATLReadClinicInfoLog")] HRESULT iATLReadClinicInfoLog(BSTR pszCode, BSTR pszLogXml, [out,retval] BSTR* xml);
+	[id(42), helpstring("方法iATLReadOnlyHISLocal")] HRESULT iATLReadOnlyHISLocal(BSTR pszLogXml, [out,retval] BSTR* xml);
+	[id(43), helpstring("方法iATLReadInfoForXJLocal")] HRESULT iATLReadInfoForXJLocal(BSTR pszCardCheckWSDL, BSTR pszCardServerURL, BSTR pszLogXml, [out,retval] BSTR* xml);
+	[id(44), helpstring("方法iATLReadHISInfoLocal")] HRESULT iATLReadHISInfoLocal(BSTR pszCardCheckWSDL, BSTR pszCardServerURL, BSTR pszLogXml, [out,retval] BSTR* xml);
+	[id(45), helpstring("方法iATLReadMedicalInfoLocal")] HRESULT iATLReadMedicalInfoLocal(BSTR pszCode, BSTR pszLogXml, [out,retval] BSTR* xml);
+	[id(46), helpstring("方法iATLReadFeeInfoLocal")] HRESULT iATLReadFeeInfoLocal(BSTR pszCode, BSTR pszLogXml, [out,retval] BSTR* xml);
+	[id(48), helpstring("方法iATLReadClinicInfoLocal")] HRESULT iATLReadClinicInfoLocal(BSTR pszCode, BSTR pszLogXml, [out,retval] BSTR* xml);
+	[id(49), helpstring("方法iATLWriteHospInfoLocal")] HRESULT iATLWriteHospInfoLocal(BSTR xml, BSTR pszLogXml, [out,retval] LONG* pRet);
 };
 [
 	uuid(892D8909-1013-42C0-86C3-62653E0797B3),

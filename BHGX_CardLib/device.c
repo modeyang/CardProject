@@ -27,15 +27,11 @@ static char **EnumDLL( __in const char *directory, __out int *count)
 	lstrcpy(Pattern, directory);
 	lstrcat(Pattern,"*.dll");
 	hFind = FindFirstFile(Pattern, &FindFileData);
-	if(hFind == INVALID_HANDLE_VALUE)
-	{
+	if(hFind == INVALID_HANDLE_VALUE){
 		*count = 0;
 		return NULL;
-	}
-	else 
-	{
-		do 
-		{
+	} else {
+		do {
 			lstrcpy(tStringArray[i++], FindFileData.cFileName);
 		} while(FindNextFile(hFind, &FindFileData) != 0);
 	}

@@ -93,7 +93,7 @@ int __stdcall apt_ScanCard()
 
 	status = Instance->iIOCtl( CMD_BEEP, &para , 2);
 	status = Instance->iIOCtl( CMD_LED, &para , 2);
-	status = Instance->ICCSet(CARDSEAT_RF, &cardType , resp);
+	status = Instance->ICCSet( CARDSEAT_RF, &cardType , resp);
 
 	if (cardType == eCPUCard) {
 		status = Instance->ICCSet(CARDSEAT_PSAM1, &psamType, resp);

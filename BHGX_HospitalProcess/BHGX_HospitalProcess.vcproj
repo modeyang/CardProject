@@ -181,7 +181,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ExceptionCheck.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Markup.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TimeUtil.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\XmlUtil.cpp"
 				>
 			</File>
 		</Filter>
@@ -195,7 +207,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ExceptionCheck.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Markup.h"
+				>
+			</File>
+			<File
+				RelativePath=".\resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TimeUtil.h"
+				>
+			</File>
+			<File
+				RelativePath=".\XmlUtil.h"
 				>
 			</File>
 		</Filter>
@@ -203,6 +231,14 @@
 			Name="资源文件"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			>
+			<File
+				RelativePath=".\BHGX_HospitalProcess.rc"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="tinyxml"
 			>
 		</Filter>
 	</Files>

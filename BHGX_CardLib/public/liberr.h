@@ -32,6 +32,8 @@ enum ErrType
 	CardCreateLicenseFailed,
 	CardNoSupport,
 	CardMallocFailed,
+	CardForbidden,
+	CardWarnning,
 };
 
 static char *errString[] =
@@ -59,6 +61,8 @@ static char *errString[] =
 	"生成license文件错误，请检查时间格式",
 	"此卡暂没有此功能",
 	"分配内存错误",
+	"该卡已注销,无法使用",
+	"该卡已挂失，暂时无法使用",
 };
 
 char *_err(int errcode);

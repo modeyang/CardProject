@@ -69,14 +69,14 @@ public:
 	STDMETHOD(iATLScanCard)(LONG* nRet);
 	STDMETHOD(iATLCardClose)(LONG* nRet);
 	STDMETHOD(iATLReadCardMessageForNH)(BSTR pszCardCheckWSDL, BSTR pszCardRewritePackageWSDL, BSTR* pszXml);
-	STDMETHOD(iATLReadHISInfo)(BSTR pszCardCheckWSDL, BSTR pszCardRewritePackageWSDL,BSTR* szXML);
-	STDMETHOD(iATLReadInfoForXJ)(BSTR pszCardCheckWSDL, BSTR pszCardRewritePackageWSDL,BSTR* szXML);
 	STDMETHOD(iATLCardIsEmpty)(LONG* bEmpty);
 	STDMETHOD(iATLCheckMsgForNH)(BSTR bstrCheckWSDL, BSTR bstrServerURL, BSTR* strCheckRet);
 	STDMETHOD(iATLReadConfigMsg)(BSTR bstrConfigInfo, BSTR* bstrReadXML);
 	STDMETHOD(iATLRegMsgForNH)(BSTR bstrServerURL, BSTR* bstrReadXML);
 	STDMETHOD(iATLEncryFile)(BSTR bstrfilename, LONG* nProCode);
 	STDMETHOD(iATLGetPrinterList)(BSTR* bstrPrinterXML);
+	STDMETHOD(iATLReadHISInfo)(BSTR pszCardCheckWSDL, BSTR pszCardRewritePackageWSDL,BSTR* szXML);
+	STDMETHOD(iATLReadInfoForXJ)(BSTR pszCardCheckWSDL, BSTR pszCardRewritePackageWSDL,BSTR* szXML);
 	STDMETHOD(iATLReadOnlyHIS)(BSTR* bstrHISInfo);
 	STDMETHOD(iATLCardOpen)(LONG* Ret);
 	STDMETHOD(iATLCardDeinit)(LONG* Ret);
@@ -86,6 +86,20 @@ public:
 	STDMETHOD(iATLReadClinicInfo)(BSTR pszCode, BSTR* readXML);
 	STDMETHOD(iATLReadMedicalInfo)(BSTR pszCode, BSTR* readXML);
 	STDMETHOD(iATLReadFeeInfo)(BSTR pszCode, BSTR* readXML);
+	STDMETHOD(iATLReadOnlyHISLog)(BSTR logConfXml, BSTR* bstrHISInfo);
+	STDMETHOD(iATLReadInfoForXJLog)(BSTR pszCardCheckWSDL, BSTR pszCardServerURL, BSTR pszLogXml, BSTR* xml);
+	STDMETHOD(iATLReadHISInfoLog)(BSTR pszCardCheckWSDL, BSTR pszCardServerURL, BSTR pszLogXml, BSTR* xml);
+	STDMETHOD(iATLReadMedicalInfoLog)(BSTR pszCode, BSTR pszLogXml, BSTR* xml);
+	STDMETHOD(iATLReadFeeInfoLog)(BSTR pszCode, BSTR pszLogXml, BSTR* xml);
+	STDMETHOD(iATLWriteHospInfoLog)(BSTR xml, BSTR pszLogXml, LONG* pRet);
+	STDMETHOD(iATLReadClinicInfoLog)(BSTR pszCode, BSTR pszLogXml, BSTR* xml);
+	STDMETHOD(iATLReadOnlyHISLocal)(BSTR pszLogXml, BSTR* xml);
+	STDMETHOD(iATLReadInfoForXJLocal)(BSTR pszCardCheckWSDL, BSTR pszCardServerURL, BSTR pszLogXml, BSTR* xml);
+	STDMETHOD(iATLReadHISInfoLocal)(BSTR pszCardCheckWSDL, BSTR pszCardServerURL, BSTR pszLogXml, BSTR* xml);
+	STDMETHOD(iATLReadMedicalInfoLocal)(BSTR pszCode, BSTR pszLogXml, BSTR* xml);
+	STDMETHOD(iATLReadFeeInfoLocal)(BSTR pszCode, BSTR pszLogXml, BSTR* xml);
+	STDMETHOD(iATLReadClinicInfoLocal)(BSTR pszCode, BSTR pszLogXml, BSTR* xml);
+	STDMETHOD(iATLWriteHospInfoLocal)(BSTR xml, BSTR pszLogXml, LONG* pRet);
 
 protected:
 	void GetErrInfo(int nProcRet, LONG &nRet);
@@ -96,6 +110,7 @@ protected:
 
 protected:
 	char m_strErr[1024];
+	
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(CardProcess), CCardProcess)

@@ -210,7 +210,8 @@ int __stdcall iIOCtl(int cmd, void *data)
 /**
  *
  */
-int __stdcall iRead(const unsigned char *key, unsigned char *buf, int iSizeInBits, int iOffsetInBits)
+int __stdcall iReadBin(int type, const unsigned char *key, unsigned char *buf,
+					   int iSizeInBits, int iOffsetInBits)
 {
 	int result;
 
@@ -232,7 +233,8 @@ int __stdcall iRead(const unsigned char *key, unsigned char *buf, int iSizeInBit
 /**
  *
  */
-int __stdcall iWrite(const unsigned char *key, unsigned char *buf,int nCtrl, int iSizeInBits, int iOffsetInBits)
+int __stdcall iWriteBin(int type, const unsigned char *key, unsigned char *buf,
+						int nCtrl, int iSizeInBits, int iOffsetInBits)
 {
 
 	// 如果文件不存在

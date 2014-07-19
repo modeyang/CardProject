@@ -210,6 +210,78 @@ EXTERN_C const IID IID_ICardProcess;
             BSTR pszCode,
             /* [retval][out] */ BSTR *readXML) = 0;
         
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadOnlyHISLog( 
+            BSTR logConfXml,
+            /* [retval][out] */ BSTR *bstrHISInfo) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadInfoForXJLog( 
+            BSTR pszCardCheckWSDL,
+            BSTR pszCardServerURL,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadHISInfoLog( 
+            BSTR pszCardCheckWSDL,
+            BSTR pszCardServerURL,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadMedicalInfoLog( 
+            BSTR pszCode,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadFeeInfoLog( 
+            BSTR pszCode,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLWriteHospInfoLog( 
+            BSTR xml,
+            BSTR pszLogXml,
+            /* [retval][out] */ LONG *pRet) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadClinicInfoLog( 
+            BSTR pszCode,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadOnlyHISLocal( 
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadInfoForXJLocal( 
+            BSTR pszCardCheckWSDL,
+            BSTR pszCardServerURL,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadHISInfoLocal( 
+            BSTR pszCardCheckWSDL,
+            BSTR pszCardServerURL,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadMedicalInfoLocal( 
+            BSTR pszCode,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadFeeInfoLocal( 
+            BSTR pszCode,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadClinicInfoLocal( 
+            BSTR pszCode,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLWriteHospInfoLocal( 
+            BSTR xml,
+            BSTR pszLogXml,
+            /* [retval][out] */ LONG *pRet) = 0;
+        
     };
     
 #else 	/* C style interface */
@@ -410,6 +482,92 @@ EXTERN_C const IID IID_ICardProcess;
             BSTR pszCode,
             /* [retval][out] */ BSTR *readXML);
         
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadOnlyHISLog )( 
+            ICardProcess * This,
+            BSTR logConfXml,
+            /* [retval][out] */ BSTR *bstrHISInfo);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadInfoForXJLog )( 
+            ICardProcess * This,
+            BSTR pszCardCheckWSDL,
+            BSTR pszCardServerURL,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadHISInfoLog )( 
+            ICardProcess * This,
+            BSTR pszCardCheckWSDL,
+            BSTR pszCardServerURL,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadMedicalInfoLog )( 
+            ICardProcess * This,
+            BSTR pszCode,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadFeeInfoLog )( 
+            ICardProcess * This,
+            BSTR pszCode,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLWriteHospInfoLog )( 
+            ICardProcess * This,
+            BSTR xml,
+            BSTR pszLogXml,
+            /* [retval][out] */ LONG *pRet);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadClinicInfoLog )( 
+            ICardProcess * This,
+            BSTR pszCode,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadOnlyHISLocal )( 
+            ICardProcess * This,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadInfoForXJLocal )( 
+            ICardProcess * This,
+            BSTR pszCardCheckWSDL,
+            BSTR pszCardServerURL,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadHISInfoLocal )( 
+            ICardProcess * This,
+            BSTR pszCardCheckWSDL,
+            BSTR pszCardServerURL,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadMedicalInfoLocal )( 
+            ICardProcess * This,
+            BSTR pszCode,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadFeeInfoLocal )( 
+            ICardProcess * This,
+            BSTR pszCode,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadClinicInfoLocal )( 
+            ICardProcess * This,
+            BSTR pszCode,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLWriteHospInfoLocal )( 
+            ICardProcess * This,
+            BSTR xml,
+            BSTR pszLogXml,
+            /* [retval][out] */ LONG *pRet);
+        
         END_INTERFACE
     } ICardProcessVtbl;
 
@@ -538,6 +696,48 @@ EXTERN_C const IID IID_ICardProcess;
 
 #define ICardProcess_iATLReadFeeInfo(This,pszCode,readXML)	\
     (This)->lpVtbl -> iATLReadFeeInfo(This,pszCode,readXML)
+
+#define ICardProcess_iATLReadOnlyHISLog(This,logConfXml,bstrHISInfo)	\
+    (This)->lpVtbl -> iATLReadOnlyHISLog(This,logConfXml,bstrHISInfo)
+
+#define ICardProcess_iATLReadInfoForXJLog(This,pszCardCheckWSDL,pszCardServerURL,pszLogXml,xml)	\
+    (This)->lpVtbl -> iATLReadInfoForXJLog(This,pszCardCheckWSDL,pszCardServerURL,pszLogXml,xml)
+
+#define ICardProcess_iATLReadHISInfoLog(This,pszCardCheckWSDL,pszCardServerURL,pszLogXml,xml)	\
+    (This)->lpVtbl -> iATLReadHISInfoLog(This,pszCardCheckWSDL,pszCardServerURL,pszLogXml,xml)
+
+#define ICardProcess_iATLReadMedicalInfoLog(This,pszCode,pszLogXml,xml)	\
+    (This)->lpVtbl -> iATLReadMedicalInfoLog(This,pszCode,pszLogXml,xml)
+
+#define ICardProcess_iATLReadFeeInfoLog(This,pszCode,pszLogXml,xml)	\
+    (This)->lpVtbl -> iATLReadFeeInfoLog(This,pszCode,pszLogXml,xml)
+
+#define ICardProcess_iATLWriteHospInfoLog(This,xml,pszLogXml,pRet)	\
+    (This)->lpVtbl -> iATLWriteHospInfoLog(This,xml,pszLogXml,pRet)
+
+#define ICardProcess_iATLReadClinicInfoLog(This,pszCode,pszLogXml,xml)	\
+    (This)->lpVtbl -> iATLReadClinicInfoLog(This,pszCode,pszLogXml,xml)
+
+#define ICardProcess_iATLReadOnlyHISLocal(This,pszLogXml,xml)	\
+    (This)->lpVtbl -> iATLReadOnlyHISLocal(This,pszLogXml,xml)
+
+#define ICardProcess_iATLReadInfoForXJLocal(This,pszCardCheckWSDL,pszCardServerURL,pszLogXml,xml)	\
+    (This)->lpVtbl -> iATLReadInfoForXJLocal(This,pszCardCheckWSDL,pszCardServerURL,pszLogXml,xml)
+
+#define ICardProcess_iATLReadHISInfoLocal(This,pszCardCheckWSDL,pszCardServerURL,pszLogXml,xml)	\
+    (This)->lpVtbl -> iATLReadHISInfoLocal(This,pszCardCheckWSDL,pszCardServerURL,pszLogXml,xml)
+
+#define ICardProcess_iATLReadMedicalInfoLocal(This,pszCode,pszLogXml,xml)	\
+    (This)->lpVtbl -> iATLReadMedicalInfoLocal(This,pszCode,pszLogXml,xml)
+
+#define ICardProcess_iATLReadFeeInfoLocal(This,pszCode,pszLogXml,xml)	\
+    (This)->lpVtbl -> iATLReadFeeInfoLocal(This,pszCode,pszLogXml,xml)
+
+#define ICardProcess_iATLReadClinicInfoLocal(This,pszCode,pszLogXml,xml)	\
+    (This)->lpVtbl -> iATLReadClinicInfoLocal(This,pszCode,pszLogXml,xml)
+
+#define ICardProcess_iATLWriteHospInfoLocal(This,xml,pszLogXml,pRet)	\
+    (This)->lpVtbl -> iATLWriteHospInfoLocal(This,xml,pszLogXml,pRet)
 
 #endif /* COBJMACROS */
 
@@ -940,6 +1140,204 @@ void __RPC_STUB ICardProcess_iATLReadMedicalInfo_Stub(
 
 
 void __RPC_STUB ICardProcess_iATLReadFeeInfo_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadOnlyHISLog_Proxy( 
+    ICardProcess * This,
+    BSTR logConfXml,
+    /* [retval][out] */ BSTR *bstrHISInfo);
+
+
+void __RPC_STUB ICardProcess_iATLReadOnlyHISLog_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadInfoForXJLog_Proxy( 
+    ICardProcess * This,
+    BSTR pszCardCheckWSDL,
+    BSTR pszCardServerURL,
+    BSTR pszLogXml,
+    /* [retval][out] */ BSTR *xml);
+
+
+void __RPC_STUB ICardProcess_iATLReadInfoForXJLog_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadHISInfoLog_Proxy( 
+    ICardProcess * This,
+    BSTR pszCardCheckWSDL,
+    BSTR pszCardServerURL,
+    BSTR pszLogXml,
+    /* [retval][out] */ BSTR *xml);
+
+
+void __RPC_STUB ICardProcess_iATLReadHISInfoLog_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadMedicalInfoLog_Proxy( 
+    ICardProcess * This,
+    BSTR pszCode,
+    BSTR pszLogXml,
+    /* [retval][out] */ BSTR *xml);
+
+
+void __RPC_STUB ICardProcess_iATLReadMedicalInfoLog_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadFeeInfoLog_Proxy( 
+    ICardProcess * This,
+    BSTR pszCode,
+    BSTR pszLogXml,
+    /* [retval][out] */ BSTR *xml);
+
+
+void __RPC_STUB ICardProcess_iATLReadFeeInfoLog_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLWriteHospInfoLog_Proxy( 
+    ICardProcess * This,
+    BSTR xml,
+    BSTR pszLogXml,
+    /* [retval][out] */ LONG *pRet);
+
+
+void __RPC_STUB ICardProcess_iATLWriteHospInfoLog_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadClinicInfoLog_Proxy( 
+    ICardProcess * This,
+    BSTR pszCode,
+    BSTR pszLogXml,
+    /* [retval][out] */ BSTR *xml);
+
+
+void __RPC_STUB ICardProcess_iATLReadClinicInfoLog_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadOnlyHISLocal_Proxy( 
+    ICardProcess * This,
+    BSTR pszLogXml,
+    /* [retval][out] */ BSTR *xml);
+
+
+void __RPC_STUB ICardProcess_iATLReadOnlyHISLocal_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadInfoForXJLocal_Proxy( 
+    ICardProcess * This,
+    BSTR pszCardCheckWSDL,
+    BSTR pszCardServerURL,
+    BSTR pszLogXml,
+    /* [retval][out] */ BSTR *xml);
+
+
+void __RPC_STUB ICardProcess_iATLReadInfoForXJLocal_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadHISInfoLocal_Proxy( 
+    ICardProcess * This,
+    BSTR pszCardCheckWSDL,
+    BSTR pszCardServerURL,
+    BSTR pszLogXml,
+    /* [retval][out] */ BSTR *xml);
+
+
+void __RPC_STUB ICardProcess_iATLReadHISInfoLocal_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadMedicalInfoLocal_Proxy( 
+    ICardProcess * This,
+    BSTR pszCode,
+    BSTR pszLogXml,
+    /* [retval][out] */ BSTR *xml);
+
+
+void __RPC_STUB ICardProcess_iATLReadMedicalInfoLocal_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadFeeInfoLocal_Proxy( 
+    ICardProcess * This,
+    BSTR pszCode,
+    BSTR pszLogXml,
+    /* [retval][out] */ BSTR *xml);
+
+
+void __RPC_STUB ICardProcess_iATLReadFeeInfoLocal_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadClinicInfoLocal_Proxy( 
+    ICardProcess * This,
+    BSTR pszCode,
+    BSTR pszLogXml,
+    /* [retval][out] */ BSTR *xml);
+
+
+void __RPC_STUB ICardProcess_iATLReadClinicInfoLocal_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLWriteHospInfoLocal_Proxy( 
+    ICardProcess * This,
+    BSTR xml,
+    BSTR pszLogXml,
+    /* [retval][out] */ LONG *pRet);
+
+
+void __RPC_STUB ICardProcess_iATLWriteHospInfoLocal_Stub(
     IRpcStubBuffer *This,
     IRpcChannelBuffer *_pRpcChannelBuffer,
     PRPC_MESSAGE _pRpcMessage,

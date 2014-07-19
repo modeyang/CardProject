@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;BHGX_HISReader_EXPORTS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -64,7 +64,7 @@
 				IgnoreDefaultLibraryNames="libcmtd.lib"
 				ModuleDefinitionFile="BHGX_HISReader.def"
 				GenerateDebugInformation="true"
-				SubSystem="2"
+				SubSystem="1"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -183,6 +183,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ExceptionCheck.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Markup.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -203,7 +211,15 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\TimeUtil.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\xml1.bin"
+				>
+			</File>
+			<File
+				RelativePath=".\XmlUtil.cpp"
 				>
 			</File>
 		</Filter>
@@ -217,11 +233,27 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ExceptionCheck.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Markup.h"
+				>
+			</File>
+			<File
 				RelativePath=".\resource.h"
 				>
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TimeUtil.h"
+				>
+			</File>
+			<File
+				RelativePath=".\XmlUtil.h"
 				>
 			</File>
 		</Filter>

@@ -12,3 +12,7 @@ EXPORTS
 	iReadMedicalInfo	@8
 	iReadFeeInfo		@9
 	iWriteHospInfo		@10
+	iReadClinicInfoLog	@11
+	iReadMedicalInfoLog	@12
+	iReadFeeInfoLog		@13
+	iWriteHospInfoLog	@14

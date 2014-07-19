@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<LogInfo PROGRAMID="001">
+    <Info ID="1" DESC="base info">
+        <SEGMENT ID="1">
+            <COLUMN ID="1" VALUE="" />
+            <COLUMN ID="2" VALUE="" />
+            <COLUMN ID="3" VALUE="06521230015268" />
+            <COLUMN ID="4" VALUE="fdsa" />
+            <COLUMN ID="5" VALUE="123456" />
+            <COLUMN ID="6" VALUE="000000" />
+            <COLUMN ID="7" VALUE="1" />
+            <COLUMN ID="8" VALUE="06521230015268" />
+            <COLUMN ID="9" VALUE="" />
+            <COLUMN ID="10" VALUE="123456" />
+            <COLUMN ID="11" VALUE="000000" />
+            <COLUMN ID="12" VALUE="1" />
+            <COLUMN ID="13" VALUE="2014-07-10 23:08:37" />
+            <COLUMN ID="14" VALUE="" />
+            <COLUMN ID="15" VALUE="iReadClinicInfoLog" />
+        </SEGMENT>
+    </Info>
+    <Info ID="2" VALUE="content">
+        <SEGMENT ID="18">
+            <COLUMN ID="1" SOURCE="ED_HOSNAME" VALUE="" />
+            <COLUMN ID="2" SOURCE="ED_HOSCODE" VALUE="" />
+            <COLUMN ID="3" SOURCE="ED_INTIME" VALUE="" />
+            <COLUMN ID="4" SOURCE="ED_ROOMNO" VALUE="" />
+            <COLUMN ID="5" SOURCE="ED_INROOMNAME" VALUE="" />
+            <COLUMN ID="6" SOURCE="ED_PAYWAY" VALUE="" />
+            <COLUMN ID="7" SOURCE="ED_SYMPNAME1" VALUE="" />
+            <COLUMN ID="8" SOURCE="ED_SYMPCODE1" VALUE="" />
+            <COLUMN ID="9" SOURCE="ED_DIAGDATA1" VALUE="" />
+            <COLUMN ID="10" SOURCE="ED_DIAGNAME1" VALUE="" />
+            <COLUMN ID="11" SOURCE="ED_DIAGCODE1" VALUE="" />
+            <COLUMN ID="12" SOURCE="ED_SYMPDATA1" VALUE="" />
+            <COLUMN ID="13" SOURCE="ED_LASTDAYS1" VALUE="" />
+            <COLUMN ID="42" SOURCE="ED_CHECKNAME1" VALUE="" />
+            <COLUMN ID="43" SOURCE="ED_CHECKCODE1" VALUE="" />
+            <COLUMN ID="44" SOURCE="ED_CHECKRET1" VALUE="" />
+            <COLUMN ID="45" SOURCE="ED_CHECKUNIT1" VALUE="" />
+            <COLUMN ID="46" SOURCE="ED_CHECKPROJ1" VALUE="" />
+            <COLUMN ID="92" SOURCE="ED_DRUGNAME1" VALUE="" />
+            <COLUMN ID="93" SOURCE="ED_DRUGCODE1" VALUE="" />
+            <COLUMN ID="94" SOURCE="ED_DRUGDAYS1" VALUE="" />
+            <COLUMN ID="95" SOURCE="ED_DRUGFREQ1" VALUE="" />
+            <COLUMN ID="96" SOURCE="ED_DRUGUINT1" VALUE="" />
+            <COLUMN ID="97" SOURCE="ED_DRUGONCE1" VALUE="" />
+            <COLUMN ID="98" SOURCE="ED_DRUGTOTAL1" VALUE="" />
+            <COLUMN ID="99" SOURCE="ED_DRUGWORK1" VALUE="" />
+            <COLUMN ID="132" SOURCE="ED_SURGNAME1" VALUE="" />
+            <COLUMN ID="133" SOURCE="ED_SURGCODE1" VALUE="" />
+            <COLUMN ID="134" SOURCE="ED_SURGDATA1" VALUE="" />
+            <COLUMN ID="141" SOURCE="ED_FEENAME1" VALUE="" />
+            <COLUMN ID="142" SOURCE="ED_FEECODE1" VALUE="" />
+            <COLUMN ID="143" SOURCE="ED_FEE1" VALUE="" />
+        </SEGMENT>
+    </Info>
+</LogInfo>
+<?xml version="1.0" encoding="gb2312" ?>
+<LogInfo PROGRAMID="001">
+    <Info ID="1" DESC="base info">
+        <SEGMENT ID="1">
+            <COLUMN ID="1" VALUE="" />
+            <COLUMN ID="2" VALUE="" />
+            <COLUMN ID="3" VALUE="06521230015268" />
+            <COLUMN ID="4" VALUE="fdsa" />
+            <COLUMN ID="5" VALUE="123456" />
+            <COLUMN ID="6" VALUE="000000" />
+            <COLUMN ID="7" VALUE="1" />
+            <COLUMN ID="8" VALUE="06521230015268" />
+            <COLUMN ID="9" VALUE="" />
+            <COLUMN ID="10" VALUE="123456" />
+            <COLUMN ID="11" VALUE="000000" />
+            <COLUMN ID="12" VALUE="1" />
+            <COLUMN ID="13" VALUE="2014-07-10 23:09:40" />
+            <COLUMN ID="14" VALUE="" />
+            <COLUMN ID="15" VALUE="iReadClinicInfoLog" />
+        </SEGMENT>
+    </Info>
+    <Info ID="2" VALUE="content">
+        <SEGMENT ID="18">
+            <COLUMN ID="1" SOURCE="ED_HOSNAME" VALUE="" />
+            <COLUMN ID="2" SOURCE="ED_HOSCODE" VALUE="" />
+            <COLUMN ID="3" SOURCE="ED_INTIME" VALUE="" />
+            <COLUMN ID="4" SOURCE="ED_ROOMNO" VALUE="" />
+            <COLUMN ID="5" SOURCE="ED_INROOMNAME" VALUE="" />
+            <COLUMN ID="6" SOURCE="ED_PAYWAY" VALUE="" />
+            <COLUMN ID="7" SOURCE="ED_SYMPNAME1" VALUE="" />
+            <COLUMN ID="8" SOURCE="ED_SYMPCODE1" VALUE="" />
+            <COLUMN ID="9" SOURCE="ED_DIAGDATA1" VALUE="" />
+            <COLUMN ID="10" SOURCE="ED_DIAGNAME1" VALUE="" />
+            <COLUMN ID="11" SOURCE="ED_DIAGCODE1" VALUE="" />
+            <COLUMN ID="12" SOURCE="ED_SYMPDATA1" VALUE="" />
+            <COLUMN ID="13" SOURCE="ED_LASTDAYS1" VALUE="" />
+            <COLUMN ID="42" SOURCE="ED_CHECKNAME1" VALUE="" />
+            <COLUMN ID="43" SOURCE="ED_CHECKCODE1" VALUE="" />
+            <COLUMN ID="44" SOURCE="ED_CHECKRET1" VALUE="" />
+            <COLUMN ID="45" SOURCE="ED_CHECKUNIT1" VALUE="" />
+            <COLUMN ID="46" SOURCE="ED_CHECKPROJ1" VALUE="" />
+            <COLUMN ID="92" SOURCE="ED_DRUGNAME1" VALUE="" />
+            <COLUMN ID="93" SOURCE="ED_DRUGCODE1" VALUE="" />
+            <COLUMN ID="94" SOURCE="ED_DRUGDAYS1" VALUE="" />
+            <COLUMN ID="95" SOURCE="ED_DRUGFREQ1" VALUE="" />
+            <COLUMN ID="96" SOURCE="ED_DRUGUINT1" VALUE="" />
+            <COLUMN ID="97" SOURCE="ED_DRUGONCE1" VALUE="" />
+            <COLUMN ID="98" SOURCE="ED_DRUGTOTAL1" VALUE="" />
+            <COLUMN ID="99" SOURCE="ED_DRUGWORK1" VALUE="" />
+            <COLUMN ID="132" SOURCE="ED_SURGNAME1" VALUE="" />
+            <COLUMN ID="133" SOURCE="ED_SURGCODE1" VALUE="" />
+            <COLUMN ID="134" SOURCE="ED_SURGDATA1" VALUE="" />
+            <COLUMN ID="141" SOURCE="ED_FEENAME1" VALUE="" />
+            <COLUMN ID="142" SOURCE="ED_FEECODE1" VALUE="" />
+            <COLUMN ID="143" SOURCE="ED_FEE1" VALUE="" />
+        </SEGMENT>
+    </Info>
+</LogInfo>

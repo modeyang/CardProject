@@ -25,7 +25,6 @@
 #include "Encry/DESEncry.h"
 #include "public/Authority.h"
 #include "StringUtil.h"
-//#include "public/xmlUtils.h"
 
 using namespace std;
 #pragma warning (disable : 4996)
@@ -179,8 +178,9 @@ struct dataItem
 	}
 };
 
-//将CPU的ID号映射到M1中，其中将健康档案号存放在0
-int cpuInM1Index[29] = {839,108, -1, -1, -1, -1, -1, 840,
+//将CPU的ID号映射到M1中，其中将健康档案号存放在0, 
+//CPU卡中发卡机构名称,发卡机构代码分别存放在2,5中
+int cpuInM1Index[29] = {839,108, 103, -1, -1, 104, -1, 840,
 						-1, 211, 215, 214, 212, -1, -1, -1,
 						-1, 213, -1, 735, -1, -1,416, -1,
 						625, 627, -1, -1, -1,};
@@ -209,21 +209,35 @@ CpuCallocForColmn(struct XmlColumnS *result);
 static void 
 M1CallocForColmn(struct XmlColumnS *result);
 
-static struct XmlColumnS  
-*CloneColmn(struct XmlColumnS *ColmnElement, int mode);
+static struct XmlColumnS  *
+CloneColmn(struct XmlColumnS *ColmnElement, int mode);
 
-static struct XmlSegmentS 
-*CloneSegment(struct XmlSegmentS *SegmentElement, int mode);
+static struct XmlSegmentS *
+CloneSegment(struct XmlSegmentS *SegmentElement, int mode);
 
-int FindColumIDByColumName(struct XmlSegmentS *list, const char *name);
-int FindSegIDByColumName(struct XmlSegmentS *list ,const char *name);
+int 
+FindColumIDByColumName(struct XmlSegmentS *list, const char *name);
 
-struct XmlSegmentS *FindSegmentByID(struct XmlSegmentS *listHead, int ID);
-struct XmlSegmentS * FindSegmentByColumName(struct XmlSegmentS *list ,const char *name);
-struct XmlSegmentS * getSegmentByColumName(struct XmlSegmentS *list ,const char *name);
-struct XmlColumnS* FindColumByColumName(struct XmlSegmentS *list, const char *name);
-struct XmlColumnS* getColumByColumName(struct XmlSegmentS *list, const char *name);
-struct XmlColumnS *FindColumnByID(struct XmlColumnS *listHead, int ID);
+int 
+FindSegIDByColumName(struct XmlSegmentS *list ,const char *name);
+
+struct XmlSegmentS *
+FindSegmentByID(struct XmlSegmentS *listHead, int ID);
+
+struct XmlSegmentS *
+FindSegmentByColumName(struct XmlSegmentS *list ,const char *name);
+
+struct XmlSegmentS * 
+getSegmentByColumName(struct XmlSegmentS *list ,const char *name);
+
+struct XmlColumnS* 
+FindColumByColumName(struct XmlSegmentS *list, const char *name);
+
+struct XmlColumnS* 
+getColumByColumName(struct XmlSegmentS *list, const char *name);
+
+struct XmlColumnS *
+FindColumnByID(struct XmlColumnS *listHead, int ID);
 
 //M1
 static int 
@@ -424,7 +438,6 @@ static struct XmlSegmentS *CloneSegment(struct XmlSegmentS *SegmentElement, int 
 			}
 		}
 	}
-
 	return result;
 }
 
@@ -689,13 +702,13 @@ static int M1ConvertXmlByArray(const std::vector<struct dataItem> &vecItem, int 
 
 		Cloumn = new TiXmlElement("COLUMN");
 		Cloumn->SetAttribute("ID", buf);
-		Cloumn->SetAttribute("SOURCE", item.source.c_str());
+		//Cloumn->SetAttribute("SOURCE", item.source.c_str());
 		Cloumn->SetAttribute("VALUE", item.value.c_str());
 
 		Segment->LinkEndChild(Cloumn); 
 	}
 	RootElement->LinkEndChild(Segment);
-	if (vecItem[1].value.c_str()[0] == '1') {
+	if (vecItem[1].value.size() > 0 ) {
 		memset(buf, 0, 10);
 		sprintf_s(buf, 10, "%d", 5);
 
@@ -1093,7 +1106,7 @@ static int  CpuConvertXmlByList(struct XmlSegmentS *listHead,
 
 			Cloumn = new TiXmlElement("COLUMN");
 			Cloumn->SetAttribute("ID", buf);
-			Cloumn->SetAttribute("SOURCE", ColumnElement->Source);
+			//Cloumn->SetAttribute("SOURCE", ColumnElement->Source);
 
 			Cloumn->SetAttribute("VALUE", ColumnElement->Value);
 
@@ -1171,8 +1184,7 @@ static void xml2Map(char *src, std::map<int, dataItem> &mapInfo, CardType type, 
 	{
 		int nSeg = atoi(Segment->Attribute("ID"));
 		Colum = Segment->FirstChildElement();
-		while (Colum)
-		{
+		while (Colum) {
 			int nColumID = atoi(Colum->Attribute("ID"));
 			std::string strColum = Colum->Attribute("VALUE");
 			struct dataItem item;
@@ -1187,7 +1199,6 @@ static void xml2Map(char *src, std::map<int, dataItem> &mapInfo, CardType type, 
 			} else {
 				mapInfo[nColumID + nSeg * SEGBASE] = item;
 			}
-			
 			Colum = Colum->NextSiblingElement();
 		}
 		Segment = Segment->NextSiblingElement();
@@ -1201,7 +1212,7 @@ void M12CpuMap(const std::map<int, dataItem> &mapInfo,
 	for (; iter != mapInfo.end(); iter++) {
 		int id = iter->first;
 		dataItem item = iter->second;
-		int SegId=0, ColmnId = 0;
+		int SegId = 0, ColmnId = 0;
 		SegId = id / SEGBASE;
 		ColmnId = id % SEGBASE;
 		if (SegId == 5) {
@@ -1222,7 +1233,7 @@ void M12CpuMap(const std::map<int, dataItem> &mapInfo,
 static int Cpu2M1Xml(char *src, char *dest, int *length) 
 {
 	std::map<int, dataItem> mapCpuInfo;
-	xml2Map(src, mapCpuInfo, eM1Card, true);
+	xml2Map(src, mapCpuInfo, eM1Card, false);
 	std::vector<struct dataItem> vecData;
 	for (int i=0; i<29; i++) {
 		struct dataItem item;
@@ -1232,15 +1243,15 @@ static int Cpu2M1Xml(char *src, char *dest, int *length)
 		item.nCpuId = cpuId;
 		if (cpuId == -1) {
 			item.value = M1Reserver[i];
-			item.source = M1SourceReserver[i];
+			//item.source = M1SourceReserver[i];
 		} else {
 			iter = mapCpuInfo.find(cpuId);
 			if (iter != mapCpuInfo.end()) {
 				item.value = iter->second.value;
-				item.source = iter->second.source;
+				//item.source = iter->second.source;
 			} else {
 				item.value = M1Reserver[i];
-				item.source = M1SourceReserver[i];
+				//item.source = M1SourceReserver[i];
 			}
 		}
 		vecData.push_back(item);
@@ -1640,7 +1651,7 @@ static int InitionCpuGList(char *xmlstr)
 				memcpy(g_recIndex[nSegID-1].fileName, cFileType.c_str(), cFileType.size());
 				g_CPUXmlListHead->SegTailer->Next = pSeg;
 				g_CPUXmlListHead->SegTailer = pSeg;
-				}
+			}
 		}
 
 	}
@@ -2413,7 +2424,7 @@ int __stdcall iWriteInfo(char *xml)
 				DBGCore("CPU卡无法回写除2以外的M1数据");
 				return CardWriteErr;
 			}
-		
+
 			xml2Map((char*)xmlStr.c_str(), mapInfo, eM1Card, false);
 
 			if (mapInfo.size() > 0) {
@@ -2688,7 +2699,7 @@ int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServerURL,char*
 		strcpy(pszXml, strResult);
 		return CardReadErr;
 	}
-	GetQueryInfo(szQuery, strCardNO);
+	GetQueryInfoForOne(szQuery, strCardNO);
 	
 	int nCheckCode = CardProcSuccess;
 
@@ -2712,7 +2723,6 @@ int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServerURL,char*
 	m_CardObj.__ns2__nh_USCOREpipe(&pCheck, &pReturn);
 	if(m_CardObj.soap->error) {   
 		bSuccessed = false;
-		//cout << *soap_faultstring(m_CardObj.soap) <<endl;
 		CreateResponXML(3, "与服务器连接失败", strResult);
 		strcpy(pszXml, strResult);
 	} else {
@@ -2741,13 +2751,7 @@ int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServerURL,char*
 	if (bSuccessed){
 		char szRead[4096];
 		memset(szRead, 0, sizeof(szRead));
-		int readSection = -1;
-		if (g_CardOps->cardAdapter->type == eCPUCard) {
-			readSection = 1| 2 | 8 | 16 | 64 | 128;
-		} else {
-			readSection = 2;
-		}
-		iReadInfo(readSection, szRead);
+		iReadInfo(2, szRead);
 		strcpy(pszXml, szRead);
 	}
 
@@ -2811,7 +2815,7 @@ int __stdcall iRegMsgForNH(char *pszCardServerURL,char* pszXml)
 		strcpy(pszXml, strResult);
 		return CardReadErr;
 	}
-	GetQueryInfo(szQuery, strCardNO);
+	GetQueryInfoForOne(szQuery, strCardNO);
 
 	bool bSuccessed = true;
 	n_USCOREapiSoap m_CardObj;
@@ -2835,15 +2839,12 @@ int __stdcall iRegMsgForNH(char *pszCardServerURL,char* pszXml)
 	if(m_CardObj.soap->error) {   
 		bSuccessed = false;
 		CreateResponXML(3, "与服务器连接失败", strResult); 
-		//LogPrinter( "soap error:%d,%s,%s/n", m_CardObj.soap->error, *soap_faultcode(m_CardObj.soap),
-		//	*soap_faultstring(m_CardObj.soap));
 		strcpy(pszXml, strResult);
 	} else {
 		std::string strRetCode, strStatus;
 		strXML = pReturn.nh_USCOREpipeResult;
 
 		GetCheckState(strXML, strRetCode, strStatus);
-
 		std::string strCheckDesc;
 		if (GetCheckRetDesc(strRetCode, strCheckDesc) == 0) {
 			bSuccessed = false;
@@ -2900,7 +2901,7 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 		return 3;
 	}
 	std::string strMedicalID;
-	GetQueryInfo(szQuery, strMedicalID);
+	GetQueryInfoForOne(szQuery, strMedicalID);
 
 	std::string strCardNO;
 	n = iQueryInfo("CARDNO", szQuery);
@@ -2909,7 +2910,7 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 		strcpy(pszXml, strResult);
 		return 3;
 	}
-	GetQueryInfo(szQuery, strCardNO);
+	GetQueryInfoForOne(szQuery, strCardNO);
 
 	bool bSuccessed = true;
 	n_USCOREapiSoap m_CardObj;
@@ -3056,7 +3057,6 @@ int __stdcall iCheckLicense(char *filename,int type)
 		status = CheckFullLicense(filename);
 		status = (status == 0 ? 0 : CardNoAuthority);
 	}
-
 	return status;
 }
 
@@ -3071,6 +3071,5 @@ int __stdcall apt_InitGList(CardType eType)
 		InitM1GlobalList();
 		g_XmlListHead = g_M1XmlListHead;
 	}
-	
 	return 0;
 }

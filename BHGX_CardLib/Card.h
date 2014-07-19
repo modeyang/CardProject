@@ -172,7 +172,7 @@ typedef struct adapter{
 	WriteCard			iWriteCard;
 
 	void				*parent;
-}adapter;
+} adapter;
 
 
 typedef struct CardOps 
