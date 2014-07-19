@@ -106,6 +106,7 @@ extern "C" {
 
 #define TIMELICENSE		0
 #define OTHERLICENSE	1
+#define COUNTS			2
 	DLL_EXPORT int __stdcall iCheckLicense(
 		char *filename,
 		int type					//0按时间  1其他

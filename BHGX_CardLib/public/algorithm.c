@@ -398,10 +398,17 @@ int iGetKeyBySeed(const unsigned char *_seed, unsigned char *key)
 int BinToHexstr(BYTE *HexStr, BYTE *Bin,int BinLen)
 {
 	char Temp1[3];
-	char *result = NULL;
-	int ret, i;
+	char *result;
+	int ret;
+	int lens, i;
+	lens=BinLen;
+	if (lens<=0) return 0;
+	result=(char *)malloc((lens*2+2)*sizeof( char));
+	if (!result)
+		return 0;
 
-	for (i=0; i<BinLen; i++)
+	memset(result,0,sizeof(result));
+	for (i=0;i<lens;i++)
 	{
 		memset(Temp1,0,sizeof(Temp1));
 		ret=sprintf(Temp1,"%X",Bin[i]);
@@ -409,23 +416,25 @@ int BinToHexstr(BYTE *HexStr, BYTE *Bin,int BinLen)
 			Temp1[1]=Temp1[0];
 			Temp1[0]='0';
 		}
-		strcat((char *)HexStr,Temp1);
+		strcat(result,Temp1);
 	}
-	HexStr[BinLen * 2] = 0;
+	strcpy((char *)HexStr,result);
+
+	free(result);
+	return 2*i;
 	return 0;
 }
 
 int HexstrToBin(BYTE *bin, BYTE *asc,int len)
 {
 	char ucChar;
-
+	len=len/2+len%2;
 	while(len--){
 		ucChar=(*asc<='9'&& *asc>='0')? *asc-'0': *asc-'A'+10;
 		ucChar<<=4;
 		asc++;
 		ucChar |= ((*asc<='9'&& *asc>='0')? *asc-'0': *asc-'A'+10) & 0xf;
 		asc++;
-		len--;
 		*bin++ = ucChar;
 	}
 	return len;
@@ -437,18 +446,20 @@ int trimRightF(unsigned char *bin, int len)
 	for (; i<len; ++i)
 	{
 		if (bin[i] == 'f' || bin[i] == 'F')
-			bin[i] = 0x0;
+			bin[i] = 0;
 	}
 	return i;
 }
 
 int clearFF(unsigned char *bin, int len)
 {
-	int i=0;
-	for (; i<len; ++i)
+	int i = 0;
+	for (; i < len; i++)
 	{
-		if (bin[i] == 0x36)
-			bin[i] = 0x0;
+		if (bin[i] == 0xFF) {
+			bin[i] = 0;
+			break;
+		}
 	}
 	return i;
 }

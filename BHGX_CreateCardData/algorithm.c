@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "algorithm.h"
 
+#pragma warning (disable : 4996)
 /**
  *
  */
@@ -184,27 +185,27 @@ static int ConvertKeyB(const char *seed, char *keyB)
 /**
  *
  */
-static int str2bcd(const char *str, unsigned  char *bcd, int len)
-{
-	int i, j;
-	
-	for(i = 0; i < len; i++) 
-	{		
-		j = i >> 1;	
-		
-		if(i & 1) 
-		{
-			bcd[j] = str[i] - 48;
-			
-		}
-		else
-		{
-			bcd[j] |= (str[i] - 48) << 4;
-		}
-	}
-	
-	return i;
-}
+//static int str2bcd(const char *str, unsigned  char *bcd, int len)
+//{
+//	int i, j;
+//	
+//	for(i = 0; i < len; i++) 
+//	{		
+//		j = i >> 1;	
+//		
+//		if(i & 1) 
+//		{
+//			bcd[j] = str[i] - 48;
+//			
+//		}
+//		else
+//		{
+//			bcd[j] |= (str[i] - 48) << 4;
+//		}
+//	}
+//	
+//	return i;
+//}
 
 int iGetKeyBySeed(const unsigned char *_seed, unsigned char *key)
 {

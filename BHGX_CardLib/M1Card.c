@@ -160,11 +160,11 @@ static int GetControlBuff(unsigned char *pControl, int nSecr)
 #define FAILE_RETRY  2
 int __stdcall aFormatCard(unsigned char cFlag)
 {
-	unsigned char seed[20];
+	unsigned char seed[32];
 	unsigned char keyB[6];
 	unsigned char newKeyA[0x6];
 	unsigned char newKeyB[0x6];
-	unsigned char changeflag=2;
+	unsigned char changeflag = 2;
 	unsigned char ctrlWork[0x4]={0x08,0x77,0x8f,0x69};
 	unsigned char szFormat[KEY_LEN];
 	int nLen=0, i;
@@ -173,6 +173,7 @@ int __stdcall aFormatCard(unsigned char cFlag)
 	memset(newKeyA, 0xff, 6);
 	memset(newKeyB, 0xff, 6);
 	memset(seed, 0, sizeof(seed));
+
 	nLen = iGetKeySeed(DEFAULT, seed);
 	if (nRet == -1 || nLen == 0 ||
 		IsAllTheSameFlag(seed, nLen/2, 0x30)== 0 ||
@@ -195,7 +196,7 @@ int __stdcall aFormatCard(unsigned char cFlag)
 			nRet = _FormatCard(ctrlWork, szFormat, i, keyB);
 			if (nRet){
 				faile_retry++;
-				DBGADAP( "格式化失败，需要修补密码\n");
+				LogPrinter( "格式化失败，需要修补密码\n");
 				break;
 			}
 		}
@@ -281,13 +282,12 @@ static int ChangePwdEx(const unsigned char * pNewKeyA ,const unsigned char * ctr
 				nsector, 1, changeflag);
 		}
 	}
-
 	return nRet ==0 ? 0:-1;
 }
+
 static int iGetKeySeed(int type, unsigned char *seed)
 {
 	unsigned char tmp[32];
-	int cardtype = 0;
 
 	//没有寻到卡
 	if(!Instance || !Instance->iReadBin)
@@ -296,7 +296,6 @@ static int iGetKeySeed(int type, unsigned char *seed)
 	//读取seed
 	memset(tmp, 0, 32);
 	Instance->iReadBin(CARDSEAT_M1, defKeyA, tmp, 56, 640);
-	cardtype = tmp[0] >> 4;
 	if (type == GWCARD) {
 		bcd2str(tmp, seed, 14);
 		goto done;
@@ -630,7 +629,6 @@ int _iWriteCard(struct RWRequestS *list)
 	GetControlBuff(pControl, 0);
 	nWriteControl = GetWriteWord(pControl);
 
-
 	while (faile_retry < FAILE_RETRY)
 	{
 		memset(seed, 0, 32);
@@ -663,7 +661,6 @@ int _iWriteCard(struct RWRequestS *list)
 				CurrRequest->length, CurrRequest->offset);
 			CurrRequest = CurrRequest->Next;
 			if (bool_test) {
-				DBGADAP("写卡失败，需要修补密码\n");
 				LogPrinter("写卡失败，需要修补密码\n");
 				faile_retry++;
 				break;
@@ -704,8 +701,7 @@ int __stdcall InitPwd(unsigned char *newKeyB)
 	GetControlBuff(ctrlWord, 0);
 	for (i=0; i<BLK_LEN; ++i)
 	{
-		nRet = ChangePwdEx(defKeyA, ctrlWord, newKeyB, 
-			oldKeyB, i, 0, changeflag);
+		nRet = ChangePwdEx(defKeyA, ctrlWord, newKeyB, oldKeyB, i, 0, changeflag);
 
 		LogPrinter("%d", nRet); 
 		if (nRet != 0)

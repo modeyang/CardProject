@@ -31,6 +31,7 @@ enum ErrType
 	CardAuthExpired,
 	CardCreateLicenseFailed,
 	CardNoSupport,
+	CardMallocFailed,
 };
 
 static char *errString[] =
@@ -57,6 +58,7 @@ static char *errString[] =
 	"授权已经过期，请联系供应商",
 	"生成license文件错误，请检查时间格式",
 	"此卡暂没有此功能",
+	"分配内存错误",
 };
 
 char *_err(int errcode);

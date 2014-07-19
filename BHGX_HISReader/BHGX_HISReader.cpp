@@ -237,13 +237,13 @@ int __stdcall iReadHISInfo(char *pszCardCheckWSDL, char *pszCardServerURL, char 
 	}
 
 	mapHISReader.clear();
-	int nInit= iCheckLicense(LICENSEFILE, OTHERLICENSE);
-	if (nInit != 0) {
-		CreateResponXML(CardAuthExpired, err(CardAuthExpired), xml);
-		return CardAuthExpired;
-	}
+	//int nInit= iCheckLicense(LICENSEFILE, OTHERLICENSE);
+	//if (nInit != 0) {
+	//	CreateResponXML(CardAuthExpired, err(CardAuthExpired), xml);
+	//	return CardAuthExpired;
+	//}
 
-	nInit = iCardInit();
+	int nInit = iCardInit();
 	if (nInit != 0)
 	{
 		CreateResponXML(CardInitErr, err(CardInitErr), xml);
@@ -297,12 +297,12 @@ int __stdcall iReadOnlyHIS(char *xml)
 	}
 
 	mapHISReader.clear();
-	int nInit= iCheckLicense(LICENSEFILE, OTHERLICENSE);
-	if (nInit != 0) {
-		CreateResponXML(CardAuthExpired, err(CardAuthExpired), xml);
-		return CardAuthExpired;
-	}
-	nInit = iCardInit();
+	//int nInit= iCheckLicense(LICENSEFILE, OTHERLICENSE);
+	//if (nInit != 0) {
+	//	CreateResponXML(CardAuthExpired, err(CardAuthExpired), xml);
+	//	return CardAuthExpired;
+	//}
+	int nInit = iCardInit();
 	if (nInit != 0)
 	{
 		CreateResponXML(CardInitErr, err(CardInitErr), xml);
@@ -351,12 +351,12 @@ int __stdcall iReadInfoForXJ(char *pszCardCheckWSDL, char *pszCardServerURL, cha
 	}
 
 	mapHISReader.clear();
-	int nInit= iCheckLicense(LICENSEFILE, OTHERLICENSE);
-	if (nInit != 0) {
-		CreateResponXML(CardAuthExpired, err(CardAuthExpired), xml);
-		return CardAuthExpired;
-	}
-	nInit = iCardInit();
+	//int nInit= iCheckLicense(LICENSEFILE, OTHERLICENSE);
+	//if (nInit != 0) {
+	//	CreateResponXML(CardAuthExpired, err(CardAuthExpired), xml);
+	//	return CardAuthExpired;
+	//}
+	int nInit = iCardInit();
 	if (nInit != 0)
 	{
 		CreateResponXML(CardInitErr, err(CardInitErr), xml);

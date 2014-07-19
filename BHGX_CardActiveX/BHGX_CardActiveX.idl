@@ -45,7 +45,7 @@ interface ICardProcess : IDispatch{
 	[id(26), helpstring("方法iATLCardDeinit")] HRESULT iATLCardDeinit([out,retval] LONG* Ret);
 	[id(27), helpstring("方法iATLCreateLicense")] HRESULT iATLCreateLicense(BSTR timeFMT, LONG* ret);
 	[id(28), helpstring("方法iATLFormatHospInfo")] HRESULT iATLFormatHospInfo([out,retval] LONG* pRet);
-	[id(29), helpstring("方法iATLWriteHospInfo")] HRESULT iATLWriteHospInfo(BSTR xml, LONG* pRet);
+	[id(29), helpstring("方法iATLWriteHospInfo")] HRESULT iATLWriteHospInfo(BSTR xml,[out,retval] LONG* pRet);
 	[id(30), helpstring("方法iATLReadClinicInfo")] HRESULT iATLReadClinicInfo(BSTR pszCode, [out,retval] BSTR* readXML);
 	[id(31), helpstring("方法iATLReadMedicalInfo")] HRESULT iATLReadMedicalInfo(BSTR pszCode, [out,retval] BSTR* readXML);
 	[id(32), helpstring("方法iATLReadFeeInfo")] HRESULT iATLReadFeeInfo(BSTR pszCode, [out,retval] BSTR* readXML);

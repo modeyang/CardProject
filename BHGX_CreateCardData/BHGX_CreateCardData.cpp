@@ -7,7 +7,6 @@
 
 #include "Encry/DESEncry.h"
 #include "../BHGX_CardLib/BHGX_CardLib.h"
-#include "../BHGX_CardLib/public/algorithm.h"
 #include "tinyxml/headers/tinyxml.h"
 #include "algorithm.h"
 #include "Resource.h"
@@ -299,7 +298,7 @@ struct CreateKeyInfoS
 */
 static struct CreateKeyInfoS* CreateCardKeyInfo(unsigned char *seed)
 {
-	//char OldKeyXML[1024];
+
 	char OldKey[20];
 	struct CreateKeyInfoS *res = NULL;
 
@@ -307,35 +306,8 @@ static struct CreateKeyInfoS* CreateCardKeyInfo(unsigned char *seed)
 	memset(res, 0, sizeof(struct CreateKeyInfoS));
 	memset(OldKey, 0, 20);
 
-	// 获得原始密码
-	//res->offset = 792;
-	//res->length = 72;
-	//iQueryInfo("MEDICARECERTIFICATENO", OldKeyXML);
-	//TiXmlDocument *XmlDoc = new TiXmlDocument();
-	//TiXmlElement  *RootElement = NULL;
-	//TiXmlElement  *Program = NULL;
-	//TiXmlElement  *Segment = NULL;
-	//TiXmlElement  *Colum = NULL;
-
-	//XmlDoc->Parse(OldKeyXML);
-	//RootElement = XmlDoc->RootElement();
-	//if (RootElement == NULL)
-	//{
-	//	return NULL;
-	//}
-	//Program = RootElement->FirstChildElement();
-	//if (Program == NULL)
-	//{
-	//	return NULL;
-	//}
-	//Segment = Program->FirstChildElement();
-	//strcpy_s(OldKey, 20, Segment->Attribute("VALUE"));
-	//
-	//iGetKeyBySeed((unsigned char *)OldKey, res->token);
-	//printf("%s\n", OldKey);
-
 	int length = 18;
-	Str2Bcd((char *)seed, res->ID, &length);
+	Str2Bcd((const char *)seed, res->ID, &length);
 	iGetKeyValue(seed, res->key);
 
 	//
@@ -370,7 +342,7 @@ static int iWriteKey(unsigned char *seed)
 * @license: 校验的对象
 * @return: 如果正确返回0，其他返回负值
 */
-static int iCheckLicense(const char *license)
+static int _CheckLicense(const char *license)
 {
 	return strcmp("北航冠新.license", (const char *)license);
 }
@@ -438,7 +410,7 @@ int __stdcall iCreateCardData(
 	if(result)
 		return result;
 
-	result = iCheckLicense(license);
+	result = _CheckLicense(license);
 	if(result)
 		return result;
 
@@ -459,8 +431,7 @@ int __stdcall iCreateCardData(
 			// 定义变量，组织vector信息
 			wstring wstrlines = wlines;
 			vector<wstring> wv = split(wstrlines, delimit);
-			if(wv.size() == 0 && wv.size() < 28)
-			{
+			if(wv.size() == 0 && wv.size() < 28){
 				result = -2;
 				break;
 			}
@@ -481,9 +452,7 @@ int __stdcall iCreateCardData(
 
 				// 创建信息列表文件
 				iCreateListFile(out, v);
-			}
-			else
-			{
+			} else {
 				// 写入KEY
 				iWriteKey((unsigned char *)v[0].c_str());
 
@@ -496,8 +465,7 @@ int __stdcall iCreateCardData(
 			}
 
 
-			if (iWriteInfo(xml) != 0)
-			{
+			if (iWriteInfo(xml) != 0){
 				result = -5;
 				break;
 			}
@@ -546,7 +514,7 @@ DLL_EXPORT int __stdcall iCreateCardDataForEncry(
 		return result;
 	}
 
-	result = iCheckLicense(license);
+	result = _CheckLicense(license);
 	if(result)
 		return result;
 

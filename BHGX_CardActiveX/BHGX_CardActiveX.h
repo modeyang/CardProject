@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0366 */
-/* at Tue Jan 08 00:13:02 2013
+/* at Thu Jan 17 22:47:12 2013
  */
 /* Compiler settings for .\BHGX_CardActiveX.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -196,7 +196,7 @@ EXTERN_C const IID IID_ICardProcess;
         
         virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLWriteHospInfo( 
             BSTR xml,
-            LONG *pRet) = 0;
+            /* [retval][out] */ LONG *pRet) = 0;
         
         virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadClinicInfo( 
             BSTR pszCode,
@@ -393,7 +393,7 @@ EXTERN_C const IID IID_ICardProcess;
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLWriteHospInfo )( 
             ICardProcess * This,
             BSTR xml,
-            LONG *pRet);
+            /* [retval][out] */ LONG *pRet);
         
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadClinicInfo )( 
             ICardProcess * This,
@@ -897,7 +897,7 @@ void __RPC_STUB ICardProcess_iATLFormatHospInfo_Stub(
 /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLWriteHospInfo_Proxy( 
     ICardProcess * This,
     BSTR xml,
-    LONG *pRet);
+    /* [retval][out] */ LONG *pRet);
 
 
 void __RPC_STUB ICardProcess_iATLWriteHospInfo_Stub(

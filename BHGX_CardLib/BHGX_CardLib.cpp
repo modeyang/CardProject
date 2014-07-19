@@ -25,6 +25,7 @@
 #include "Encry/DESEncry.h"
 #include "public/Authority.h"
 #include "StringUtil.h"
+//#include "public/xmlUtils.h"
 
 using namespace std;
 #pragma warning (disable : 4996)
@@ -214,14 +215,15 @@ static struct XmlColumnS
 static struct XmlSegmentS 
 *CloneSegment(struct XmlSegmentS *SegmentElement, int mode);
 
-static struct XmlSegmentS *
-GetXmlSegmentByFlag(int flag);
+int FindColumIDByColumName(struct XmlSegmentS *list, const char *name);
+int FindSegIDByColumName(struct XmlSegmentS *list ,const char *name);
 
-static struct XmlSegmentS *
-FindSegmentByID(struct XmlSegmentS *listHead, int ID);
-
-static struct XmlColumnS *
-FindColumnByID(struct XmlColumnS *listHead, int ID);
+struct XmlSegmentS *FindSegmentByID(struct XmlSegmentS *listHead, int ID);
+struct XmlSegmentS * FindSegmentByColumName(struct XmlSegmentS *list ,const char *name);
+struct XmlSegmentS * getSegmentByColumName(struct XmlSegmentS *list ,const char *name);
+struct XmlColumnS* FindColumByColumName(struct XmlSegmentS *list, const char *name);
+struct XmlColumnS* getColumByColumName(struct XmlSegmentS *list, const char *name);
+struct XmlColumnS *FindColumnByID(struct XmlColumnS *listHead, int ID);
 
 //M1
 static int 
@@ -276,7 +278,7 @@ static struct CreateKeyInfoS*
 CreateCardKeyInfo(unsigned char *seed);
 
 static int 
-CheckCardXMLValid(const char *pszCardXml);
+CheckCardXMLValid(std::string &pszCardXml);
 
 //**********************************
 //以下函数会注册到CardOps结构体中
@@ -343,7 +345,7 @@ static void CpuCallocForColmn(struct XmlColumnS *result)
 	}
 
 	if (result->CheckInfo.CpuInfo.itemtype != eAnsType) {
-		length <<= 1; 
+		length *= 2; 
 	}
 	length += padding + 1;
 	result->Value = (char*)malloc(length);
@@ -425,6 +427,155 @@ static struct XmlSegmentS *CloneSegment(struct XmlSegmentS *SegmentElement, int 
 
 	return result;
 }
+
+
+struct XmlSegmentS *FindSegmentByID(struct XmlSegmentS *listHead, int ID)
+{
+	struct XmlSegmentS *result = NULL;
+
+	result = listHead;
+	while(result){
+		if(result->ID == ID)
+			break;
+
+		result = result->Next;
+	}
+
+	return result;
+}
+
+
+int FindSegIDByColumName(struct XmlSegmentS *list ,const char *name) 
+{
+	struct XmlSegmentS *result = list;
+	struct XmlColumnS *resultCol = NULL;
+
+	while (result) {
+		resultCol = result->ColumnHeader;
+		while (resultCol) {
+			if (strcmp(resultCol->Source, name) == 0) {
+				return result->ID;
+			}
+			resultCol = resultCol->Next;
+		}
+		result = result->Next;
+	}
+	return -1;
+}
+
+struct XmlSegmentS * FindSegmentByColumName(struct XmlSegmentS *list ,const char *name) 
+{
+	struct XmlSegmentS *result = list;
+	struct XmlColumnS *resultCol = NULL;
+
+	while (result) {
+		resultCol = result->ColumnHeader;
+		while (resultCol) {
+			if (strcmp(resultCol->Source, name) == 0) {
+				return result;
+			}
+			resultCol = resultCol->Next;
+		}
+		result = result->Next;
+	}
+	return NULL;
+}
+
+struct XmlSegmentS * getSegmentByColumName(struct XmlSegmentS *list ,const char *name) 
+{
+	struct XmlSegmentS *result = list;
+	struct XmlColumnS *resultCol = NULL;
+
+	while (result) {
+		resultCol = result->ColumnHeader;
+		while (resultCol) {
+			if (strcmp(resultCol->Source, name) == 0) {
+				return CloneSegment(result, 1);
+			}
+			resultCol = resultCol->Next;
+		}
+		result = result->Next;
+	}
+	return NULL;
+}
+
+int FindColumIDByColumName(struct XmlSegmentS *list, const char *name) 
+{
+	struct XmlSegmentS *result = list;
+	struct XmlColumnS *resultCol = NULL;
+
+	while (result) {
+		resultCol = result->ColumnHeader;
+		while (resultCol) {
+			if (strcmp(resultCol->Source, name) == 0) {
+				return resultCol->ID;
+			}
+			resultCol = resultCol->Next;
+		}
+		result = result->Next;
+	}
+	return -1;
+}
+
+struct XmlColumnS* FindColumByColumName(struct XmlSegmentS *list, const char *name) 
+{
+	struct XmlSegmentS *result = list;
+	struct XmlColumnS *resultCol = NULL;
+	struct XmlColumnS *tmp = NULL;
+	while (result) {
+		tmp = result->ColumnHeader;
+		while (tmp) {
+			if (strcmp(tmp->Source, name) == 0) {
+				return tmp;
+			}
+			tmp = tmp->Next;
+		}
+		result = result->Next;
+	}
+	return NULL;
+}
+
+struct XmlColumnS* getColumByColumName(struct XmlSegmentS *list, const char *name) 
+{
+	struct XmlSegmentS *result = list;
+	struct XmlColumnS *resultCol = NULL;
+	struct XmlColumnS *tmp = NULL;
+	while (result) {
+		tmp = result->ColumnHeader;
+		while (tmp) {
+			if (strcmp(tmp->Source, name) == 0) {
+				resultCol = CloneColmn(tmp, 1);
+				goto done;
+			}
+			tmp = tmp->Next;
+		}
+		result = result->Next;
+	}
+
+done:
+	return resultCol;
+}
+
+
+
+/**
+*
+*/
+struct XmlColumnS *FindColumnByID(struct XmlColumnS *listHead, int ID)
+{
+	struct XmlColumnS *result = NULL;
+
+	result = listHead;
+	while(result){
+		if(result->ID == ID)
+			break;
+
+		result = result->Next;
+	}
+
+	return result;
+}
+
 
 /**
  *
@@ -691,149 +842,6 @@ static int M1ConvertXmlByList(struct XmlSegmentS *listHead, char *xml, int *leng
 
 	return 0;
 }
-
-
-static struct XmlSegmentS *FindSegmentByID(struct XmlSegmentS *listHead, int ID)
-{
-	struct XmlSegmentS *result = NULL;
-
-	result = listHead;
-	while(result){
-		if(result->ID == ID)
-			break;
-
-		result = result->Next;
-	}
-	
-	return result;
-}
-
-
-static int FindSegIDByColumName(struct XmlSegmentS *list ,const char *name) {
-	struct XmlSegmentS *result = list;
-	struct XmlColumnS *resultCol = NULL;
-
-	while (result) {
-		resultCol = result->ColumnHeader;
-		while (resultCol) {
-			if (strcmp(resultCol->Source, name) == 0) {
-				return result->ID;
-			}
-			resultCol = resultCol->Next;
-		}
-		result = result->Next;
-	}
-	return -1;
-}
-
-static struct XmlSegmentS * FindSegmentByColumName(struct XmlSegmentS *list ,const char *name) {
-	struct XmlSegmentS *result = list;
-	struct XmlColumnS *resultCol = NULL;
-
-	while (result) {
-		resultCol = result->ColumnHeader;
-		while (resultCol) {
-			if (strcmp(resultCol->Source, name) == 0) {
-				return result;
-			}
-			resultCol = resultCol->Next;
-		}
-		result = result->Next;
-	}
-	return NULL;
-}
-
-static struct XmlSegmentS * getSegmentByColumName(struct XmlSegmentS *list ,const char *name) {
-	struct XmlSegmentS *result = list;
-	struct XmlColumnS *resultCol = NULL;
-
-	while (result) {
-		resultCol = result->ColumnHeader;
-		while (resultCol) {
-			if (strcmp(resultCol->Source, name) == 0) {
-				return CloneSegment(result, 1);
-			}
-			resultCol = resultCol->Next;
-		}
-		result = result->Next;
-	}
-	return NULL;
-}
-
-static int FindColumIDByColumName(struct XmlSegmentS *list, const char *name) {
-	struct XmlSegmentS *result = list;
-	struct XmlColumnS *resultCol = NULL;
-
-	while (result) {
-		resultCol = result->ColumnHeader;
-		while (resultCol) {
-			if (strcmp(resultCol->Source, name) == 0) {
-				return resultCol->ID;
-			}
-			resultCol = resultCol->Next;
-		}
-		result = result->Next;
-	}
-	return -1;
-}
-
-static struct XmlColumnS* FindColumByColumName(struct XmlSegmentS *list, const char *name) {
-	struct XmlSegmentS *result = list;
-	struct XmlColumnS *resultCol = NULL;
-	struct XmlColumnS *tmp = NULL;
-	while (result) {
-		tmp = result->ColumnHeader;
-		while (tmp) {
-			if (strcmp(tmp->Source, name) == 0) {
-				return tmp;
-			}
-			tmp = tmp->Next;
-		}
-		result = result->Next;
-	}
-	return NULL;
-}
-
-static struct XmlColumnS* getColumByColumName(struct XmlSegmentS *list, const char *name) {
-	struct XmlSegmentS *result = list;
-	struct XmlColumnS *resultCol = NULL;
-	struct XmlColumnS *tmp = NULL;
-	while (result) {
-		tmp = result->ColumnHeader;
-		while (tmp) {
-			if (strcmp(tmp->Source, name) == 0) {
-				resultCol = CloneColmn(tmp, 1);
-				goto done;
-			}
-			tmp = tmp->Next;
-		}
-		result = result->Next;
-	}
-
-done:
-	return resultCol;
-}
-
-
-
-/**
- *
- */
-static struct XmlColumnS *FindColumnByID(struct XmlColumnS *listHead, int ID)
-{
-	struct XmlColumnS *result = NULL;
-
-	result = listHead;
-	while(result){
-		if(result->ID == ID)
-			break;
-
-		result = result->Next;
-	}
-
-	return result;
-}
-
 
 static int InsertColumnBySplite(struct XmlSegmentS *SegmentElement, 
 								std::map<int,std::string> &mapSplite, 
@@ -1296,7 +1304,6 @@ static struct XmlSegmentS*  CpuConvertXmltoList(char *xml)
 	char *HexString = NULL;
 	char *tmpString = NULL;
 	int ElemLen = 0, padding = 0;
-	char tmpArray[64];
 	int realLen = 0;
 
 	struct XmlSegmentS *XmlListHead = g_XmlListHead->SegHeader;
@@ -1357,25 +1364,33 @@ static struct XmlSegmentS*  CpuConvertXmltoList(char *xml)
 			//进行数据转换ans cn b类型
 			if (info.itemtype != eAnsType) {
 				tmpString = NULL;
+				char tmpArray[64];
 				memset(tmpArray, 0, sizeof(tmpArray));
 				HexString = TempColumnElement->Value;
-				memset(TempColumnElement->Value, 0xff, info.ColumnByte * 2);
-				ElemLen = ElemLen < info.ColumnByte*2 ? ElemLen : info.ColumnByte*2;
-
-				if (ElemLen % 2)  //当不为Ans时，不是2的倍数时，补充‘f’
-					ElemLen++;
+				memset(TempColumnElement->Value, 0xFF, info.ColumnByte * 2);
+				ElemLen = ElemLen < info.ColumnByte * 2 ? ElemLen : info.ColumnByte * 2;
 
 				if (ElemLen > sizeof(tmpArray)) {
-					tmpString = (char*)malloc(ElemLen+1);
-					memset(tmpString, 0, ElemLen+1);
+					tmpString = (char*)malloc(info.ColumnByte * 2 + 1);
+					memset(tmpString, 0, info.ColumnByte * 2 + 1);
 				} else {
-					tmpString = tmpArray;
+					tmpString = &tmpArray[0];
 				}
-				
-				tmpString[ElemLen] = 'f';
-				tmpString[ElemLen-1] = 'f';
-				realLen = ElemLen < strColum.size() ? ElemLen : strColum.size();
-				memcpy(tmpString, strColum.c_str(), realLen);
+
+				if (ElemLen % 2) { //不是2的倍数时，补充‘f’
+					tmpString[ElemLen] = 'f';
+				}
+				memcpy(tmpString, strColum.c_str(), ElemLen);
+
+				//将小数点转换为'a'
+				if (info.itemtype == eCnType) {
+					size_t pos = strColum.find('.');
+					if (pos != -1) {
+						*(tmpString + pos) = 'a';
+					}
+				}
+
+
 				HexstrToBin((BYTE*)HexString+padding, (BYTE*)tmpString, ElemLen);
 
 				if (ElemLen > sizeof(tmpArray)) {
@@ -1383,9 +1398,8 @@ static struct XmlSegmentS*  CpuConvertXmltoList(char *xml)
 				}
 			} else {
 				HexString = TempColumnElement->Value;
-				realLen = info.ColumnByte < strColum.size() ? info.ColumnByte : strColum.size();
+				realLen = info.ColumnByte < ElemLen ? info.ColumnByte : ElemLen;
 				memcpy(HexString+padding, strColum.c_str(), realLen);
-				//strcpy(HexString + padding, strColum.c_str());
 			}
 
 			// 加入链表
@@ -1912,7 +1926,6 @@ done:
 	// 销毁读写请求链表
 	apt_DestroyRWRequest(RequestList, 0);
 	DestroyList(pFindSeg, 1);
-	}
 	return queryItem;
 }
 
@@ -2034,22 +2047,20 @@ static int iCreateXmlByVector(const vector<QueryColum>&  v, char *xml, int *leng
 	return result;
 }
 
-static int CheckCardXMLValid(const char *pszCardXml)
+static int CheckCardXMLValid(std::string &pszCardXml)
 {
-	std::string strCardXML = pszCardXml;
-	strCardXML = strCardXML.substr(0, strCardXML.find(">"));
+	std::string strCardXML = pszCardXml.substr(0, pszCardXml.find(">"));
 	strCardXML = strlwr((char*)strCardXML.c_str());
 	int pos = strCardXML.find("gb2312");
 
-	strCardXML = pszCardXml;
+	std::string &dstXml = pszCardXml;
 	if (pos < 0){
-		strCardXML = CMarkup::UTF8ToGB2312(strCardXML.c_str());
-		strCardXML.replace(0, strCardXML.find(">")+1, 
+		dstXml.replace(0, dstXml.find(">")+1, 
 			"<?xml version=\"1.0\" encoding=\"gb2312\" ?>");
 	}
 
 	CMarkup xml;
-	xml.SetDoc(strCardXML.c_str());
+	xml.SetDoc(dstXml.c_str());
 	if (!xml.FindElem("SEGMENTS")){
 		return -1;
 	}
@@ -2342,21 +2353,34 @@ static int checkCpuWriteXml(char *xmlStr,
 	return 1;
 }
 
+static int WriteFile(char *filename,const char *xml)
+{
+	FILE *handle;
+
+	fopen_s(&handle, filename, "w");
+	fwrite(xml, strlen(xml), 1, handle);
+	fclose(handle);
+
+	return 0;
+}
+
 int __stdcall iWriteInfo(char *xml)
 {
 	ASSERT_OPEN(g_bCardOpen);
 	int len = strlen(xml) + 1;
 	int status = 0;
-
-	if (len == 1 || CheckCardXMLValid(xml) < 0){
+	
+	std::string xmlStr(xml);
+	if (len == 1 || CheckCardXMLValid(xmlStr) < 0){
 		LogPrinter("CardXML:Check Error\n");
-		DBGCore( "CardXML Check Error\n");
 		return CardXmlErr;
 	}
+	//WriteFile("234.xml", xmlStr.c_str());
+	
 	ISSCANCARD;
 
 	if (g_CardOps->cardAdapter->type == eM1Card) {
-		status =  _iWriteInfo(xml);
+		status =  _iWriteInfo((char*)xmlStr.c_str());
 		goto done;
 	}
 
@@ -2368,7 +2392,7 @@ int __stdcall iWriteInfo(char *xml)
 		//add verify cpu write xml, return vector segflag
 		std::vector<int> vecRecFlag;
 		std::vector<int> vecBinFlag;
-		isCpuWrite = checkCpuWriteXml(xml, vecRecFlag, vecBinFlag);
+		isCpuWrite = checkCpuWriteXml((char*)xmlStr.c_str(), vecRecFlag, vecBinFlag);
 		if (isCpuWrite == 1) {
 			if (vecBinFlag.size() > 0) {
 				isRec = 0;
@@ -2380,7 +2404,7 @@ int __stdcall iWriteInfo(char *xml)
 						SETBIT(flag, (vecRecFlag[i]-1));
 					}	
 				}
-				xml2Map(xml, mapCpuInfo, eCPUCard, false);
+				xml2Map((char*)xmlStr.c_str(), mapCpuInfo, eCPUCard, false);
 			}
 		} else {
 			if (vecRecFlag.size() > 0 || vecBinFlag.size() > 0) {
@@ -2389,8 +2413,8 @@ int __stdcall iWriteInfo(char *xml)
 				DBGCore("CPU卡无法回写除2以外的M1数据");
 				return CardWriteErr;
 			}
-
-			xml2Map(xml, mapInfo, eM1Card, false);
+		
+			xml2Map((char*)xmlStr.c_str(), mapInfo, eM1Card, false);
 
 			if (mapInfo.size() > 0) {
 				M12CpuMap(mapInfo, mapCpuInfo);
@@ -2420,7 +2444,7 @@ int __stdcall iWriteInfo(char *xml)
 
 			status =  _iWriteInfo(convertXml);
 		} else {  //cpu bin write
-			status =  _iWriteInfo(xml);
+			status =  _iWriteInfo((char*)xmlStr.c_str());
 		}
 	} 
 
@@ -2586,9 +2610,10 @@ int __stdcall iCreateCard(char *pszCardDataXml)
 	int result = 0;
 	ISSCANCARD;
 
-	if (CheckCardXMLValid(pszCardDataXml) < 0){
+	std::string xmlStr(pszCardDataXml);
+	if (CheckCardXMLValid(xmlStr) < 0){
 		LogPrinter("CardXML:Check Error\n");
-		DBGCore( "CardXML Check Error\n");
+		//DBGCore( "CardXML Check Error\n");
 		return CardXmlErr;
 	}
 
@@ -2598,7 +2623,7 @@ int __stdcall iCreateCard(char *pszCardDataXml)
 	}
 
 	//M1制卡
-	XmlSegmentS *seg = g_CardOps->iConvertXmltoList(pszCardDataXml);
+	XmlSegmentS *seg = g_CardOps->iConvertXmltoList((char*)xmlStr.c_str());
 	seg = FindSegmentByID(seg, 2);
 	int nRet = 0;
 	if (seg != NULL){
@@ -2609,7 +2634,7 @@ int __stdcall iCreateCard(char *pszCardDataXml)
 		}
 		iGetKeyBySeed((unsigned char *)stColumn->Value, KeyB);
 
-		nRet = iWriteInfo(pszCardDataXml);
+		nRet = iWriteInfo((char*)xmlStr.c_str());
 		DBGCore( "写卡数据结果:%d\n", nRet);
 		LogPrinter("回写数据：%d\n", nRet);
 
@@ -2630,7 +2655,7 @@ int __stdcall iFormatCard()
 	ISSCANCARD;
 
 	if (g_CardOps->cardAdapter->type == eCPUCard) {
-		status = FormatCpuCard('f');
+		status = FormatCpuCard(0xff);
 	} else {
 		status = aFormatCard(0xff);
 	}
@@ -2687,7 +2712,8 @@ int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServerURL,char*
 	m_CardObj.__ns2__nh_USCOREpipe(&pCheck, &pReturn);
 	if(m_CardObj.soap->error) {   
 		bSuccessed = false;
-		CreateResponXML(3, *soap_faultstring(m_CardObj.soap), strResult);
+		//cout << *soap_faultstring(m_CardObj.soap) <<endl;
+		CreateResponXML(3, "与服务器连接失败", strResult);
 		strcpy(pszXml, strResult);
 	} else {
 		std::string strRetCode, strStatus;
@@ -2809,8 +2835,8 @@ int __stdcall iRegMsgForNH(char *pszCardServerURL,char* pszXml)
 	if(m_CardObj.soap->error) {   
 		bSuccessed = false;
 		CreateResponXML(3, "与服务器连接失败", strResult); 
-		LogPrinter( "soap error:%d,%s,%s/n", m_CardObj.soap->error, *soap_faultcode(m_CardObj.soap),
-			*soap_faultstring(m_CardObj.soap));
+		//LogPrinter( "soap error:%d,%s,%s/n", m_CardObj.soap->error, *soap_faultcode(m_CardObj.soap),
+		//	*soap_faultstring(m_CardObj.soap));
 		strcpy(pszXml, strResult);
 	} else {
 		std::string strRetCode, strStatus;
@@ -2824,10 +2850,7 @@ int __stdcall iRegMsgForNH(char *pszCardServerURL,char* pszXml)
 			CreateResponXML(3, strCheckDesc.c_str(), strResult);
 			strcpy(pszXml, strResult);
 		} else{
-			if (strStatus.size() > 0){
-				strStatus = CMarkup::UTF8ToGB2312(strStatus.c_str());
-				strStatus.replace(0, strStatus.find(">")+1, 
-					"<?xml version=\"1.0\" encoding=\"gb2312\" ?>");
+			if (strStatus.size() > 0 && CheckCardXMLValid(strStatus) == 0){ 
 				
 				if (g_CardOps->cardAdapter->type == eM1Card) {
 					FormatWriteInfo(strStatus.c_str(), strResult);
@@ -2909,18 +2932,10 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 		m_CardObj.__ns2__nh_USCOREpipe(&pCheck, &pReturn);
 		if(m_CardObj.soap->error) {   
 			bSuccessed = false;
-			CreateResponXML(3, "与服务器连接失败", strResult);
-			LogPrinter("soap error:%d,%s,%s\n", m_CardObj.soap->error, 
-				*soap_faultcode(m_CardObj.soap),
-				*soap_faultstring(m_CardObj.soap));  
-
-			DBGCore( "soap error:%d,%s,%s/n", m_CardObj.soap->error, 
-				*soap_faultcode(m_CardObj.soap),
-				*soap_faultstring(m_CardObj.soap));
+			CreateResponXML(3, "与服务器连接失败", strResult); 
 			strcpy(pszXml, strResult);
 		} else {
 			std::string strRetCode, strStatus;
-			//strXML = CMarkup::UTF8ToGB2312(strXML.c_str());
 			strXML = pReturn.nh_USCOREpipeResult;
 			GetCheckState(strXML, strRetCode, strStatus);
 
@@ -2932,6 +2947,7 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 			} else{
 				int nCardStatus = atoi(strStatus.c_str());
 				strCheckDesc.clear();
+
 				if (GetCardStatus(nCardStatus, strCheckDesc) == 0){
 					bSuccessed = false;
 					CreateResponXML(1, strCheckDesc.c_str(), strResult);
@@ -2965,14 +2981,10 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 
 		if(m_CardObj.soap->error){   
 			bSuccessed = false;
-			CreateResponXML(3, "与服务器连接失败", strResult);
-			LogPrinter("soap error:%d,%s,%s\n", m_CardObj.soap->error,
-				*soap_faultcode(m_CardObj.soap), *soap_faultstring(m_CardObj.soap));   
-
-			DBGCore( "soap error:%d,%s,%s\n", m_CardObj.soap->error,
-				*soap_faultcode(m_CardObj.soap), *soap_faultstring(m_CardObj.soap));
+			CreateResponXML(3, "与服务器连接失败", strResult); 
 			strcpy(pszXml, strResult);
 		}  else {
+
 			std::string strRetCode, strStatus;
 			strXML = pReturn.nh_USCOREpipeResult;
 
@@ -2984,21 +2996,19 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 				CreateResponXML(3, strCheckDesc.c_str(), strResult);
 				strcpy(pszXml, strResult);
 			} else {
-				if (strStatus.size() > 0){
-					strStatus = CMarkup::UTF8ToGB2312(strStatus.c_str());
-					if (CheckCardXMLValid(strStatus.c_str())){
+				if (strStatus.size() > 0 && CheckCardXMLValid(strStatus) == 0){
 
-						if (g_CardOps->cardAdapter->type == eM1Card) {
-							FormatWriteInfo(strStatus.c_str(), strResult);
-							int nState = iWriteInfo(strResult);
-							if (nState != 0){
-								bSuccessed = false;
-								memset(strResult, 0, sizeof(strResult));
-								CreateResponXML(2, "卡回写失败", strResult);
-								strcpy(pszXml, strResult);
-							}
-						} else {  //CPU暂不支持回写
+					if (g_CardOps->cardAdapter->type == eM1Card) {
+
+						FormatWriteInfo(strStatus.c_str(), strResult);
+						int nState = iWriteInfo(strResult);
+						if (nState != 0){
+							bSuccessed = false;
+							memset(strResult, 0, sizeof(strResult));
+							CreateResponXML(2, "卡回写失败", strResult);
+							strcpy(pszXml, strResult);
 						}
+					} else {  //CPU暂不支持回写 
 					}
 				}
 			}

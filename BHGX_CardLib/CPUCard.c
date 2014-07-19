@@ -301,7 +301,7 @@ static void ListParseContent(struct RWRequestS *list)
 	BYTE *bcd = NULL;
 	BYTE tmpBuff[4096];
 	eFileType eType;
-	int len = 0, realLen = 0;
+	int len = 0, i = 0;
 	BYTE padding[2];
 
 	while (CurrRequest)
@@ -334,9 +334,19 @@ static void ListParseContent(struct RWRequestS *list)
 				trimRightF(CurrRequest->value, CurrRequest->length * 2);
 			}
 			clearFF(CurrRequest->value, CurrRequest->length * 2);
+
+			//将压缩数字中的'a'转回'.'  this is a bad way
+			if (CurrRequest->itemtype == eCnType) {
+				for (i=0; i<CurrRequest->length * 2 &&
+					CurrRequest->value[i] != 0; i++) {
+					if (CurrRequest->value[i] == 'a') {
+						CurrRequest->value[i] = '.';
+					}
+				}
+			}
 		} else {
 			memcpy(CurrRequest->value, tmpBuff, CurrRequest->length);
-			trimRightF(CurrRequest->value, CurrRequest->length * 2);
+			clearFF(CurrRequest->value, CurrRequest->length);
 		}
 
 		CurrRequest = CurrRequest->Next;
@@ -514,45 +524,37 @@ int __stdcall FormatCpuCard(char c)
 		status = 0;
 		strcpy((char*)send  , "DDF1");
 		status |= Instance->iSelectFile(CARDSEAT_RF , send);
-		//status |= Instance->iUCardAuthSys(KEY_RK_DDF1);
 
 		strcpy((char*)send  , "DF03");
 		status |= Instance->iSelectFile(CARDSEAT_RF , send);
-		status |= Instance->iUCardAuthSys(KEY_RK_DF03);
 
 		status |= Instance->iUCardAuthSys(KEY_UK_DF03_1);
 
 		strcpy((char*)send, "EE01");
-
 		length = 1893 - END_OFFSET;
 		status = Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
-		//memset(buff, 0x0, sizeof(buff));
-		//memset(buff+1476, 0x2, 50);
-		//status = Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
-		//if (status == 0) {
-		//	memset(buff, c, sizeof(buff));
-		//	status = Instance->iReadBin(CARDSEAT_RF, send, buff, length, 0);
-		//	if (status == 0) {
-		//		memcpy(readBuff, buff + 1476, 50);
-		//		dbgmem(readBuff, 50);
-		//	} else {
-		//		printf("读取失败\n");
-		//	}	
-		//}
 
+		strcpy((char*)send, "EE02");
+		length = 1893 - END_OFFSET;
+		status |= Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
 
-		ISAPTSCANCARD
-		strcpy((char*)send  , "DDF1");
-		status = Instance->iSelectFile(CARDSEAT_RF , send);
-		status |= Instance->iUCardAuthSys(KEY_RK_DDF1);
-
-		strcpy((char*)send  , "DF03");
-		status |= Instance->iSelectFile(CARDSEAT_RF , send);
-		status |= Instance->iUCardAuthSys(KEY_RK_DF03);
-
-		status |= Instance->iUCardAuthSys(KEY_UK_DF03_1);
+		strcpy((char*)send, "EE03");
+		length = 1893 - END_OFFSET;
+		status |= Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
 
 		strcpy((char*)send, "ED01");
+		status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, 3267 - END_OFFSET, 0);
+
+		strcpy((char*)send, "ED02");
+		status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, 3267 - END_OFFSET, 0);
+
+		strcpy((char*)send, "ED03");
+		status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, 3267 - END_OFFSET, 0);
+
+		strcpy((char*)send, "ED04");
+		status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, 3267 - END_OFFSET, 0);
+
+		strcpy((char*)send, "ED05");
 		status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, 3267 - END_OFFSET, 0);
 	}
 	return status;
