@@ -228,6 +228,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\public\ExceptionCheck.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\public\ExceptionCheck.h"
+				>
+			</File>
+			<File
 				RelativePath=".\public\liberr.c"
 				>
 			</File>
@@ -244,11 +252,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\xmlUtils.cpp"
+				RelativePath=".\public\TimeUtil.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\xmlUtils.h"
+				RelativePath=".\public\TimeUtil.h"
+				>
+			</File>
+			<File
+				RelativePath=".\public\XmlUtil.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\public\XmlUtil.h"
 				>
 			</File>
 			<File
@@ -398,14 +414,6 @@
 		</File>
 		<File
 			RelativePath=".\StringUtil.h"
-			>
-		</File>
-		<File
-			RelativePath=".\VirtualXML.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\VirtualXML.h"
 			>
 		</File>
 		<File

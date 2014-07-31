@@ -26,6 +26,10 @@
 #include "public/Authority.h"
 #include "StringUtil.h"
 
+#include "public/TimeUtil.h"
+#include "public/XmlUtil.h"
+#include "public/ExceptionCheck.h"
+
 using namespace std;
 #pragma warning (disable : 4996)
 #pragma warning (disable : 4267)
@@ -278,6 +282,9 @@ QueryItem(CardType type, const char *name, char *xml,
 
 static int
 QueryItem(CardType type, const char *name, char *xml, int &nLen);
+
+static int 
+ParseValueQuery(char *source, std::string &szResult);
 
 static struct XmlColumnS * 
 M1QueryItem(const char *name, char *xml, int &nLen);
@@ -1203,6 +1210,20 @@ static void xml2Map(char *src, std::map<int, dataItem> &mapInfo, CardType type, 
 		}
 		Segment = Segment->NextSiblingElement();
 	}
+}
+
+static int ParseValueQuery(char *source, std::string &szResult)
+{
+	std::string strXML;
+	char szQuery[1024];
+	memset(szQuery, 0, sizeof(szQuery));
+
+	int n = iQueryInfo(source,  szQuery);
+	if (n != 0){
+		return n;
+	}
+	GetQueryInfoForOne(szQuery, szResult);
+	return 0;
 }
 
 void M12CpuMap(const std::map<int, dataItem> &mapInfo, 
@@ -2882,6 +2903,165 @@ int __stdcall iRegMsgForNH(char *pszCardServerURL,char* pszXml)
 	return bSuccessed ? 0 : CardRegError;
 }
 
+std::map<int, std::map<int, std::string> > mapLogConfig; 
+int g_rwFlag = 0;
+char g_processName[20];
+
+
+void geneHISLog(const char *pszContent, std::map<int, std::string> &mapXmlInfo)
+{
+	TiXmlDocument XmlDoc;
+	TiXmlElement  *RootElement;
+	TiXmlElement  *Segment;
+	XmlDoc.Parse(pszContent);
+	RootElement = XmlDoc.RootElement();
+	Segment = RootElement->FirstChildElement();
+
+	std::vector<TiXmlElement*> vtcSeg;
+	while (Segment) {
+		vtcSeg.push_back(Segment);
+		Segment = Segment->NextSiblingElement();
+	}
+
+	TiXmlDocument *XmlDocLog = NULL;
+	TiXmlElement *LogElement = NULL;
+	TiXmlElement *InfoSegment = NULL;
+	TiXmlElement *LogSegment = NULL;
+	TiXmlPrinter Printer;
+	TiXmlDeclaration HeadDec;
+
+	// 创建XML文档
+	XmlDocLog = new TiXmlDocument();
+
+	// 增加XML的头部说明
+	HeadDec.Parse("<?xml version=\"1.0\" encoding=\"gb2312\" ?>", 0, TIXML_ENCODING_UNKNOWN);
+	XmlDocLog->LinkEndChild(&HeadDec);
+
+	LogElement = new TiXmlElement("LogInfo");
+	LogElement->SetAttribute("PROGRAMID", "001");
+
+	InfoSegment = new TiXmlElement("Info");
+	InfoSegment->SetAttribute("ID", 1);
+	InfoSegment->SetAttribute("DESC", "base info");
+
+	LogSegment = new TiXmlElement("SEGMENT");
+	LogSegment->SetAttribute("ID", 1);
+
+	//insert base info column
+	char timeStr[64];
+	CTimeUtil::getCurrentTime(timeStr);
+	std::map<int, std::string> contentMap = mapLogConfig[2];
+	contentMap[-1] = mapXmlInfo[2];
+	contentMap[0] = mapXmlInfo[5];
+	contentMap[8] = mapXmlInfo[1];
+	contentMap[9] = mapXmlInfo[10];
+	contentMap[10] = mapXmlInfo[9];
+	contentMap[11] = timeStr;
+	if (g_rwFlag == 0)  {
+		contentMap[12] = "0";
+	} else {
+		contentMap[12] = "1";
+	}
+	contentMap[13] = g_processName;
+	std::map<int, std::string>::iterator mapIter = contentMap.begin();
+	for (; mapIter != contentMap.end(); mapIter++) {
+		TiXmlElement *pColumn = new TiXmlElement("COLUMN");
+		pColumn->SetAttribute("ID", mapIter->first + 2);
+		pColumn->SetAttribute("VALUE", mapIter->second.c_str());
+		LogSegment->LinkEndChild(pColumn);
+	}
+	InfoSegment->LinkEndChild(LogSegment);
+	LogElement->LinkEndChild(InfoSegment);
+
+	TiXmlElement *pCtInfoSegment = new TiXmlElement("Info");
+	pCtInfoSegment->SetAttribute("ID", 2);
+	pCtInfoSegment->SetAttribute("VALUE", "content");
+
+	for (int i=0; i<vtcSeg.size(); i++) {
+		pCtInfoSegment->InsertEndChild(*vtcSeg[i]);
+	}
+	LogElement->LinkEndChild(pCtInfoSegment);
+
+	XmlDocLog->LinkEndChild(LogElement);
+	XmlDocLog->Accept(&Printer);
+
+	std::map<int, std::string> configMap = mapLogConfig[1];
+	std::string strFilePath(configMap[1]);
+	//strFilePath += strcat((char*)contentMap[2].c_str(), "_");
+	strFilePath += strcat(CTimeUtil::getCurrentDay(timeStr), ".log");
+	FILE *fp = fopen(strFilePath.c_str(), "a+");
+	fwrite(Printer.CStr(), strlen(Printer.CStr()), 1, fp);
+	fclose(fp);
+}
+
+int __stdcall iRegMsgForNHLog(char *pszCardServerURL, char* pszLogXml, char* pszXml)
+{
+	int status = iRegMsgForNH(pszCardServerURL, pszLogXml);
+	if (status != CardProcSuccess) {
+		return CardRegError;
+	}
+	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
+
+	std::map<int, std::string> mapReaderInfo;
+	CXmlUtil::parseHISXml(pszXml, mapReaderInfo);
+
+	g_rwFlag = 0;
+	strcpy(g_processName, "iRegMsgForNHLog");
+	geneHISLog(pszXml, mapReaderInfo);
+	return CardProcSuccess;
+}
+
+
+int __stdcall iReadCardMessageForNHLocal(char* pszLogXml, char* pszXml)
+{
+	std::string strMedicalID;
+	int n = ParseValueQuery("MEDICARECERTIFICATENO", strMedicalID);
+	if (n != 0) {
+		CreateResponXML(3, "获取参合号失败", pszXml);
+		return 3;
+	}
+	return iCheckMsgForNHLocal(pszLogXml, pszXml);
+}
+
+//卡校验 黑名单校验
+int __stdcall iCheckMsgForNHLocal(char* pszLogXml, char* pszXml)
+{
+	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
+	CExceptionCheck check(mapLogConfig);
+	if (check.filterForbidden(pszXml) == CardForbidden) {
+		return CardForbidden;
+	} 
+
+	if (check.filterWarnning(pszXml) == CardWarnning) {
+		return CardWarnning;
+	}
+
+	if (CardProcSuccess != iReadInfo(2, pszXml)) {
+		return CardReadErr;
+	}
+	return CardProcSuccess;
+}
+
+int __stdcall iReadCardMessageForNHLog(char *pszCardCheckWSDL, 
+									char *pszCardServerURL, 
+									char* pszLogXml,
+									char* pszXml)
+{
+	int status = iReadCardMessageForNH(pszCardCheckWSDL, pszCardServerURL, pszXml);
+	if (status != CardProcSuccess) {
+		return CardCheckError;
+	}
+	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
+
+	std::map<int, std::string> mapReaderInfo;
+	CXmlUtil::parseHISXml(pszXml, mapReaderInfo);
+
+	g_rwFlag = 0;
+	strcpy(g_processName, "iReadCardMessageForNHLog");
+	geneHISLog(pszXml, mapReaderInfo);
+	return CardProcSuccess;
+}
+
 int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerURL, char* pszXml)
 {
 	std::string strCheckWSDL = pszCardCheckWSDL;
@@ -2894,23 +3074,21 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 	memset(strResult, 0, sizeof(strResult));
 	SCANCARD_XML(pszXml, strResult);
 
-	int n = iQueryInfo("MEDICARECERTIFICATENO", szQuery);
-	if (n != 0){
+	std::string strMedicalID;
+	int n = ParseValueQuery("MEDICARECERTIFICATENO", strMedicalID);
+	if (n != 0) {
 		CreateResponXML(3, "获取参合号失败", strResult);
 		strcpy(pszXml, strResult);
 		return 3;
 	}
-	std::string strMedicalID;
-	GetQueryInfoForOne(szQuery, strMedicalID);
 
 	std::string strCardNO;
-	n = iQueryInfo("CARDNO", szQuery);
+	n = ParseValueQuery("CARDNO", strCardNO);
 	if (n != 0){
 		CreateResponXML(3, "获取卡号失败", strResult);
 		strcpy(pszXml, strResult);
 		return 3;
 	}
-	GetQueryInfoForOne(szQuery, strCardNO);
 
 	bool bSuccessed = true;
 	n_USCOREapiSoap m_CardObj;
@@ -2966,7 +3144,7 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 		}
 	}
 
-	if (bSuccessed){
+	if (bSuccessed && g_CardOps->cardAdapter->type == eM1Card){
 		char* strRegParams = new char[1024];
 		memset(strRegParams, 0, 1024);
 		CreateRegWsdlParams(strCardNO.c_str(), strRegParams); 
@@ -2997,20 +3175,13 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 				CreateResponXML(3, strCheckDesc.c_str(), strResult);
 				strcpy(pszXml, strResult);
 			} else {
-				if (strStatus.size() > 0 && CheckCardXMLValid(strStatus) == 0){
-
-					if (g_CardOps->cardAdapter->type == eM1Card) {
-
-						FormatWriteInfo(strStatus.c_str(), strResult);
-						int nState = iWriteInfo(strResult);
-						if (nState != 0){
-							bSuccessed = false;
-							memset(strResult, 0, sizeof(strResult));
-							CreateResponXML(2, "卡回写失败", strResult);
-							strcpy(pszXml, strResult);
-						}
-					} else {  //CPU暂不支持回写 
-					}
+				FormatWriteInfo(strStatus.c_str(), strResult);
+				int nState = iWriteInfo(strResult);
+				if (nState != 0){
+					bSuccessed = false;
+					memset(strResult, 0, sizeof(strResult));
+					CreateResponXML(2, "卡回写失败", strResult);
+					strcpy(pszXml, strResult);
 				}
 			}
 		}

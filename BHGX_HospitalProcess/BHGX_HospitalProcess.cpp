@@ -116,9 +116,9 @@ int		g_ItemFee[INFEE_BASE];			//单项费用信息
 int		g_AllFee[ALLFEE_BASE];			//共计费用信息
 int		g_HospEnd[HOSP_END];			//住院结束
 
-static int _HospReadInfo(int section, char *xml, bool bLog, bool bLocal);
+static int _HospReadInfo(int section, char *xml, bool bLog, bool bLocal, bool bOnlyLog);
 
-void geneHISLog(const char *pszContent, std::map<int, std::string> &mapQueryInfo);
+void geneHISLog(const char *pszContent, std::map<int, std::string> &mapQueryInfo, bool bOnlyLog);
 
 int __stdcall iFormatHospInfo()
 {
@@ -136,7 +136,7 @@ int __stdcall iWriteHospInfo(char *xml)
 int __stdcall iReadClinicInfo(char *pszClinicCode, char *xml)
 {
 	int status = 0;
-	status = _HospReadInfo(SEG_CLINICINFO, xml, false, false);
+	status = _HospReadInfo(SEG_CLINICINFO, xml, false, false, false);
 	return status;
 }
 
@@ -144,7 +144,7 @@ int __stdcall iReadClinicInfo(char *pszClinicCode, char *xml)
 int __stdcall iReadMedicalInfo(char *pszHospCode, char *xml)
 {
 	int status = 0;
-	status = _HospReadInfo(SEG_HOSPINFO, xml, false, false);
+	status = _HospReadInfo(SEG_HOSPINFO, xml, false, false, false);
 	return status;
 }
 
@@ -152,7 +152,7 @@ int __stdcall iReadMedicalInfo(char *pszHospCode, char *xml)
 int __stdcall iReadFeeInfo(char *pszClinicCode, char *xml)
 {
 	int status = 0;
-	status = _HospReadInfo(SEG_FEEINFO, xml, false, false);
+	status = _HospReadInfo(SEG_FEEINFO, xml, false, false, false);
 	return status;
 }
 
@@ -174,7 +174,7 @@ int __stdcall iWriteHospInfoLog(char *xml, char *pszLogXml)
 
 	std::map<int, std::string> mapQueryInfo;
 	CXmlUtil::parseHISXml(szQuery, mapQueryInfo);
-	geneHISLog(xml, mapQueryInfo);
+	geneHISLog(xml, mapQueryInfo, false);
 	return status;
 }
 
@@ -186,7 +186,7 @@ int __stdcall iReadClinicInfoLog(char *pszClinicCode, char *xml, char *pszLogXml
 	int status = 0;
 	g_rwFlag = 0;
 	strcpy(g_processName, "iReadClinicInfoLog");
-	status = _HospReadInfo(SEG_CLINICINFO, xml, true, false);
+	status = _HospReadInfo(SEG_CLINICINFO, xml, true, false, false);
 
 	return status;
 }
@@ -199,7 +199,7 @@ int __stdcall iReadMedicalInfoLog(char *pszHospCode, char *xml, char *pszLogXml)
 	int status = 0;
 	g_rwFlag = 0;
 	strcpy(g_processName, "iReadMedicalInfoLog");
-	status = _HospReadInfo(SEG_HOSPINFO, xml, true, false);
+	status = _HospReadInfo(SEG_HOSPINFO, xml, true, false, false);
 
 	return status;
 }
@@ -212,7 +212,7 @@ int __stdcall iReadFeeInfoLog(char *pszClinicCode, char *xml, char *pszLogXml)
 	int status = 0;
 	g_rwFlag = 0;
 	strcpy(g_processName, "iReadFeeInfoLog");
-	status = _HospReadInfo(SEG_FEEINFO, xml, true, false);
+	status = _HospReadInfo(SEG_FEEINFO, xml, true, false, false);
 
 	return status;
 }
@@ -231,20 +231,20 @@ int __stdcall iWriteHospInfoLocal(char *xml, char *pszLogXml)
 	}
 
 	int status = 0;
-	g_rwFlag = 1;
-	strcpy(g_processName, "iWriteHospInfoLocal");
+	//g_rwFlag = 1;
+	//strcpy(g_processName, "iWriteHospInfoLocal");
 	status = iWriteInfo(xml);
 
-	char szQuery[1024*4];
-	memset(szQuery, 0, sizeof(szQuery));
-	status = iReadInfo(2, szQuery);
-	if (status != CardProcSuccess) {
-		return status;
-	}
+	//char szQuery[1024*4];
+	//memset(szQuery, 0, sizeof(szQuery));
+	//status = iReadInfo(2, szQuery);
+	//if (status != CardProcSuccess) {
+	//	return status;
+	//}
 
-	std::map<int, std::string> mapQueryInfo;
-	CXmlUtil::parseHISXml(szQuery, mapQueryInfo);
-	geneHISLog(xml, mapQueryInfo);
+	//std::map<int, std::string> mapQueryInfo;
+	//CXmlUtil::parseHISXml(szQuery, mapQueryInfo);
+	//geneHISLog(xml, mapQueryInfo, false);
 	return status;
 }
 
@@ -256,7 +256,7 @@ int __stdcall iReadClinicInfoLocal(char *pszClinicCode, char *xml, char *pszLogX
 	int status = 0;
 	g_rwFlag = 0;
 	strcpy(g_processName, "iReadClinicInfoLocal");
-	status = _HospReadInfo(SEG_CLINICINFO, xml, true, true);
+	status = _HospReadInfo(SEG_CLINICINFO, xml, false, true, false);
 	return status;
 }
 
@@ -268,7 +268,7 @@ int __stdcall iReadMedicalInfoLocal(char *pszClinicCode, char *xml, char *pszLog
 	int status = 0;
 	g_rwFlag = 0;
 	strcpy(g_processName, "iReadMedicalInfoLocal");
-	status = _HospReadInfo(SEG_HOSPINFO, xml, true, true);
+	status = _HospReadInfo(SEG_HOSPINFO, xml, false, true, false);
 	return status;
 }
 
@@ -280,7 +280,57 @@ int __stdcall iReadFeeInfoLocal(char *pszClinicCode, char *xml, char *pszLogXml)
 	int status = 0;
 	g_rwFlag = 0;
 	strcpy(g_processName, "iReadFeeInfoLocal");
-	status = _HospReadInfo(SEG_FEEINFO, xml, true, true);
+	status = _HospReadInfo(SEG_FEEINFO, xml, false, true, false);
+	return status;
+}
+
+int __stdcall iWriteHospInfoOnlyLog(char *xml, char *pszLogXml)
+{
+	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
+
+	int status = 0;
+	g_rwFlag = 1;
+	strcpy(g_processName, "iWriteHospInfoLog");
+	status = iWriteInfo(xml);
+
+	std::map<int, std::string> mapQueryInfo;
+	geneHISLog(xml, mapQueryInfo, true);
+	return status;
+}
+
+//门诊摘要日志
+int __stdcall iReadClinicInfoOnlyLog(char *, char *xml, char *pszLogXml)
+{
+	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
+
+	int status = 0;
+	g_rwFlag = 0;
+	strcpy(g_processName, "iReadClinicInfoOnlyLog");
+	status = _HospReadInfo(SEG_CLINICINFO, xml, true, false, true);
+	return status;
+}
+
+//病案首页日志
+int __stdcall iReadMedicalInfoOnlyLog(char *, char *xml, char *pszLogXml)
+{
+	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
+
+	int status = 0;
+	g_rwFlag = 0;
+	strcpy(g_processName, "iReadMedicalInfoOnlyLog");
+	status = _HospReadInfo(SEG_HOSPINFO, xml, true, false, true);
+	return status;
+}
+
+//费用结算日志
+int __stdcall iReadFeeInfoOnlyLog(char *, char *xml, char *pszLogXml)
+{
+	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
+
+	int status = 0;
+	g_rwFlag = 0;
+	strcpy(g_processName, "iReadFeeInfoOnlyLog");
+	status = _HospReadInfo(SEG_FEEINFO, xml, true, false, true);
 	return status;
 }
 
@@ -311,7 +361,7 @@ int __stdcall iReadHealthInfo(char *xml)
 }
 
 
-void geneHISLog(const char *pszContent, std::map<int, std::string> &mapQueryInfo)
+void geneHISLog(const char *pszContent, std::map<int, std::string> &mapQueryInfo, bool bOnlyLog)
 {
 	TiXmlDocument XmlDoc;
 	TiXmlElement  *RootElement;
@@ -354,13 +404,16 @@ void geneHISLog(const char *pszContent, std::map<int, std::string> &mapQueryInfo
 	char timeStr[64];
 	CTimeUtil::getCurrentTime(timeStr);
 	std::map<int, std::string> contentMap = mapLogConfig[2];
-	//contentMap[-1] = mapQueryInfo[3];
-	//contentMap[0] = mapQueryInfo[4];
-	contentMap[-1] = mapQueryInfo[2];
-	contentMap[0] = mapQueryInfo[5];
-	contentMap[8] = mapQueryInfo[1];
-	contentMap[9] = mapQueryInfo[10];
-	contentMap[10] = mapQueryInfo[9];
+	if (!bOnlyLog) {
+		contentMap[-1] = mapQueryInfo[2];
+		contentMap[0] = mapQueryInfo[5];
+		contentMap[8] = mapQueryInfo[1];
+		contentMap[9] = mapQueryInfo[10];
+		contentMap[10] = mapQueryInfo[9];
+	} else {
+		contentMap[-1] = mapQueryInfo[3];
+		contentMap[0] = mapQueryInfo[4];
+	}
 	contentMap[11] = timeStr;
 	if (g_rwFlag == 0)  {
 		contentMap[12] = "0";
@@ -392,7 +445,6 @@ void geneHISLog(const char *pszContent, std::map<int, std::string> &mapQueryInfo
 
 	std::map<int, std::string> configMap = mapLogConfig[1];
 	std::string strFilePath(configMap[1]);
-	//strFilePath += strcat((char*)contentMap[2].c_str(), "_");
 	strFilePath += strcat(CTimeUtil::getCurrentDay(timeStr), ".log");
 	FILE *fp = fopen(strFilePath.c_str(), "a+");
 	fwrite(Printer.CStr(), strlen(Printer.CStr()), 1, fp);
@@ -494,7 +546,7 @@ static int _ParseSegXml(const char *src,
 	return 0;
 }
 
-static int _HospReadInfo(int section, char *xml, bool bLog, bool bLocal)
+static int _HospReadInfo(int section, char *xml, bool bLog, bool bLocal, bool bOnlyLog)
 {
 	int status = 0;
 	memset(g_BaseBuff, 0, BASELEN);
@@ -552,15 +604,21 @@ static int _HospReadInfo(int section, char *xml, bool bLog, bool bLocal)
 	}
 
 	if (bLog) {
+		std::map<int, std::string> mapQueryInfo;
 		char szQuery[1024*4];
 		memset(szQuery, 0, sizeof(szQuery));
-		status = iReadInfo(2, szQuery);
+		if (!bOnlyLog) {
+			status = iReadInfo(2, szQuery);
+		} else {
+			status = iReadInfo(1, szQuery);
+		}
 		if (status != 0){
 			strcpy(xml, err(status));
+			return status;
 		}
-		std::map<int, std::string> mapQueryInfo;
 		CXmlUtil::parseHISXml(szQuery, mapQueryInfo);
-		geneHISLog(xml, mapQueryInfo);
+
+		geneHISLog(xml, mapQueryInfo, bOnlyLog);
 	}
 	return status;
 }	
@@ -719,7 +777,7 @@ void procReadMedicalInfoLog()
 		return;
 	}
 	//int nStart = GetTickCount();
-	ret = iReadMedicalInfoLog("", szRead, buf);
+	ret = iReadMedicalInfoOnlyLog("", szRead, buf);
 	//int nEnd = GetTickCount();
 	//printf("iReadClinicInfo: %d所需时间: %d \n", ret, nEnd - nStart);
 	if (ret != 0){

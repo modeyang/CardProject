@@ -27,3 +27,7 @@ EXPORTS
 	iCardDeinit      @23
 	iCreateLicense   @24
 	iCheckLicense     @25
+	iRegMsgForNHLog		@26
+	iReadCardMessageForNHLog	@27
+	iReadCardMessageForNHLocal	@28
+	iCheckMsgForNHLocal		@29

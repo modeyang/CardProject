@@ -55,6 +55,17 @@ extern "C" {
 	//费用结算日志
 	DLL_EXPORT int __stdcall iReadFeeInfoLocal(char *, char *xml, char *pszLogXml);
 
+	DLL_EXPORT int __stdcall iWriteHospInfoOnlyLog(char *xml, char *pszLogXml);
+
+	//门诊摘要日志
+	DLL_EXPORT int __stdcall iReadClinicInfoOnlyLog(char *, char *xml, char *pszLogXml);
+
+	//病案首页日志
+	DLL_EXPORT int __stdcall iReadMedicalInfoOnlyLog(char *, char *xml, char *pszLogXml);
+
+	//费用结算日志
+	DLL_EXPORT int __stdcall iReadFeeInfoOnlyLog(char *, char *xml, char *pszLogXml);
+
 #ifdef __cplusplus
 }
 #endif

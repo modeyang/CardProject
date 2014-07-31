@@ -97,6 +97,31 @@ extern "C" {
 		char* pszXml
 		);
 
+	//卡注册
+	DLL_EXPORT int __stdcall iRegMsgForNHLog(
+		char *pszCardServerURL, 
+		char* pszLogXml,
+		char* pszXml
+		);
+
+	DLL_EXPORT int __stdcall iReadCardMessageForNHLog(
+		char *pszCardCheckWSDL, 
+		char *pszCardServerURL, 
+		char* pszLogXml,
+		char* pszXml
+		);
+
+	DLL_EXPORT int __stdcall iReadCardMessageForNHLocal(
+		char* pszLogXml,
+		char* pszXml
+		);
+
+	//卡校验 黑名单校验
+	DLL_EXPORT int __stdcall iCheckMsgForNHLocal(
+		char* pszLogXml,
+		char* pszXml
+		);
+
 	DLL_EXPORT int __stdcall iEncryFile(char *filename);
 
 	DLL_EXPORT int __stdcall iCreateLicense(
