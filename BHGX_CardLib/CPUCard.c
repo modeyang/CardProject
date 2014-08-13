@@ -363,6 +363,7 @@ static void ParseWriteContent(struct RWRequestS *list)
 	BYTE *bcd = NULL;
 	int nByteLen = 0;
 	eFileType datatype ;
+	BOOL bAgent = TRUE;
 
 	while(CurrRequest)
 	{
@@ -370,11 +371,12 @@ static void ParseWriteContent(struct RWRequestS *list)
 		datatype = CurrRequest->datatype;
 		ColumnElement = (struct XmlColumnS *)CurrRequest->pri;
 
-		if ((CurrRequest->offset - Agent->offset) == 0){
+		if ((CurrRequest->offset - Agent->offset) == 0 && bAgent){
 			bcd = Agent->value;
 		}
 
 		if (datatype == eRecType) { //¼ÇÂ¼ÎÄ¼þ
+			bAgent = FALSE;
 			memcpy(bcd, CurrRequest->value, CurrRequest->length + PADDING);
 			*bcd++ = (BYTE)CurrRequest->nColumID;
 			*bcd++ =(BYTE)CurrRequest->length;
