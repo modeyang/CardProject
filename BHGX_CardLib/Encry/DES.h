@@ -1,7 +1,6 @@
 // DES.h: interface for the DES class.
 //
 //////////////////////////////////////////////////////////////////////
-#include <memory.h>
 
 enum    {ENCRYPT,DECRYPT};
 class DES  

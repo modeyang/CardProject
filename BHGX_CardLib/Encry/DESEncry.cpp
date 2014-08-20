@@ -196,20 +196,21 @@ void CDESEncry::Transform_file(std::string &strOutfile, bool bEncry)
 {
 	size_t pos = strOutfile.find_last_of("\\");
 	std::string strfilename = strOutfile;
-	if (pos != -1)
-	{
+	if (pos != -1){
 		strfilename = strOutfile.substr(pos+1, strOutfile.size());
 		strOutfile = strOutfile.substr(0, pos);
+	} else {
+		strOutfile = ".";
 	}
-	pos = strfilename.find("_");
-	if (bEncry && pos == -1)
-	{
+
+	std::string flag = "JM_" ;
+	pos = strfilename.find(flag.c_str());
+	if (bEncry && pos == -1){
 		strfilename = "JM_" + strfilename;
 	}
 
-	if (!bEncry && pos != -1)
-	{
-		strfilename = strfilename.substr(pos+1, strfilename.size());
+	if (!bEncry && pos != -1){
+		strfilename = strfilename.substr(pos+3, strfilename.size());
 	}
 
 	strOutfile = strOutfile + "\\" + strfilename;
