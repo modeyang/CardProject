@@ -181,10 +181,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ExceptionCheck.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\Markup.cpp"
 				>
 			</File>
@@ -204,10 +200,6 @@
 			>
 			<File
 				RelativePath=".\BHGX_HospitalProcess.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ExceptionCheck.h"
 				>
 			</File>
 			<File

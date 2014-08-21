@@ -2,6 +2,7 @@
 #include "../BHGX_CardLib.h"
 #include "../public/liberr.h"
 #include "../tinyxml/headers/tinyxml.h"
+#include "../Encry/DESEncry.h"
 #include "Markup.h"
 #include <map>
 #include <vector>
@@ -21,6 +22,11 @@ CExceptionCheck::CExceptionCheck(std::map<int, std::map<int, std::string> > logC
 	mapLogConfig = logConfig;
 }
 
+CExceptionCheck::CExceptionCheck(char *logXml)
+{
+	CXmlUtil::paserLogXml(logXml, mapLogConfig);
+}
+
 CExceptionCheck::~CExceptionCheck(void)
 {
 }
@@ -29,7 +35,9 @@ CExceptionCheck::~CExceptionCheck(void)
 int CExceptionCheck::parseExceptionXml(char *filePath, std::vector<excepRecord> &vecRecord)
 {
 	CMarkup xml;
-	xml.Load(filePath);
+	CDESEncry encry;
+	encry.DesryFile(filePath);
+	xml.SetDoc(encry.GetDescryContent());
 	
 	if (!xml.FindElem("members")) {
 		return -1;

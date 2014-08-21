@@ -7,7 +7,6 @@
 #include "../BHGX_CardLib/public/liberr.h"
 #include "TimeUtil.h"
 #include "XmlUtil.h"
-#include "ExceptionCheck.h"
 #include "tinyxml/headers/tinyxml.h"
 #include "Markup.h"
 
@@ -116,7 +115,7 @@ int		g_ItemFee[INFEE_BASE];			//单项费用信息
 int		g_AllFee[ALLFEE_BASE];			//共计费用信息
 int		g_HospEnd[HOSP_END];			//住院结束
 
-static int _HospReadInfo(int section, char *xml, bool bLog, bool bLocal, bool bOnlyLog);
+static int _HospReadInfo(int section, char *pszLogXml, char *xml, bool bLog, bool bLocal, bool bOnlyLog);
 
 void geneHISLog(const char *pszContent, std::map<int, std::string> &mapQueryInfo, bool bOnlyLog);
 
@@ -136,7 +135,7 @@ int __stdcall iWriteHospInfo(char *xml)
 int __stdcall iReadClinicInfo(char *pszClinicCode, char *xml)
 {
 	int status = 0;
-	status = _HospReadInfo(SEG_CLINICINFO, xml, false, false, false);
+	status = _HospReadInfo(SEG_CLINICINFO, NULL, xml, false, false, false);
 	return status;
 }
 
@@ -144,7 +143,7 @@ int __stdcall iReadClinicInfo(char *pszClinicCode, char *xml)
 int __stdcall iReadMedicalInfo(char *pszHospCode, char *xml)
 {
 	int status = 0;
-	status = _HospReadInfo(SEG_HOSPINFO, xml, false, false, false);
+	status = _HospReadInfo(SEG_HOSPINFO, NULL, xml, false, false, false);
 	return status;
 }
 
@@ -152,7 +151,7 @@ int __stdcall iReadMedicalInfo(char *pszHospCode, char *xml)
 int __stdcall iReadFeeInfo(char *pszClinicCode, char *xml)
 {
 	int status = 0;
-	status = _HospReadInfo(SEG_FEEINFO, xml, false, false, false);
+	status = _HospReadInfo(SEG_FEEINFO, NULL, xml, false, false, false);
 	return status;
 }
 
@@ -181,12 +180,10 @@ int __stdcall iWriteHospInfoLog(char *xml, char *pszLogXml)
 //门诊摘要
 int __stdcall iReadClinicInfoLog(char *pszClinicCode, char *xml, char *pszLogXml)
 {
-	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
-
 	int status = 0;
 	g_rwFlag = 0;
 	strcpy(g_processName, "iReadClinicInfoLog");
-	status = _HospReadInfo(SEG_CLINICINFO, xml, true, false, false);
+	status = _HospReadInfo(SEG_CLINICINFO, pszLogXml, xml, true, false, false);
 
 	return status;
 }
@@ -194,12 +191,11 @@ int __stdcall iReadClinicInfoLog(char *pszClinicCode, char *xml, char *pszLogXml
 //病案首页
 int __stdcall iReadMedicalInfoLog(char *pszHospCode, char *xml, char *pszLogXml)
 {
-	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
 
 	int status = 0;
 	g_rwFlag = 0;
 	strcpy(g_processName, "iReadMedicalInfoLog");
-	status = _HospReadInfo(SEG_HOSPINFO, xml, true, false, false);
+	status = _HospReadInfo(SEG_HOSPINFO, pszLogXml, xml, true, false, false);
 
 	return status;
 }
@@ -207,30 +203,21 @@ int __stdcall iReadMedicalInfoLog(char *pszHospCode, char *xml, char *pszLogXml)
 //费用结算
 int __stdcall iReadFeeInfoLog(char *pszClinicCode, char *xml, char *pszLogXml)
 {
-	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
-
 	int status = 0;
 	g_rwFlag = 0;
 	strcpy(g_processName, "iReadFeeInfoLog");
-	status = _HospReadInfo(SEG_FEEINFO, xml, true, false, false);
+	status = _HospReadInfo(SEG_FEEINFO, pszLogXml, xml, true, false, false);
 
 	return status;
 }
 
 int __stdcall iWriteHospInfoLocal(char *xml, char *pszLogXml)
 {
-	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
-
-	CExceptionCheck check(mapLogConfig);
-	if (check.filterForbidden(xml) == CardForbidden) {
-		return CardForbidden;
+	int status = iCheckException(pszLogXml, xml);
+	if (status != CardProcSuccess) {
+		return status;
 	}
 
-	if (check.filterWarnning(xml) == CardWarnning) {
-		return CardWarnning;
-	}
-
-	int status = 0;
 	//g_rwFlag = 1;
 	//strcpy(g_processName, "iWriteHospInfoLocal");
 	status = iWriteInfo(xml);
@@ -251,36 +238,30 @@ int __stdcall iWriteHospInfoLocal(char *xml, char *pszLogXml)
 //门诊摘要日志
 int __stdcall iReadClinicInfoLocal(char *pszClinicCode, char *xml, char *pszLogXml)
 {
-	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
-
 	int status = 0;
 	g_rwFlag = 0;
 	strcpy(g_processName, "iReadClinicInfoLocal");
-	status = _HospReadInfo(SEG_CLINICINFO, xml, false, true, false);
+	status = _HospReadInfo(SEG_CLINICINFO, pszLogXml, xml, false, true, false);
 	return status;
 }
 
 //病案首页日志
 int __stdcall iReadMedicalInfoLocal(char *pszClinicCode, char *xml, char *pszLogXml)
 {
-	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
-
 	int status = 0;
 	g_rwFlag = 0;
 	strcpy(g_processName, "iReadMedicalInfoLocal");
-	status = _HospReadInfo(SEG_HOSPINFO, xml, false, true, false);
+	status = _HospReadInfo(SEG_HOSPINFO, pszLogXml, xml, false, true, false);
 	return status;
 }
 
 //费用结算日志
 int __stdcall iReadFeeInfoLocal(char *pszClinicCode, char *xml, char *pszLogXml)
 {
-	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
-
 	int status = 0;
 	g_rwFlag = 0;
 	strcpy(g_processName, "iReadFeeInfoLocal");
-	status = _HospReadInfo(SEG_FEEINFO, xml, false, true, false);
+	status = _HospReadInfo(SEG_FEEINFO, pszLogXml, xml, false, true, false);
 	return status;
 }
 
@@ -301,36 +282,30 @@ int __stdcall iWriteHospInfoOnlyLog(char *xml, char *pszLogXml)
 //门诊摘要日志
 int __stdcall iReadClinicInfoOnlyLog(char *, char *xml, char *pszLogXml)
 {
-	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
-
 	int status = 0;
 	g_rwFlag = 0;
 	strcpy(g_processName, "iReadClinicInfoOnlyLog");
-	status = _HospReadInfo(SEG_CLINICINFO, xml, true, false, true);
+	status = _HospReadInfo(SEG_CLINICINFO, pszLogXml, xml, true, false, true);
 	return status;
 }
 
 //病案首页日志
 int __stdcall iReadMedicalInfoOnlyLog(char *, char *xml, char *pszLogXml)
 {
-	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
-
 	int status = 0;
 	g_rwFlag = 0;
 	strcpy(g_processName, "iReadMedicalInfoOnlyLog");
-	status = _HospReadInfo(SEG_HOSPINFO, xml, true, false, true);
+	status = _HospReadInfo(SEG_HOSPINFO, pszLogXml, xml, true, false, true);
 	return status;
 }
 
 //费用结算日志
 int __stdcall iReadFeeInfoOnlyLog(char *, char *xml, char *pszLogXml)
 {
-	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
-
 	int status = 0;
 	g_rwFlag = 0;
 	strcpy(g_processName, "iReadFeeInfoOnlyLog");
-	status = _HospReadInfo(SEG_FEEINFO, xml, true, false, true);
+	status = _HospReadInfo(SEG_FEEINFO,pszLogXml, xml, true, false, true);
 	return status;
 }
 
@@ -546,21 +521,21 @@ static int _ParseSegXml(const char *src,
 	return 0;
 }
 
-static int _HospReadInfo(int section, char *xml, bool bLog, bool bLocal, bool bOnlyLog)
+static int _HospReadInfo(int section, char *pszLogXml, char *xml, bool bLog, bool bLocal, bool bOnlyLog)
 {
 	int status = 0;
 	memset(g_BaseBuff, 0, BASELEN);
 	int extraLocation[8];
 	memset(extraLocation, -1, sizeof(extraLocation));
 
-	if (bLocal) {
-		CExceptionCheck check(mapLogConfig);
-		if (check.filterForbidden(xml) == CardForbidden) {
-			return CardForbidden;
-		}
+	if (pszLogXml != NULL) {
+		CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
+	}
 
-		if (check.filterWarnning(xml) == CardWarnning) {
-			return CardWarnning;
+	if (bLocal) {
+		int status = iCheckException(pszLogXml, xml);
+		if (status != CardProcSuccess) {
+			return status;
 		}
 	}
 

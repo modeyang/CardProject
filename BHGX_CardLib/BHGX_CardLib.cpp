@@ -3231,6 +3231,19 @@ int __stdcall iCheckLicense(char *filename,int type)
 	return status;
 }
 
+int __stdcall iCheckException(char *pszLogXml,char *pszXml)
+{
+	CExceptionCheck check(pszLogXml);
+	if (check.filterForbidden(pszXml) == CardForbidden) {
+		return CardForbidden;
+	} 
+
+	if (check.filterWarnning(pszXml) == CardWarnning) {
+		return CardWarnning;
+	}
+	return CardProcSuccess;
+}
+
 int __stdcall apt_InitGList(CardType eType)
 {
 	if (eType == eCPUCard) {

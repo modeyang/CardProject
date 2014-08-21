@@ -137,6 +137,12 @@ extern "C" {
 		int type					//0按时间  1其他
 		);
 
+	// 黑名单校验
+	DLL_EXPORT int __stdcall iCheckException(
+		char *pszLogXml,
+		char *pszXml
+		);
+
 
 #ifdef __cplusplus
 }

@@ -20,6 +20,8 @@ class CExceptionCheck
 {
 public:
 	CExceptionCheck(std::map<int, std::map<int, std::string> > logConfig);
+	CExceptionCheck(char *logXml);
+
 	~CExceptionCheck(void);
 
 	int filterForbidden(char *xml);

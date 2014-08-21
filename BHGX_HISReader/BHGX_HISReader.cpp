@@ -11,7 +11,6 @@
 #include <windows.h>
 #include "TimeUtil.h"
 #include "XmlUtil.h"
-#include "ExceptionCheck.h"
 
 using namespace std;
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
@@ -264,7 +263,7 @@ int _filterNHCard(char *xml)
 }
 
 
-int readHISBaseInfo(char *pszCardCheckWSDL, char *pszCardServerURL, char *xml, bool bNet, bool bLocal)
+int readHISBaseInfo(char *pszCardCheckWSDL, char *pszCardServerURL,char *pszLogXml, char *xml, bool bNet, bool bLocal)
 {
 	if (xml == NULL){
 		return -1;
@@ -276,14 +275,13 @@ int readHISBaseInfo(char *pszCardCheckWSDL, char *pszCardServerURL, char *xml, b
 		return CardInitErr;
 	}
 
-	if (bLocal) {
-		CExceptionCheck check(mapLogConfig);
-		if (check.filterForbidden(xml) == CardForbidden) {
-			return CardForbidden;
-		} 
+	if (pszLogXml != NULL)
+		CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
 
-		if (check.filterWarnning(xml) == CardWarnning) {
-			return CardWarnning;
+	if (bLocal) {
+		int status = iCheckException(pszLogXml, xml);
+		if (status != CardProcSuccess) {
+			return status;
 		}
 
 		if (CardProcSuccess != iReadInfo(2, xml)) {
@@ -312,7 +310,7 @@ int __stdcall iReadHISInfo(char *pszCardCheckWSDL, char *pszCardServerURL, char 
 {
 	char szRead[8092];
 	memset(szRead, 0, sizeof(szRead));
-	int status = readHISBaseInfo(pszCardCheckWSDL,pszCardServerURL, szRead, true, false);
+	int status = readHISBaseInfo(pszCardCheckWSDL,pszCardServerURL, NULL, szRead, true, false);
 	if (status != CardProcSuccess) {
 		strcpy(xml, szRead);
 		return status;
@@ -325,7 +323,7 @@ int __stdcall iReadOnlyHIS(char *xml)
 {
 	char szRead[8092];
 	memset(szRead, 0, sizeof(szRead));
-	int status = readHISBaseInfo("", "", szRead, false, false);
+	int status = readHISBaseInfo("", "", NULL, szRead, false, false);
 	if (status != CardProcSuccess) {
 		strcpy(xml, szRead);
 		return status;
@@ -338,7 +336,7 @@ int __stdcall iReadInfoForXJ(char *pszCardCheckWSDL, char *pszCardServerURL, cha
 {
 	char szRead[8092];
 	memset(szRead, 0, sizeof(szRead));
-	int status = readHISBaseInfo(pszCardCheckWSDL,pszCardServerURL, szRead, true, false);
+	int status = readHISBaseInfo(pszCardCheckWSDL,pszCardServerURL, NULL,  szRead, true, false);
 	if (status != CardProcSuccess) {
 		strcpy(xml, szRead);
 		return status;
@@ -348,11 +346,9 @@ int __stdcall iReadInfoForXJ(char *pszCardCheckWSDL, char *pszCardServerURL, cha
 
 int __stdcall iReadHISInfoLog(char *pszCardCheckWSDL, char *pszCardServerURL, char *pszLogXml, char *xml)
 {
-	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
-
 	char szRead[8092];
 	memset(szRead, 0, sizeof(szRead));
-	int status = readHISBaseInfo(pszCardCheckWSDL,pszCardServerURL, szRead, true, false);
+	int status = readHISBaseInfo(pszCardCheckWSDL,pszCardServerURL, pszLogXml, szRead, true, false);
 	if (status != CardProcSuccess) {
 		strcpy(xml, szRead);
 		return status;
@@ -364,11 +360,10 @@ int __stdcall iReadHISInfoLog(char *pszCardCheckWSDL, char *pszCardServerURL, ch
 
 int __stdcall iReadOnlyHISLog(char *pszLogXml, char *xml)
 {
-	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
 
 	char szRead[8092];
 	memset(szRead, 0, sizeof(szRead));
-	int status = readHISBaseInfo("", "", szRead, false, false);
+	int status = readHISBaseInfo("", "", pszLogXml,  szRead, false, false);
 	if (status != CardProcSuccess) {
 		strcpy(xml, szRead);
 		return status;
@@ -381,11 +376,10 @@ int __stdcall iReadOnlyHISLog(char *pszLogXml, char *xml)
 
 int __stdcall iReadInfoForXJLog(char *pszCardCheckWSDL, char *pszCardServerURL, char *pszLogXml, char *xml) 
 {
-	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
 
 	char szRead[8092];
 	memset(szRead, 0, sizeof(szRead));
-	int status = readHISBaseInfo(pszCardCheckWSDL,pszCardServerURL, szRead, true, false);
+	int status = readHISBaseInfo(pszCardCheckWSDL,pszCardServerURL, pszLogXml, szRead, true, false);
 	if (status != CardProcSuccess) {
 		strcpy(xml, szRead);
 		return status;
@@ -397,11 +391,9 @@ int __stdcall iReadInfoForXJLog(char *pszCardCheckWSDL, char *pszCardServerURL, 
 
 int __stdcall iReadHISInfoLocal(char *pszCardCheckWSDL, char *pszCardServerURL, char *pszLogXml, char *xml)
 {
-	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
-
 	char szRead[8092];
 	memset(szRead, 0, sizeof(szRead));
-	int status = readHISBaseInfo(pszCardCheckWSDL,pszCardServerURL, szRead, true, true);
+	int status = readHISBaseInfo(pszCardCheckWSDL,pszCardServerURL, pszLogXml, szRead, true, true);
 	if (status != CardProcSuccess) {
 		strcpy(xml, szRead);
 		return status;
@@ -413,11 +405,9 @@ int __stdcall iReadHISInfoLocal(char *pszCardCheckWSDL, char *pszCardServerURL, 
 
 int __stdcall iReadInfoForXJLocal(char *pszCardCheckWSDL, char *pszCardServerURL, char *pszLogXml, char *xml) 
 {
-	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
-
 	char szRead[8092];
 	memset(szRead, 0, sizeof(szRead));
-	int status = readHISBaseInfo(pszCardCheckWSDL, pszCardServerURL, szRead, true, true);
+	int status = readHISBaseInfo(pszCardCheckWSDL, pszCardServerURL, pszLogXml, szRead, true, true);
 	if (status != CardProcSuccess) {
 		strcpy(xml, szRead);
 		return status;
@@ -429,11 +419,9 @@ int __stdcall iReadInfoForXJLocal(char *pszCardCheckWSDL, char *pszCardServerURL
 
 int __stdcall iReadOnlyHISLocal(char *pszLogXml, char *xml)
 {
-	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
-
 	char szRead[8092];
 	memset(szRead, 0, sizeof(szRead));
-	int status = readHISBaseInfo("" , "", szRead, false, true);
+	int status = readHISBaseInfo("" , "", pszLogXml, szRead, false, true);
 	if (status != CardProcSuccess) {
 		strcpy(xml, szRead);
 		return status;

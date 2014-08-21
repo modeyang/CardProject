@@ -31,3 +31,4 @@ EXPORTS
 	iReadCardMessageForNHLog	@27
 	iReadCardMessageForNHLocal	@28
 	iCheckMsgForNHLocal		@29
+	iCheckException			@30
