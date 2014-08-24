@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "DESEncry.h"
 #include "DES.h"
+#include <exception>
 #include "../public/Markup.h"
 
 using namespace std;
@@ -45,8 +46,7 @@ bool CDESEncry::EncryFile(char *szFilename)
 	std::string strOutFile = szInFile;
 	Transform_file(strOutFile, true);	
 	fp = fopen(strOutFile.c_str(),"wb");
-	if (fp == NULL)
-	{
+	if (fp == NULL){
 		fclose(ff);
 		return false;
 	}
@@ -75,31 +75,22 @@ bool CDESEncry::EncryFile(char *szFilename)
 bool CDESEncry::DesryFile(char *szFilename)
 {
 	std::locale::global(std::locale(""));
-	FILE *ff;
 	char inbuff[8],outbuff[8];
+	int fsize, nTotalsize;
 
-	ff = fopen(szFilename, "rb");
-
-	if(ff==NULL)
-	{
-		//std::string szInFile =  CMarkup::UTF8ToGB2312(szFilename);
-		ff = fopen(szFilename, "rb");
-		if (NULL == ff)
-		{
-			return false;
-		}
+	FILE * ff = fopen(szFilename, "rb");
+	if (ff == NULL) {
+		return false;
 	}
-		
-	int fsize;
-	fread(&fsize,sizeof(int),1,ff);			//获得明文文件大小
-
-	int nTotalsize = fsize;
+	//获得明文文件大小
+	fread(&fsize,sizeof(int),1,ff);
+	nTotalsize = fsize;
 	fsize = fsize%8 ? (fsize/8+1)*8 : fsize;
-
-	//fread(initbuff,sizeof(char),sizeof(initbuff),ff);	//获得明文件的类型、加密重数、加密模式
-
 	m_pfileContent = (char*)malloc(sizeof(char)*fsize+1);
-
+	if (m_pfileContent == NULL) {
+		return false;
+	}
+	
 	//开始解密
 	DES jm;
 	int nStart = 0;

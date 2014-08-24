@@ -34,6 +34,7 @@ enum ErrType
 	CardMallocFailed,
 	CardForbidden,
 	CardWarnning,
+	CardMedicalFailed,
 };
 
 static char *errString[] =
@@ -53,7 +54,7 @@ static char *errString[] =
 	"卡校验失败",				// -12	
 	"卡注册失败",				//-13
 	"加密文件失败",				//-14
-	"解密文件失败",				//-15
+	"解密文件失败,没有此文件，或者不是加密文件",				//-15
 	"卡不是空卡",
 	"设备没有被打开",
 	"没有被授权操作，请联系供应商",
@@ -63,6 +64,7 @@ static char *errString[] =
 	"分配内存错误",
 	"该卡已注销,无法使用",
 	"该卡已挂失，暂时无法使用",
+	"农合号为空",
 };
 
 char *_err(int errcode);

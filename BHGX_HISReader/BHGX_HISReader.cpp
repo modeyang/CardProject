@@ -257,7 +257,7 @@ int _filterNHCard(char *xml)
 
 	if (!IsMedicalID(strMedicalID)){
 		CXmlUtil::CreateResponXML(CardReadErr, "参合号不存在", xml);
-		return CardReadErr;
+		return CardMedicalFailed;
 	}
 	return CardProcSuccess;
 }
@@ -288,13 +288,16 @@ int readHISBaseInfo(char *pszCardCheckWSDL, char *pszCardServerURL,char *pszLogX
 			return CardReadErr;
 		}
 	} else {
-		if (CardProcSuccess != _filterNHCard(xml)) {
-			return CardReadErr;
-		}
-
+		int status = 0;
 		if (bNet) {
-			if (CardProcSuccess != iCheckMsgForNH(pszCardCheckWSDL, pszCardServerURL, xml)){
-				return CardCheckError;
+			//status = _filterNHCard(xml);
+			//if (status != CardProcSuccess) {
+			//	return status;
+			//}
+
+			status = iCheckMsgForNH(pszCardCheckWSDL, pszCardServerURL, xml);
+			if (status != CardProcSuccess){
+				return status;
 			}
 		} else {
 			if (CardProcSuccess != iReadInfo(2, xml)) {

@@ -304,18 +304,20 @@ static void ListParseContent(struct RWRequestS *list)
 	eFileType eType;
 	int len = 0, i = 0;
 	BYTE padding[2];
+	struct RWRequestS *preAgent = NULL;
 
 	while (CurrRequest)
 	{
 		ColumnElement = (struct XmlColumnS *)CurrRequest->pri;
 		Agent = CurrRequest->agent;
 		eType = CurrRequest->datatype;
-		if (CurrRequest->offset == Agent->offset){
+		if (CurrRequest->offset == Agent->offset
+			&& preAgent != Agent){
 			bcd = Agent->value;
+			preAgent = Agent;
 		} 
 
 		memset(tmpBuff, 0, sizeof(tmpBuff));
-
 		if (eType == eRecType) {//¼ÇÂ¼ÎÄ¼ş
 			memcpy(padding, bcd, sizeof(padding));
 			bcd += sizeof(padding);
@@ -450,7 +452,6 @@ static int _iWriteCard(struct RWRequestS *list)
 				}
 				pOldReq = pReq;
 				pReq = pReq->Next;
-				status = 0;
 			}
 		}
 	}

@@ -36,7 +36,9 @@ int CExceptionCheck::parseExceptionXml(char *filePath, std::vector<excepRecord> 
 {
 	CMarkup xml;
 	CDESEncry encry;
-	encry.DesryFile(filePath);
+	if (!encry.DesryFile(filePath)){
+		return 1;
+	}
 	xml.SetDoc(encry.GetDescryContent());
 	
 	if (!xml.FindElem("members")) {
@@ -165,7 +167,9 @@ int CExceptionCheck::filterForbidden(char *xml)
 	}
 	std::map<int, std::string> &configMap = mapLogConfig[1];
 	std::vector<excepRecord> vecForbiddenRecord;
-	parseExceptionXml((char*)configMap[2].c_str(), vecForbiddenRecord);
+	if (parseExceptionXml((char*)configMap[2].c_str(), vecForbiddenRecord) == 1) {
+		return DescryFileError;
+	}
 
 	char szQuery[1024];
 	memset(szQuery, 0, sizeof(szQuery));
@@ -207,7 +211,9 @@ int CExceptionCheck::filterWarnning(char *xml)
 	std::string strFilePath(configMap[3]);
 	strFilePath += strIDNumber.substr(0, 4);
 	strFilePath += "_greylist.xml";
-	parseExceptionXml((char*)strFilePath.c_str(), vecWarnningRecord);
+	if (parseExceptionXml((char*)strFilePath.c_str(), vecWarnningRecord) == 1) {
+		return DescryFileError;
+	}
 
 	if (isExceptionCard(vecWarnningRecord) != -1) {
 		CXmlUtil::CreateResponXML(CardWarnning, err(CardWarnning), xml);

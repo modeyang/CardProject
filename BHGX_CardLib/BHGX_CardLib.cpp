@@ -2819,6 +2819,9 @@ int __stdcall iReadConfigMsg(char *pszConfigXML,char *pszReadXML)
 int __stdcall iRegMsgForNH(char *pszCardServerURL,char* pszXml)
 {
 	ASSERT_OPEN(g_bCardOpen);
+	if (g_CardOps->cardAdapter->type != eM1Card) {
+		return CardNoSupport;
+	}
 	std::string strServerURL = pszCardServerURL;
 
 	std::string strXML;
@@ -2837,7 +2840,7 @@ int __stdcall iRegMsgForNH(char *pszCardServerURL,char* pszXml)
 		return CardReadErr;
 	}
 	GetQueryInfoForOne(szQuery, strCardNO);
-
+	
 	bool bSuccessed = true;
 	n_USCOREapiSoap m_CardObj;
 	m_CardObj.endpoint = strServerURL.c_str();
@@ -2873,20 +2876,14 @@ int __stdcall iRegMsgForNH(char *pszCardServerURL,char* pszXml)
 			strcpy(pszXml, strResult);
 		} else{
 			if (strStatus.size() > 0 && CheckCardXMLValid(strStatus) == 0){ 
-				
-				if (g_CardOps->cardAdapter->type == eM1Card) {
-					FormatWriteInfo(strStatus.c_str(), strResult);
-					int nState = iWriteInfo(strResult);
-					if (nState != 0){
-						bSuccessed = false;
-						memset(strResult, 0, sizeof(strResult));
-						CreateResponXML(2, "卡回写失败", strResult);
-						strcpy(pszXml, strResult);
-					}
-				} else {  //CPU暂不支持回写
-
+				FormatWriteInfo(strStatus.c_str(), strResult);
+				int nState = iWriteInfo(strResult);
+				if (nState != 0){
+					bSuccessed = false;
+					memset(strResult, 0, sizeof(strResult));
+					CreateResponXML(2, "卡回写失败", strResult);
+					strcpy(pszXml, strResult);
 				}
-
 			}
 		}
 	}
@@ -3026,14 +3023,9 @@ int __stdcall iReadCardMessageForNHLocal(char* pszLogXml, char* pszXml)
 //卡校验 黑名单校验
 int __stdcall iCheckMsgForNHLocal(char* pszLogXml, char* pszXml)
 {
-	CXmlUtil::paserLogXml(pszLogXml, mapLogConfig);
-	CExceptionCheck check(mapLogConfig);
-	if (check.filterForbidden(pszXml) == CardForbidden) {
-		return CardForbidden;
-	} 
-
-	if (check.filterWarnning(pszXml) == CardWarnning) {
-		return CardWarnning;
+	int status = iCheckException(pszLogXml, pszXml);
+	if (status != CardProcSuccess) {
+		return status;
 	}
 
 	if (CardProcSuccess != iReadInfo(2, pszXml)) {
@@ -3079,13 +3071,18 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 	if (n != 0) {
 		CreateResponXML(3, "获取参合号失败", strResult);
 		strcpy(pszXml, strResult);
-		return 3;
+		return CardReadErr;
+	}
+	if (strMedicalID.size() == 0) {
+		CreateResponXML(3, "参合号为空", strResult);
+		strcpy(pszXml, strResult);
+		return CardMedicalFailed;
 	}
 
 	std::string strCardNO;
 	n = ParseValueQuery("CARDNO", strCardNO);
-	if (n != 0){
-		CreateResponXML(3, "获取卡号失败", strResult);
+	if (n != 0 || strCardNO.size() == 0){
+		CreateResponXML(3, "获取卡号失败或者卡号为空", strResult);
 		strcpy(pszXml, strResult);
 		return 3;
 	}
@@ -3234,12 +3231,13 @@ int __stdcall iCheckLicense(char *filename,int type)
 int __stdcall iCheckException(char *pszLogXml,char *pszXml)
 {
 	CExceptionCheck check(pszLogXml);
-	if (check.filterForbidden(pszXml) == CardForbidden) {
-		return CardForbidden;
+	int status = check.filterForbidden(pszXml);
+	if (status != CardProcSuccess) {
+		return status;
 	} 
-
-	if (check.filterWarnning(pszXml) == CardWarnning) {
-		return CardWarnning;
+	status = check.filterWarnning(pszXml);
+	if (status != CardProcSuccess) {
+		return status;
 	}
 	return CardProcSuccess;
 }
