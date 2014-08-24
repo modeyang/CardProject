@@ -108,6 +108,7 @@ public:
 	STDMETHOD(iATLReadMedicalInfoOnlyLog)(BSTR pszCode, BSTR pszLogXml, BSTR* xml);
 	STDMETHOD(iATLReadCardMessageForNHLocal)(BSTR pszLogXml, BSTR* pszXml);
 	STDMETHOD(iATLCheckMsgForNHLocal)(BSTR pszLogXml, BSTR* pszXml);
+	STDMETHOD(iATLReadOnlyCardMessageForNH)(BSTR* pszXml);
 
 protected:
 	void GetErrInfo(int nProcRet, LONG &nRet);
@@ -118,6 +119,7 @@ protected:
 
 protected:
 	char m_strErr[1024];
-};
+	
+	};
 
 OBJECT_ENTRY_AUTO(__uuidof(CardProcess), CCardProcess)

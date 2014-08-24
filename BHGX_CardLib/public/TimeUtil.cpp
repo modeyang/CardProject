@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#pragma warning (disable : 4996)
 
 CTimeUtil::CTimeUtil(void)
 {

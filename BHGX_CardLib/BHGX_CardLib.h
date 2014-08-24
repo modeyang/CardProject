@@ -91,6 +91,10 @@ extern "C" {
 		char* pszXml
 		);
 
+	DLL_EXPORT int __stdcall iReadOnlyCardMessageForNH( 
+		char* pszXml
+		);
+
 	DLL_EXPORT int __stdcall iReadCardMessageForNH(
 		char *pszCardCheckWSDL, 
 		char *pszCardServerURL, 

@@ -40,6 +40,7 @@ int CExceptionCheck::parseExceptionXml(char *filePath, std::vector<excepRecord> 
 		return 1;
 	}
 	xml.SetDoc(encry.GetDescryContent());
+	//xml.Load(filePath);
 	
 	if (!xml.FindElem("members")) {
 		return -1;

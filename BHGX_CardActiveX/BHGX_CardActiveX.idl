@@ -71,6 +71,7 @@ interface ICardProcess : IDispatch{
 	[id(55), helpstring("方法iATLReadMedicalInfoOnlyLog")] HRESULT iATLReadMedicalInfoOnlyLog(BSTR pszCode, BSTR pszLogXml, [out,retval] BSTR* xml);
 	[id(56), helpstring("方法iATLReadCardMessageForNHLocal")] HRESULT iATLReadCardMessageForNHLocal(BSTR pszLogXml, [out,retval] BSTR* pszXml);
 	[id(57), helpstring("方法iATLCheckMsgForNHLocal")] HRESULT iATLCheckMsgForNHLocal(BSTR pszLogXml, [out,retval] BSTR* pszXml);
+	[id(58), helpstring("方法iATLReadOnlyCardMessageForNH")] HRESULT iATLReadOnlyCardMessageForNH([out,retval] BSTR* pszXml);
 };
 [
 	uuid(892D8909-1013-42C0-86C3-62653E0797B3),

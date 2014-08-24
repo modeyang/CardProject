@@ -3058,6 +3058,11 @@ int __stdcall iReadCardMessageForNHLog(char *pszCardCheckWSDL,
 	return CardProcSuccess;
 }
 
+int __stdcall iReadOnlyCardMessageForNH(char* pszXml)
+{
+	return iReadInfo(2, pszXml);
+}
+
 int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerURL, char* pszXml)
 {
 	std::string strCheckWSDL = pszCardCheckWSDL;

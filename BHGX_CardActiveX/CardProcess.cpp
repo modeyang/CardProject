@@ -831,3 +831,11 @@ STDMETHODIMP CCardProcess::iATLCheckMsgForNHLocal(BSTR pszLogXml, BSTR* pszXml)
 	*pszXml = bstr.Detach();
 	return S_OK;
 }
+
+STDMETHODIMP CCardProcess::iATLReadOnlyCardMessageForNH(BSTR* pszXml)
+{
+	int status = iReadOnlyCardMessageForNH(g_ReadBuff);
+	_bstr_t bstr(g_ReadBuff);
+	*pszXml = bstr.Detach();
+	return status;
+}
