@@ -640,6 +640,10 @@ static int CombineColValue(struct XmlColumnS *ColumnElement,
 						   char sep, struct XmlSegmentS *Segment,
 						   char *buff)
 {
+	if (sep == 0 && strlen(ColumnElement->Value)/5 <= ColumnElement->CheckInfo.M1Info.ColumnBit/64) {
+		strcpy(buff, ColumnElement->Value);
+		return 0;
+	}
 	if (ColumnElement->ID == pairCol.first)
 	{
 		struct XmlSegmentS *pSegTel = Segment;
