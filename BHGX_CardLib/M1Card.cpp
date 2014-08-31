@@ -1,10 +1,18 @@
 #include "M1Card.h"
 #include "device.h"
+#include "StringUtil.h"
+#include "adapter.h"
+#include "resource.h"
 #include "public/liberr.h"
 #include "public/algorithm.h"
 #include "public/debug.h"
-#include "adapter.h"
+#include "SegmentHelper.h"
+#include "public/ConvertUtil.h"
+#include "Card.h"
+#include <map>
+#include <vector>
 
+using namespace std;
 
 #pragma warning (disable : 4020)
 #pragma warning (disable : 4996)
@@ -40,6 +48,13 @@ static unsigned char initCtrl[0x4]=
 #define ISGWCARD(cardno)   (cardno == 1) 
 #define ISAPTSCANCARD {if (apt_ScanCard() != 0) return CardScanErr;}
 
+#define SAFE_DELETE(a)  if (a != NULL) { delete(a);a = NULL;}
+#define SAFE_DELETE_C(a)  if (a != NULL) { free(a);a = NULL;}
+
+//M1卡时会将一部分在第2块的数据保存在第五块区域，当只访问第二扇区时
+bool g_OnlySecond = false;
+struct CardDevice *Instance;
+
 static int GetControlBuff(unsigned char *pControl, int nSecr);
 static int GetWriteWord(const unsigned char *pControl);
 static int iGetKeySeed(int type, unsigned char *seed);
@@ -66,10 +81,112 @@ static int	M1LastInit(void*);
 //为链表分配内存
 static int	M1CallocForList(struct RWRequestS*);
 
-extern  struct CardDevice *Instance;
+//cardops
+static int InitionM1GList(char *xml);
+
 
 adapter M1Adapter;
+CardOps g_CardOps;
+static struct XmlProgramS *g_XmlListHead = NULL;
+static CSegmentHelper *g_SegHelper = NULL;
 
+static int InitM1GlobalList() 
+{
+	if (g_XmlListHead) {
+		return 0;
+	}
+
+	// 在资源文件里边提取XML文件并且初始化他
+	HINSTANCE hInstance = ::LoadLibrary("BHGX_CardLib.dll");
+	HRSRC hResInfo = ::FindResource(hInstance, MAKEINTRESOURCE(IDR_XML2),"XML");
+	HGLOBAL hgRes = ::LoadResource(hInstance, hResInfo);
+	DWORD cbRes = ::SizeofResource(hInstance, hResInfo);
+	char *pvRes = (char *)::LockResource(hgRes);
+	if(!pvRes){	
+		LogPrinter("加载xml文件错误\n");
+		return CardInitErr;
+	}
+
+	// 如果已经分配了链表
+	if(g_XmlListHead)
+		return -2;
+
+	// 初始化全局列表
+	InitionM1GList(pvRes);
+	return 0;
+}
+
+static int InitionM1GList(char *xml)
+{
+	if (g_XmlListHead == NULL){
+		g_XmlListHead = (struct XmlProgramS*)malloc(sizeof(struct XmlProgramS));
+		g_XmlListHead->SegHeader = g_XmlListHead->SegTailer = NULL;
+	}
+
+	TiXmlDocument *XmlDoc;
+	TiXmlElement  *RootElement;
+	TiXmlElement  *Program;
+	TiXmlElement  *Segment;
+	TiXmlElement  *Colum;
+
+	XmlDoc = new TiXmlDocument();
+	XmlDoc->Parse(xml);
+	RootElement = XmlDoc->RootElement();
+
+	Program = RootElement->FirstChildElement();
+	Segment = Program->FirstChildElement();
+	while(Segment) 
+	{
+		struct XmlSegmentS *pSeg = (struct XmlSegmentS *)malloc(sizeof(struct XmlSegmentS));
+		memset(pSeg, 0, sizeof(struct XmlSegmentS));
+		pSeg->ColumnHeader = pSeg->ColumnTailer = NULL;
+
+		// 插入链表
+		if(g_XmlListHead->SegHeader) {
+			g_XmlListHead->SegTailer->Next = pSeg;
+			g_XmlListHead->SegTailer = pSeg;
+		}  else {
+			g_XmlListHead->SegHeader = g_XmlListHead->SegTailer = pSeg;
+		}
+
+		// 对元素进行赋值
+		pSeg->ID =  atoi(Segment->Attribute("ID"));
+
+		// 插入链表中元素
+		Colum = Segment->FirstChildElement();
+		while(Colum) 
+		{
+			struct XmlColumnS *pColmn = (struct XmlColumnS *)malloc(sizeof(struct XmlColumnS));
+			memset(pColmn, 0, sizeof(struct XmlColumnS));
+			pColmn->Next = NULL;
+
+			// 插入元素
+			if(pSeg->ColumnHeader) {
+				pSeg->ColumnTailer->Next = pColmn;
+				pSeg->ColumnTailer = pColmn;
+			} else{
+				pSeg->ColumnHeader = pColmn;
+				pSeg->ColumnTailer = pColmn;
+			}
+
+			// 对元素进行赋值
+			pColmn->parent = pSeg;
+			pColmn->ID = atoi(Colum->Attribute("ID"));
+			strcpy_s(pColmn->Source ,30 ,Colum->Attribute("SOURCE"));
+			pColmn->Offset = atoi(Colum->Attribute("OFFSET"));
+			pColmn->CheckInfo.M1Info.ColumnBit = atoi(Colum->Attribute("COLUMNBIT"));
+			pColmn->CheckInfo.M1Info.Mask = atoi(Colum->Attribute("MASK"));
+
+			// 迭代下一个元素
+			Colum = Colum->NextSiblingElement();
+		}
+
+		// 迭代下一个元素
+		Segment = Segment->NextSiblingElement();
+	}
+
+	return 0;
+}
 /**
 *
 */
@@ -81,12 +198,9 @@ static int str2bcd(const unsigned char *str, unsigned  char *bcd, int len)
 	{		
 		j = i >> 1;	
 
-		if(i & 1) 
-		{
+		if(i & 1) {
 			bcd[j] |= (str[i-1] - 48) << 4;
-		}
-		else
-		{
+		} else {
 			bcd[j]=str[i+1] -48;
 		}
 	}
@@ -104,12 +218,9 @@ static int bcd2str(const unsigned char *bcd, unsigned char *str, int len)
 	for(i=0; i < len; i++) 
 	{
 		j = i >> 1;
-		if(i & 1) 
-		{
+		if(i & 1) {
 			str[i] |= (bcd[j] & 0x0f) + 48;
-		}	
-		else 
-		{
+		}else {
 			str[i] = (bcd[j] >> 4) + 48;
 		}
 	}
@@ -315,7 +426,7 @@ static int iGetKeySeed(int type, unsigned char *seed)
 	}
 
 done:
-	return strlen(seed);
+	return strlen((char*)seed);
 }
 
 
@@ -795,7 +906,7 @@ int  M1ReadCard(struct RWRequestS *list, void *apt)
 	return res;
 }
 
-int M1WriteCard(struct RWRequestS *list,  adapter *apt)
+int M1WriteCard(struct RWRequestS *list,  void *apt)
 {
 	struct RWRequestS *AgentList = NULL;
 	int res = 0;
@@ -827,7 +938,391 @@ static int	M1CallocForList(struct RWRequestS* request)
 	return 0;
 }
 
-int __stdcall InitM1CardOps()
+/**
+*
+*/
+
+//将两个字段的内容合并成一个字段，从第5块合并数据到
+static int CombineColValue(struct XmlColumnS *ColumnElement, 
+						   std::pair<int,int> pairCol, 
+						   char sep, struct XmlSegmentS *Segment,
+						   char *buff)
+{
+	if (sep == 0 && strlen(ColumnElement->Value)/5 <= ColumnElement->CheckInfo.M1Info.ColumnBit/64) {
+		strcpy(buff, ColumnElement->Value);
+		return 0;
+	}
+	if (ColumnElement->ID == pairCol.first)
+	{
+		struct XmlSegmentS *pSegTel = Segment;
+		struct XmlSegmentS *pSegPri = NULL;
+		while (pSegTel->Next != NULL){
+			pSegPri = pSegTel;
+			pSegTel = pSegTel->Next;
+		}
+
+		if (pSegTel->ID == 5){
+			struct XmlColumnS *pTel = pSegTel->ColumnHeader;
+			struct XmlColumnS *pPri = NULL;
+			while (pTel->Next != NULL && pTel->ID != pairCol.second){
+				pPri = pTel;
+				pTel = pTel->Next;
+			}
+
+			if (pTel->ID == pairCol.second){
+				if (strlen(pTel->Value) > 0){
+					if (sep != 0)
+						sprintf_s(buff, 100, "%s%c%s", ColumnElement->Value, sep,pTel->Value);
+					else
+						sprintf_s(buff, 100, "%s%s", ColumnElement->Value,pTel->Value);
+				} else {
+					strcpy(buff, ColumnElement->Value);
+				}
+
+				pPri->Next = pTel->Next;
+				free(pTel);
+			}
+		}
+	}
+	return 0;
+}
+
+static int M1ConvertXmlByList(struct XmlSegmentS *listHead, char *xml, int *length)
+{
+	struct XmlSegmentS *SegmentElement = NULL;
+	struct XmlColumnS *ColumnElement = NULL;
+
+	TiXmlDocument *XmlDoc;
+	TiXmlElement *RootElement;
+	TiXmlDeclaration HeadDec;
+	TiXmlElement *Segment;
+	TiXmlElement *Cloumn;
+	TiXmlPrinter Printer;
+
+	char buf[10];
+	char *pBuf = NULL;
+	char ColmnBuf[100];
+	ZeroMemory(ColmnBuf, sizeof(ColmnBuf));
+
+	// 创建XML文档
+	XmlDoc = new TiXmlDocument();
+
+	// 增加XML的头部说明
+	HeadDec.Parse("<?xml version=\"1.0\" encoding=\"gb2312\" ?>", 0, TIXML_ENCODING_UNKNOWN);
+	XmlDoc->LinkEndChild(&HeadDec);
+
+	// 产生TiXMLDoc文档
+	RootElement = new TiXmlElement("SEGMENTS");
+	RootElement->SetAttribute("PROGRAMID", "001");
+
+	for(SegmentElement = listHead; SegmentElement; 
+		SegmentElement = SegmentElement->Next){
+			memset(buf, 0, 10);
+			sprintf_s(buf, 10, "%d", SegmentElement->ID);
+
+			Segment = new TiXmlElement("SEGMENT");
+			Segment->SetAttribute("ID",buf);
+
+			int nNameSeg = SegmentElement->ID;
+
+			for(ColumnElement = SegmentElement->ColumnHeader; ColumnElement; 
+				ColumnElement = ColumnElement->Next){
+					memset(buf, 0, 10);
+					sprintf_s(buf, 10, "%d", ColumnElement->ID);
+
+					Cloumn = new TiXmlElement("COLUMN");
+					Cloumn->SetAttribute("ID", buf);
+					Cloumn->SetAttribute("SOURCE", ColumnElement->Source);
+
+					if (nNameSeg == 2){
+						std::string szName;
+						struct XmlSegmentS *pSegPri, *pCur = NULL;
+
+						switch (ColumnElement->ID){
+				case 9:
+					CombineColValue(ColumnElement, std::make_pair(9,78),0, SegmentElement, ColmnBuf);
+					if (Is_IntName(ColmnBuf)){
+						szName = CConvertUtil::uf_gbk_int_covers(ColmnBuf,"togbk");
+						memcpy(ColmnBuf, szName.c_str(), szName.size());
+						ColmnBuf[szName.size()] = 0;
+					}
+					break;
+				case 10://add by yanggx5-28 为解决身份证末尾为字母的错误
+					pBuf = ColumnElement->Value;
+					while (*(pBuf) != 0)
+						pBuf++;
+					pBuf--;
+					if (*pBuf > '9' || *pBuf < '0')
+						*pBuf = 'X';
+
+					strcpy(ColmnBuf, ColumnElement->Value);
+					break;
+				case 22:
+					CombineColValue(ColumnElement, std::make_pair(22,75), '/', SegmentElement, ColmnBuf);
+					break;
+				case 24:
+					CombineColValue(ColumnElement, std::make_pair(24,77),0, SegmentElement, ColmnBuf);
+					if (Is_IntName(ColmnBuf)){
+						szName = CConvertUtil::uf_gbk_int_covers(ColmnBuf,"togbk");
+						memcpy(ColmnBuf, szName.c_str(), szName.size());
+						ColmnBuf[szName.size()] = 0;
+					}
+					break;
+
+				case 25:
+					CombineColValue(ColumnElement, std::make_pair(25,76), '/', SegmentElement, ColmnBuf);
+					pCur = SegmentElement;
+					while (pCur->Next != NULL){
+						pSegPri = pCur;
+						pCur = pCur->Next;
+					}
+
+					if (IsAllTheSameFlag((unsigned char*)&pCur->ColumnHeader->Value,18, '0') == 0){
+							pSegPri->Next = pCur->Next;
+							SAFE_DELETE_C(pCur);
+					}
+					break; 
+				default:
+					strcpy(ColmnBuf, ColumnElement->Value);
+					break;
+
+						}
+					} else {
+						strcpy(ColmnBuf, ColumnElement->Value);
+					}
+					Cloumn->SetAttribute("VALUE", ColmnBuf);
+
+					Segment->LinkEndChild(Cloumn);   
+			}
+
+			RootElement->LinkEndChild(Segment);
+	}
+	XmlDoc->LinkEndChild(RootElement);
+
+	// 把XML文档的内容传给上层
+	XmlDoc->Accept(&Printer);
+	*length = (int)Printer.Size();
+	memcpy(xml, Printer.CStr(), *length);
+
+	return 0;
+}
+
+static int InsertColumnBySplite(struct XmlSegmentS *SegmentElement, 
+								std::map<int,std::string> &mapSplite, 
+								struct XmlSegmentS *pSeg, 
+								std::pair<int,int> pairCol)
+{
+	struct XmlSegmentS *TempSegmentElement = NULL;
+	struct XmlColumnS  *pColNext = pSeg->ColumnHeader;
+	struct XmlColumnS *ColumnElement, *TempColumnElement = NULL;
+	std::map<int, std::string>::iterator iter = mapSplite.find(pairCol.first);
+	if (iter != mapSplite.end()){
+		ColumnElement = g_SegHelper->FindColumnByID(SegmentElement->ColumnHeader, pairCol.second);
+		if (NULL != ColumnElement){
+
+			std::string value = iter->second;
+			int len = value.length();
+			TempColumnElement = (struct XmlColumnS *)malloc(sizeof(struct XmlColumnS));
+			memcpy(TempColumnElement, ColumnElement, sizeof(struct XmlColumnS));
+			TempColumnElement->Value = (char*)malloc(len + 1);
+			TempColumnElement->Value[len] = 0;
+			TempColumnElement->Next = NULL;
+			strcpy_s(TempColumnElement->Value, len+1, value.c_str());
+			if (pSeg->ColumnHeader == NULL){
+
+				pSeg->ColumnHeader = TempColumnElement;
+				pColNext = pSeg->ColumnHeader;
+			} else{
+				if (pColNext != NULL){
+					while (pColNext->Next != NULL){
+						pColNext = pColNext->Next;
+					}
+				}
+				pColNext->Next = TempColumnElement;
+			}
+		}
+	}
+	return 0;
+}
+
+
+/**
+*
+*/
+static struct XmlSegmentS* M1ConvertXmltoList(char *xml)
+{
+	struct XmlSegmentS *SegmentElement = NULL;
+	struct XmlSegmentS *CurrSegmentElement = NULL;
+	struct XmlSegmentS *TempSegmentElement = NULL;
+	struct XmlSegmentS *result = NULL;
+
+	struct XmlColumnS  *ColumnElement = NULL;
+	struct XmlColumnS  *CurrColumnElement = NULL;
+	struct XmlColumnS  *TempColumnElement = NULL;
+	struct XmlColumnS  *pAddtionElement = NULL;
+	struct XmlColumnS  *pAddtionElement2 = NULL;
+	struct XmlSegmentS *XmlListHead = g_XmlListHead->SegHeader;
+
+	TiXmlDocument *XmlDoc;
+	TiXmlElement  *RootElement;
+	TiXmlElement  *Segment;
+	TiXmlElement  *Colum;
+
+	std::map<int, std::string> mapSplite;
+
+	int ID;
+
+	// 解析XML语句
+	XmlDoc = new TiXmlDocument();
+	XmlDoc->Parse(xml);
+	RootElement = XmlDoc->RootElement();
+
+	Segment = RootElement->FirstChildElement();
+	while(Segment){
+		ID = atoi(Segment->Attribute("ID"));
+		SegmentElement = g_SegHelper->FindSegmentByID(XmlListHead, ID);
+		if (NULL == SegmentElement)
+			break;
+
+		TempSegmentElement = (struct XmlSegmentS *)malloc(sizeof(struct XmlSegmentS));
+		memcpy(TempSegmentElement, SegmentElement, sizeof(struct XmlSegmentS));
+		TempSegmentElement->ColumnHeader = NULL;
+		TempSegmentElement->ColumnTailer = NULL;
+		TempSegmentElement->Next = NULL;
+
+		// 加入新的元素
+		if(result){
+			CurrSegmentElement->Next = TempSegmentElement;
+			CurrSegmentElement = TempSegmentElement;
+		} else {
+			CurrSegmentElement = TempSegmentElement;
+			result = CurrSegmentElement;
+		}
+
+		Colum = Segment->FirstChildElement();
+		while(Colum){
+			int nColumnID = atoi(Colum->Attribute("ID"));
+			ColumnElement = g_SegHelper->FindColumnByID(SegmentElement->ColumnHeader, nColumnID);
+
+			if (NULL == ColumnElement)
+				break;
+
+			TempColumnElement = (struct XmlColumnS *)malloc(sizeof(struct XmlColumnS));
+			memcpy(TempColumnElement, ColumnElement, sizeof(struct XmlColumnS));
+			TempColumnElement->Value = (char*)malloc(TempColumnElement->CheckInfo.M1Info.ColumnBit +1); 
+			TempColumnElement->Next = NULL;
+
+			//add 1020
+			char strCheckValue[100];
+			memset(strCheckValue, 0, sizeof(strCheckValue));
+			CheckSpace(Colum->Attribute("VALUE"), 
+				strlen(Colum->Attribute("VALUE")), strCheckValue);
+
+			int nBit = TempColumnElement->CheckInfo.M1Info.ColumnBit/4;
+			if(strlen(Colum->Attribute("VALUE")) == 0 || 
+				std::string(Colum->Attribute("VALUE")) == string(" ")) {
+					memset(strCheckValue, 'f', TempColumnElement->CheckInfo.M1Info.ColumnBit%4 ? nBit+1:nBit);
+			} else {
+				if (ID == 2) {
+					if (nColumnID == 9 || nColumnID == 24) {
+						if (Is_GbkName(strCheckValue)) {
+							std::string szName = CConvertUtil::uf_gbk_int_covers(strCheckValue, "toint");
+							strcpy(strCheckValue, szName.c_str());
+						}
+
+						if (nColumnID == 24 && strlen(strCheckValue) > 32){
+							mapSplite[nColumnID] = std::string(strCheckValue).substr(32, strlen(strCheckValue));
+							strCheckValue[32] = 0;
+						} else if (nColumnID == 9 && strlen(strCheckValue) > 64) {
+							mapSplite[nColumnID] = std::string(strCheckValue).substr(64, strlen(strCheckValue));
+							strCheckValue[64] = 0;
+						}
+					}
+
+					//addby yanggx 1124
+					if (nColumnID == 22){
+						std::vector<std::string> vecPhone;
+						vecPhone = split(std::string(strCheckValue), "/");
+						strcpy_s(strCheckValue, sizeof(strCheckValue), vecPhone[0].c_str());
+						if (vecPhone.size() > 1){
+							mapSplite[22] = vecPhone[1];
+						} else {
+							mapSplite[22] = "fffffffffff";
+						}
+
+					}
+
+					//addby yanggx 1124
+					if (nColumnID == 25){
+						std::vector<std::string> vecPhone;
+						vecPhone = split(std::string(strCheckValue), "/");
+						strcpy_s(strCheckValue, sizeof(strCheckValue), vecPhone[0].c_str());
+						if (vecPhone.size() > 1) {
+							mapSplite[25] = vecPhone[1];
+						} else {
+							mapSplite[25] = "fffffffffff";
+						}
+					}
+				}
+			}
+
+			// 赋值
+			strcpy(TempColumnElement->Value, strCheckValue);
+
+			// 加入链表  // 已经加入过了
+			if(CurrSegmentElement->ColumnHeader) {
+				CurrColumnElement->Next = TempColumnElement;
+				CurrColumnElement = TempColumnElement;
+			} else {
+				CurrColumnElement = TempColumnElement;
+				CurrSegmentElement->ColumnHeader = CurrColumnElement;
+			}
+
+			// 向后迭代
+			Colum = Colum->NextSiblingElement();
+		}
+
+		// 向后迭代
+		Segment = Segment->NextSiblingElement();
+	}
+
+	SegmentElement = g_SegHelper->FindSegmentByID(XmlListHead, 5);
+	if (NULL != SegmentElement) {
+		struct XmlSegmentS *pTel = result;
+		while (pTel->Next != NULL){
+			pTel = pTel->Next;
+		}
+
+		struct XmlSegmentS *pSeg = pTel;
+		if (pTel->ID != 5){
+			pSeg = (struct XmlSegmentS *)malloc(sizeof(struct XmlSegmentS));
+			memcpy(pSeg, SegmentElement, sizeof(struct XmlSegmentS));
+			pSeg->ID = 5;
+			pSeg->ColumnHeader = NULL;
+			pSeg->ColumnTailer = NULL;
+			pSeg->Next = NULL;
+			pTel->Next = pSeg;
+		}
+
+		//addby yanggx 0228
+		InsertColumnBySplite(SegmentElement, mapSplite, pSeg, std::make_pair(22,75));
+		InsertColumnBySplite(SegmentElement, mapSplite, pSeg, std::make_pair(25,76));
+		InsertColumnBySplite(SegmentElement, mapSplite, pSeg, std::make_pair(24,77));
+		InsertColumnBySplite(SegmentElement, mapSplite, pSeg, std::make_pair(9,78));
+	}
+
+	// 返回结果
+	return result;
+}
+
+static void M1CallocForColmn(struct XmlColumnS *result) 
+{
+	int len = result->CheckInfo.M1Info.ColumnBit;
+	result->Value = (char*)malloc(len + 1);
+	memset(result->Value, 0, len + 1);
+}
+
+static int __stdcall InitM1Adapter()
 {
 	M1Adapter.type = eM1Card;
 	M1Adapter.iLastInit = M1LastInit;
@@ -835,4 +1330,23 @@ int __stdcall InitM1CardOps()
 	M1Adapter.iReadCard = M1ReadCard;
 	M1Adapter.iWriteCard = M1WriteCard;
 	return 0;
+}
+
+CardOps * __stdcall InitM1CardOps()
+{
+	InitM1Adapter();
+	g_CardOps.iInitGList = InitM1GlobalList;
+	g_CardOps.iConvertXmlByList = M1ConvertXmlByList;
+	g_CardOps.iConvertXmltoList = M1ConvertXmltoList;
+	g_CardOps.iCallocForColmn =  M1CallocForColmn;
+	g_CardOps.cardAdapter = &M1Adapter;
+
+	g_SegHelper = new CSegmentHelper(g_XmlListHead, &g_CardOps); 
+	return &g_CardOps;
+}
+
+void __stdcall M1clear()
+{
+	SAFE_DELETE(g_SegHelper);
+	SAFE_DELETE_C(g_XmlListHead);
 }

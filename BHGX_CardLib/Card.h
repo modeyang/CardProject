@@ -2,6 +2,7 @@
 #define _CARD_H
 #include <assert.h>
 
+
 #ifdef  __cplusplus
 extern "C" {
 #endif
@@ -182,7 +183,8 @@ typedef struct CardOps
 	ConvertXmltoList	iConvertXmltoList;
 	CallocForColmn      iCallocForColmn;
 
-	adapter		      *cardAdapter;
+	struct XmlProgramS *programXmlList;
+	adapter		       *cardAdapter;
 }CardOps;
 
 void      CardUnregisterOps(int type);

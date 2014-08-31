@@ -34,8 +34,7 @@ bool inline Is_IntName(char *szValue)
 	int i=0;
 	while (szValue[i] != 0)
 	{
-		if (szValue[i] < 0)
-		{
+		if (szValue[i] < 0){
 			return false;
 		}
 		++i;

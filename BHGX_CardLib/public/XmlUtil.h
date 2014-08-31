@@ -15,4 +15,7 @@ public:
 	static void CreateResponXML(int nID, const char *szResult, char *RetXML);
 	static void parseHISXml(const char *szReader, std::map<int, std::string> &mapAll);
 	static int  paserLogXml(char *pszLogXml, std::map<int, std::map<int, std::string> > &mapLogConfig);
+
+	static int CheckCardXMLValid(std::string &pszCardXml);
+
 };

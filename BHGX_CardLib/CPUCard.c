@@ -46,6 +46,7 @@
 #define BIN_END		22
 
 extern  struct RecFolder g_recIndex[30];
+extern  struct CardDevice *Instance;
 
 //Bin文件读写权限
 static int g_BinAccessMap[BIN_START] = {0};
@@ -80,12 +81,6 @@ static void ParseWriteContent(struct RWRequestS *list);
 static void* SpliteSegments(struct RWRequestS *list);
 
 static BOOL IsSameFile(struct RWRequestS *oldReq, struct RWRequestS *newReq);
-
-
-//处理事件链表
-extern struct XmlProgramS *g_XmlListHead;
-extern struct CardDevice *Instance;
-
 
 static int GetFloderKeyID(char *folder)
 {
@@ -493,15 +488,16 @@ static BOOL IsSameFile(struct RWRequestS *oldReq, struct RWRequestS *newReq)
 }
 
 
-int __stdcall InitCpuCardOps()
+adapter * __stdcall InitCpuAdapter()
 {
 	CpuAdapter.type = eCPUCard;
 	CpuAdapter.iLastInit = CpuLastInit;
 	CpuAdapter.iCallocForList = CpuCallocForList;
 	CpuAdapter.iReadCard = CpuReadCard;
 	CpuAdapter.iWriteCard = CpuWriteCard;
-	return 0;
+	return &CpuAdapter;
 }
+
 
 static void dbgmem(unsigned char *begin, int len)
 {

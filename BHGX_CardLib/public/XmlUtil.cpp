@@ -1,4 +1,5 @@
 #include "XmlUtil.h"
+#include "Markup.h"
 #include "../tinyxml/headers/tinyxml.h"
 
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
@@ -136,5 +137,42 @@ int CXmlUtil::paserLogXml(char *pszLogXml, std::map<int, std::map<int, std::stri
 		mapLogConfig[SegID] = mapConfig;
 		Segment = Segment->NextSiblingElement();
 	}
+	return 0;
+}
+
+
+int CXmlUtil::CheckCardXMLValid(std::string &pszCardXml)
+{
+	std::string strCardXML = pszCardXml.substr(0, pszCardXml.find(">"));
+	strCardXML = strlwr((char*)strCardXML.c_str());
+	int pos = strCardXML.find("gb2312");
+
+	std::string &dstXml = pszCardXml;
+	if (pos < 0){
+		dstXml.replace(0, dstXml.find(">")+1, 
+			"<?xml version=\"1.0\" encoding=\"gb2312\" ?>");
+	}
+
+	CMarkup xml;
+	xml.SetDoc(dstXml.c_str());
+	if (!xml.FindElem("SEGMENTS")){
+		return -1;
+	}
+	xml.IntoElem();
+	if (! xml.FindElem("SEGMENT")){
+		return -1;
+	}
+
+	xml.IntoElem();
+	if (! xml.FindElem("COLUMN")) {
+		return -1;
+	}
+
+	if (!xml.FindAttrib("ID") ||
+		!xml.FindAttrib("VALUE")) {
+			return -1;
+	}
+	xml.OutOfElem();
+	xml.OutOfElem();
 	return 0;
 }

@@ -14,7 +14,7 @@ struct RecFolder{
 };
 
 
-int __stdcall InitCpuCardOps();
+adapter* __stdcall InitCpuAdapter();
 
 int __stdcall FormatCpuCard(char c);
 
