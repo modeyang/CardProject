@@ -2,8 +2,8 @@
 #include <malloc.h>
 #include "CPUCard.h"
 #include "device.h"
-#include "public/liberr.h"
 #include "adapter.h"
+#include "public/liberr.h"
 #include "public/algorithm.h"
 
 
@@ -115,8 +115,6 @@ static int GetUpdateKeyID(int SegID,int mode)
 	}
 	return -1;
 }
-
-
 
 static int  CpuLastInit(void *data)
 {
@@ -498,17 +496,6 @@ adapter * __stdcall InitCpuAdapter()
 	return &CpuAdapter;
 }
 
-
-static void dbgmem(unsigned char *begin, int len)
-{
-	int i = 0;
-	for(i=0; i<len; i++)
-		printf("%02x ",begin[i]);
-
-	printf("\n");
-
-	return;
-}
 
 int __stdcall FormatCpuCard(char c)
 {

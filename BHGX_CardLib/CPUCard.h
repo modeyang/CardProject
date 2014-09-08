@@ -13,7 +13,6 @@ struct RecFolder{
 	BYTE	fileName[10];     //EF, ED....
 };
 
-
 adapter* __stdcall InitCpuAdapter();
 
 int __stdcall FormatCpuCard(char c);

@@ -1,6 +1,7 @@
 #ifndef SEGMENTHELPER_H
 #define SEGMENTHELPER_H
 #pragma once
+
 #include "Card.h"
 #include "tinyxml/headers/tinyxml.h"
 

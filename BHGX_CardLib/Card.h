@@ -1,12 +1,16 @@
 #ifndef _CARD_H
 #define _CARD_H
 #include <assert.h>
+#include <stdio.h>
 
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
+#pragma warning (disable : 4996)
+#pragma warning (disable : 4267)
+#pragma warning (disable : 4020)
 
 #define	CARDSEAT_RF		0	//0：非接用户卡 
 #define CARDSEAT_PSAM1	1	//1：SAM卡编号1
@@ -16,6 +20,18 @@ extern "C" {
 #define CMD_LED		2
 
 typedef unsigned char BYTE;
+
+
+#define SAFE_DELETE(a)  if (a != NULL) { delete(a);a = NULL;}
+#define SAFE_DELETE_C(a)  if (a != NULL) { free(a);a = NULL;}
+
+#define NR_MASK(nr) (1 << nr)
+#define NOT_NR_MASK(nr) ~(1 << nr)
+
+#define SETBIT(byte, nr) byte |= NR_MASK(nr)
+#define CLRBIT(byte, nr) byte &= NOT_NR_MASK(nr)
+
+#define SAFEARRAY_DELETE(a)  if (a != NULL) { delete [] a ;a = NULL;}
 
 //CPU每个字段的类型
 typedef enum eItemType
@@ -33,6 +49,7 @@ typedef enum eFileType
 	eCycType,            //循环文件，利用appendRec
 	eSureType            //定长文件,利用SignRec
 }eFileType;
+
 
 
 /**
@@ -193,8 +210,7 @@ void      CardRegisterOps(int type, CardOps *ops);
 
 CardOps*  GetCardOps(int type);
 
-int       IsAllTheSameFlag(const unsigned char *szBuf,
-					       int nLen, unsigned char cflag);
+int       IsAllTheSameFlag(const unsigned char *szBuf, int nLen, unsigned char cflag);
 
 #ifdef  __cplusplus
 };

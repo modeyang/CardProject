@@ -35,6 +35,8 @@ enum ErrType
 	CardForbidden,
 	CardWarnning,
 	CardMedicalFailed,
+	CardNotMedicalCard,
+	ConnectWebServerFailed,
 };
 
 static char *errString[] =
@@ -65,6 +67,8 @@ static char *errString[] =
 	"该卡已注销,无法使用",
 	"该卡已挂失，暂时无法使用",
 	"农合号为空",
+	"非农合卡，请重新换卡",
+	"连接webserver失败",
 };
 
 char *_err(int errcode);

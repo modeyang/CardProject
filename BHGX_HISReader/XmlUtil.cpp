@@ -1,4 +1,5 @@
 #include "XmlUtil.h"
+#include "Markup.h"
 #include "tinyxml/headers/tinyxml.h"
 
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
@@ -12,7 +13,6 @@ CXmlUtil::CXmlUtil(void)
 CXmlUtil::~CXmlUtil(void)
 {
 }
-
 
 int CXmlUtil::GetQueryInfoForOne(char *QueryXML, std::string &szCardNO)
 {
@@ -85,33 +85,28 @@ void CXmlUtil::CreateResponXML(int nID, const char *szResult, char *RetXML)
 }
 
 
-void CXmlUtil::parseHISXml(const char *szReader, std::map<int, std::string> &mapAll)
+void CXmlUtil::parseHISXml(const char *szReader, std::map<std::string, ColumInfo> &mapColumInfo)
 {
 	TiXmlDocument XmlDoc;
-
 	TiXmlElement  *RootElement;
 	TiXmlElement  *Segment;
 	TiXmlElement  *Colum;
 	XmlDoc.Parse(szReader);
 	RootElement = XmlDoc.RootElement();
 	Segment = RootElement->FirstChildElement();
-	if(Segment){
+	while(Segment){
 		Colum = Segment->FirstChildElement();
-		std::string strValue;
 		while (Colum){
-			int nID = atoi(Colum->Attribute("ID"));
-			strValue = Colum->Attribute("VALUE");
-			mapAll[nID] = strValue;
+			ColumInfo info;
+			info.ID = atoi(Colum->Attribute("ID"));
+			info.strSource = Colum->Attribute("SOURCE");
+			info.strValue = Colum->Attribute("VALUE");
+			mapColumInfo[info.strSource] = info;
 			Colum = Colum->NextSiblingElement();
 		}
-	}
-	Segment = Segment->NextSiblingElement();
-	if (Segment) {
-		Colum = Segment->FirstChildElement();
-		mapAll[39] = Colum->Attribute("VALUE");
+		Segment = Segment->NextSiblingElement();
 	}
 }
-
 
 int CXmlUtil::paserLogXml(char *pszLogXml, std::map<int, std::map<int, std::string> > &mapLogConfig)
 {
@@ -138,3 +133,39 @@ int CXmlUtil::paserLogXml(char *pszLogXml, std::map<int, std::map<int, std::stri
 	}
 	return 0;
 }
+
+int CXmlUtil::CheckCardXMLValid(std::string &pszCardXml)
+ {
+	 std::string strCardXML = pszCardXml.substr(0, pszCardXml.find(">"));
+	 strCardXML = strlwr((char*)strCardXML.c_str());
+	 int pos = strCardXML.find("gb2312");
+
+	 std::string &dstXml = pszCardXml;
+	 if (pos < 0){
+		 dstXml.replace(0, dstXml.find(">")+1, 
+			 "<?xml version=\"1.0\" encoding=\"gb2312\" ?>");
+	 }
+
+	 CMarkup xml;
+	 xml.SetDoc(dstXml.c_str());
+	 if (!xml.FindElem("SEGMENTS")){
+		 return -1;
+	 }
+	 xml.IntoElem();
+	 if (! xml.FindElem("SEGMENT")){
+		 return -1;
+	 }
+
+	 xml.IntoElem();
+	 if (! xml.FindElem("COLUMN")) {
+		 return -1;
+	 }
+
+	 if (!xml.FindAttrib("ID") ||
+		 !xml.FindAttrib("VALUE")) {
+			 return -1;
+	 }
+	 xml.OutOfElem();
+	 xml.OutOfElem();
+	 return 0;
+ }

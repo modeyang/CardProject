@@ -183,6 +183,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\LogHelper.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Markup.cpp"
 				>
 			</File>
@@ -226,6 +230,10 @@
 			>
 			<File
 				RelativePath=".\BHGX_HISReader.h"
+				>
+			</File>
+			<File
+				RelativePath=".\LogHelper.h"
 				>
 			</File>
 			<File

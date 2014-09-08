@@ -1341,6 +1341,9 @@ CardOps * __stdcall InitM1CardOps()
 	g_CardOps.iCallocForColmn =  M1CallocForColmn;
 	g_CardOps.cardAdapter = &M1Adapter;
 
+	g_CardOps.iInitGList();
+	g_CardOps.programXmlList = g_XmlListHead;
+
 	g_SegHelper = new CSegmentHelper(g_XmlListHead, &g_CardOps); 
 	return &g_CardOps;
 }

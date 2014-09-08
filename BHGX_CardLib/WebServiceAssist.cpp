@@ -1,44 +1,140 @@
+#include "Card.h"
+#include "public/XmlUtil.h"
+#include "public/liberr.h"
 #include "WebServiceAssist.h"
+#include "BHGX_CardLib.h"
+#include "ns_pipeClient/n_USCOREapiSoap.nsmap"
+#include "ns_pipeClient/soapn_USCOREapiSoapProxy.h"
 
 #pragma warning (disable : 4996)
 
 #include "tinyxml/headers/tinyxml.h"
-
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
-
-std::map<std::string, std::string> m_mapCodeDesc;
-std::map<int, std::string> m_mapCardStatus;
-
 using namespace std;
 
-void CreateResponXML(int nID, const char *szResult, char *RetXML)
+WebServiceUtil::WebServiceUtil()
 {
-	TiXmlDocument *XmlDoc;
-	TiXmlElement *RootElement;
-	TiXmlElement *Segment;
-	TiXmlDeclaration HeadDec;
-	TiXmlPrinter Printer;
-
-	// 创建XML文档
-	XmlDoc = new TiXmlDocument();
-
-	// 增加XML的头部说明
-	HeadDec.Parse("<?xml version=\"1.0\" encoding=\"gb2312\" ?>", 0, TIXML_ENCODING_UNKNOWN);
-	XmlDoc->LinkEndChild(&HeadDec);
-
-	RootElement = new TiXmlElement("CardProcess");
-	Segment = new TiXmlElement("ReturnInfo");
-	Segment->SetAttribute("ID", nID);
-	Segment->SetAttribute("Desc", szResult);
-
-	RootElement->LinkEndChild(Segment);
-	XmlDoc->LinkEndChild(RootElement);
-
-	XmlDoc->Accept(&Printer);
-	strcpy(RetXML, Printer.CStr());
 }
 
-int GetCheckState(const std::string &strXML, std::string &strRetCode, std::string &strSec)
+WebServiceUtil::~WebServiceUtil()
+{
+}
+
+WebServiceUtil::WebServiceUtil(char * strCheckWSDL, char * strServerURL):
+m_strCheckWSDL(strCheckWSDL),
+m_strServerURL(strServerURL)
+{
+
+}
+
+bool WebServiceUtil::IsMedicalID(const std::string &strID)
+{
+	for (size_t i=0; i<strID.size(); ++i){
+		char ID = strID[i];
+		if (ID != 0x30){
+			return true;
+		}
+	}
+	return false;
+}
+
+int WebServiceUtil::NHCheckValid(std::string strCardNO, char *pszXml)
+{
+	int status = CardProcSuccess;
+	n_USCOREapiSoap soapUtil;
+	soapUtil.endpoint = m_strServerURL.c_str();
+	soap_init(soapUtil.soap);
+	soap_set_mode(soapUtil.soap,SOAP_C_UTFSTRING);
+
+	char *strCheckParams = new char[1024];
+	memset(strCheckParams, 0, 1024);
+	CreateCheckWsdlParams(strCardNO.c_str(), m_strCheckWSDL.c_str(), strCheckParams);
+
+	_ns1__nh_USCOREpipe pCheck;
+	pCheck.parms = strCheckParams;
+	_ns1__nh_USCOREpipeResponse pReturn;
+
+	pReturn.nh_USCOREpipeResult = new char[1024];
+
+	soapUtil.__ns2__nh_USCOREpipe(&pCheck, &pReturn);
+	if(soapUtil.soap->error) {   
+		status = ConnectWebServerFailed;
+		CXmlUtil::CreateResponXML(status, "与服务器连接失败", pszXml);
+	} else {
+		std::string strRetCode, strStatus;
+		std::string strXML = pReturn.nh_USCOREpipeResult;
+		GetCheckState(strXML, strRetCode, strStatus);
+
+		std::string strCheckDesc;
+		if (GetCheckRetDesc(strRetCode, strCheckDesc) == 0) {
+			status = CardCheckError;
+			CXmlUtil::CreateResponXML(status, strCheckDesc.c_str(), pszXml);
+		} else{
+			int nCardStatus = atoi(strStatus.c_str());
+			strCheckDesc.clear();
+
+			if (GetCardStatus(nCardStatus, strCheckDesc) == 0){
+				status = CardCheckError;
+				CXmlUtil::CreateResponXML(status, strCheckDesc.c_str(), pszXml);
+			}
+		}
+	}
+	SAFEARRAY_DELETE(strCheckParams);
+	SAFEARRAY_DELETE(pReturn.nh_USCOREpipeResult);
+
+	soap_end(soapUtil.soap);   
+	soap_done(soapUtil.soap); 
+	return status;
+}
+
+int WebServiceUtil::NHRegCard(std::string strCardNO, char *pszXml)
+{
+	int status = CardProcSuccess;
+	n_USCOREapiSoap soapUtil;
+	soapUtil.endpoint = m_strServerURL.c_str();
+	soap_init(soapUtil.soap);
+	soap_set_mode(soapUtil.soap,SOAP_C_UTFSTRING);
+
+	char* strRegParams = new char[1024];
+	memset(strRegParams, 0, 1024);
+	CreateRegWsdlParams(strCardNO.c_str(), strRegParams); 
+
+	_ns1__nh_USCOREpipe pCheck;
+	pCheck.parms = strRegParams;
+
+	_ns1__nh_USCOREpipeResponse pReturn;
+	pReturn.nh_USCOREpipeResult = new char[4096];
+
+	soapUtil.__ns2__nh_USCOREpipe(&pCheck, &pReturn);
+
+	if(soapUtil.soap->error){   
+		status = ConnectWebServerFailed;
+		CXmlUtil::CreateResponXML(status, "与服务器连接失败", pszXml); 
+	}  else {
+		std::string strRetCode, strStatus;
+		std::string strXML = pReturn.nh_USCOREpipeResult;
+		GetCheckState(strXML, strRetCode, strStatus);
+
+		std::string strCheckDesc;
+		if (GetCheckRetDesc(strRetCode, strCheckDesc) == 0) {
+			status = CardCheckError;
+			CXmlUtil::CreateResponXML(status, strCheckDesc.c_str(), pszXml);
+		} else {
+			FormatWriteInfo(strStatus.c_str(), pszXml);
+			status = iWriteInfo(pszXml);
+			if (status != CardProcSuccess) {
+				CXmlUtil::CreateResponXML(2, "卡回写失败", pszXml);
+			}
+		}
+	}
+	SAFEARRAY_DELETE(strRegParams);
+	SAFEARRAY_DELETE(pReturn.nh_USCOREpipeResult);
+	soap_end(soapUtil.soap);   
+	soap_done(soapUtil.soap); 
+	return status;
+}
+
+int WebServiceUtil::GetCheckState(const std::string &strXML, std::string &strRetCode, std::string &strSec)
 {
 	size_t nPos = strXML.find("\t");
 	if (nPos != -1){
@@ -51,7 +147,7 @@ int GetCheckState(const std::string &strXML, std::string &strRetCode, std::strin
 	return -1;
 }
 
-static int _FormatWrite(std::map<int, std::string> &mapAll, char *strFMTWrite)
+int WebServiceUtil::_FormatWrite(std::map<int, std::string> &mapAll, char *strFMTWrite)
 {
 	TiXmlDocument *XmlDoc;
 
@@ -88,7 +184,7 @@ static int _FormatWrite(std::map<int, std::string> &mapAll, char *strFMTWrite)
 	return 0;
 }
 
-int FormatWriteInfo(const char *strWrite, char *strFMTWrite)
+int WebServiceUtil::FormatWriteInfo(const char *strWrite, char *strFMTWrite)
 {
 	std::map<int, std::string> mapAll;
 	TiXmlDocument XmlDoc;
@@ -115,48 +211,9 @@ int FormatWriteInfo(const char *strWrite, char *strFMTWrite)
 	return 0;
 }
 
-int GetQueryMapInfo(char *QueryXML, std::map<std::string,std::string> &mapQuery)
-{
-	TiXmlDocument XmlDoc;
 
-	TiXmlElement  *RootElement;
-	TiXmlElement  *Segment;
-	TiXmlElement  *Colum;
-	XmlDoc.Parse(QueryXML);
-	RootElement = XmlDoc.RootElement();
-	Segment = RootElement->FirstChildElement();
-	if(Segment){
-		Colum = Segment->FirstChildElement();
-		if (Colum){
-			std::string szValue = Colum->Attribute("VALUE");
-			std::string szName = Colum->Attribute("Source");
-			mapQuery[szName] = szValue;
-		}
-	}
-	return mapQuery.size() > 0;
-}
 
-int GetQueryInfoForOne(char *QueryXML, std::string &szCardNO)
-{
-	TiXmlDocument XmlDoc;
-
-	TiXmlElement  *RootElement;
-	TiXmlElement  *Segment;
-	TiXmlElement  *Colum;
-	XmlDoc.Parse(QueryXML);
-	RootElement = XmlDoc.RootElement();
-	Segment = RootElement->FirstChildElement();
-	if(Segment){
-		Colum = Segment->FirstChildElement();
-		if (Colum){
-			szCardNO = Colum->Attribute("VALUE");
-			return 0;
-		}
-	}
-	return -1;;
-}
-
-int CreateCheckWsdlParams(const char *CardID, const char *pszCardCheckWSDL, char *strParams)
+int WebServiceUtil::CreateCheckWsdlParams(const char *CardID, const char *pszCardCheckWSDL, char *strParams)
 {
 	sprintf(strParams, "<root><system><parm name=\"functionName\" value=\" CardCheckForNH\"/>"
 		"<parm name=\"divisionCode\" value=\"\"/></system><parms><parm name=\"cardID \" value=\"%s\"/>"
@@ -165,7 +222,7 @@ int CreateCheckWsdlParams(const char *CardID, const char *pszCardCheckWSDL, char
 	return 0;
 }
 
-int CreateRegWsdlParams(const char *CardID, char *strParams)
+int WebServiceUtil::CreateRegWsdlParams(const char *CardID, char *strParams)
 {
 	sprintf(strParams, "<root><system><parm name=\"functionName\" value=\" GetRewritePackage\"/>"
 		"<parm name=\"divisionCode\" value=\"\"/></system><parms><parm name=\"cardID  \" value=\"%s\"/>"
@@ -174,7 +231,7 @@ int CreateRegWsdlParams(const char *CardID, char *strParams)
 	return 0;
 }
 
-int GetCheckRetDesc(const std::string &strStatus, std::string &strDesc)
+int WebServiceUtil::GetCheckRetDesc(const std::string &strStatus, std::string &strDesc)
 {
 	if (m_mapCodeDesc.size() == 0){
 		m_mapCodeDesc["I710000"] = "卡校验成功";
@@ -203,7 +260,7 @@ int GetCheckRetDesc(const std::string &strStatus, std::string &strDesc)
 	return (strStatus == std::string("I710000") || strStatus == std::string("I720000"));
 }
 
-int GetCardStatus(int nStatus, std::string &strStatus)
+int WebServiceUtil::GetCardStatus(int nStatus, std::string &strStatus)
 {
 
 	if (m_mapCardStatus.size() == 0) {
@@ -220,16 +277,4 @@ int GetCardStatus(int nStatus, std::string &strStatus)
 		strStatus = "未知错误";
 	}
 	return (nStatus == 0);
-}
-
-bool IsMedicalID(const std::string &strID)
-{
-	for (size_t i=0; i<strID.size(); ++i)
-	{
-		char ID = strID[i];
-		if (ID != 0x30){
-			return true;
-		}
-	}
-	return false;
 }

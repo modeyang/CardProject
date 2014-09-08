@@ -112,7 +112,6 @@ void CXmlUtil::parseHISXml(const char *szReader, std::map<int, std::string> &map
 	}
 }
 
-
 int CXmlUtil::paserLogXml(char *pszLogXml, std::map<int, std::map<int, std::string> > &mapLogConfig)
 {
 	std::map<int, std::string> mapConfig;

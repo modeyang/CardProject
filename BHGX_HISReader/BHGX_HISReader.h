@@ -81,8 +81,7 @@ extern "C" {
 	* 输出参数：	
 	* 返 回 值：	0:成功 其他：失败
 	*******************************************************************************/
-	DLL_EXPORT int __stdcall iReadHISInfoLocal(char *pszCardCheckWSDL, char *pszCardServerURL, 
-		char *pszLogXml, char *xml);
+	DLL_EXPORT int __stdcall iReadHISInfoLocal(char *pszLogXml, char *xml);
 
 	/*******************************************************************************
 	* 函数名称：	iReadInfoForXJLocal	
@@ -92,8 +91,7 @@ extern "C" {
 	* 输出参数：	
 	* 返 回 值：	0:成功 其他：失败
 	*******************************************************************************/
-	DLL_EXPORT int __stdcall iReadInfoForXJLocal(char *pszCardCheckWSDL, char *pszCardServerURL, 
-		char *pszLogXml, char *xml);
+	DLL_EXPORT int __stdcall iReadInfoForXJLocal(char *pszLogXml, char *xml);
 
 	/*******************************************************************************
 	* 函数名称：	iReadOnlyHISLocal

@@ -643,7 +643,7 @@ STDMETHODIMP CCardProcess::iATLReadInfoForXJLocal(BSTR pszCardCheckWSDL, BSTR ps
 	char* strRewriteWSDL = (char*)bstrRewriteWSDL;
 	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int ret = 0;
-	ret = iReadInfoForXJLocal(strCheckWSDL, strRewriteWSDL,(char*)bsLog, g_ReadBuff);
+	ret = iReadInfoForXJLocal((char*)bsLog, g_ReadBuff);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
 		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
@@ -663,7 +663,7 @@ STDMETHODIMP CCardProcess::iATLReadHISInfoLocal(BSTR pszCardCheckWSDL, BSTR pszC
 	char* strRewriteWSDL = (char*)bstrRewriteWSDL;
 	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int ret = 0;
-	ret = iReadHISInfoLocal(strCheckWSDL, strRewriteWSDL,(char*)bsLog, g_ReadBuff);
+	ret = iReadHISInfoLocal((char*)bsLog, g_ReadBuff);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
 		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);

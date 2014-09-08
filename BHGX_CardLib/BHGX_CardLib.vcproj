@@ -244,6 +244,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\public\LogHelper.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\public\LogHelper.h"
+				>
+			</File>
+			<File
 				RelativePath=".\public\Markup.cpp"
 				>
 			</File>

@@ -1,10 +1,12 @@
-
 #include <memory>
 #include <map>
 #include <vector>
 #include "CPUAdapter.h"
 #include "CPUCard.h"
 #include "device.h"
+#include "resource.h"
+#include "StringUtil.h"
+#include "SegmentHelper.h"
 #include "public/Markup.h"
 #include "public/debug.h"
 #include "public/liberr.h"
@@ -13,19 +15,9 @@
 #include "public/ConvertUtil.h"
 #include "public/algorithm.h"
 
-#include "CPUCard.h"
-#include "tinyxml/headers/tinyxml.h"
-#include "resource.h"
-#include "StringUtil.h"
-#include "SegmentHelper.h"
-
-using namespace std;
-
-#pragma warning (disable : 4996)
-#pragma warning (disable : 4267)
-#pragma warning (disable : 4020)
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 
+using namespace std;
 
 CardOps g_CpuCardOps;
 static CSegmentHelper *g_SegHelper = NULL;
@@ -34,10 +26,6 @@ extern "C" {
 	struct RecFolder g_recIndex[30];
 }
 
-
-#define SAFE_DELETE(a)  if (a != NULL) { delete(a);a = NULL;}
-#define DBGCore(format, ...) LogWithTime(0, format)
-#define SAFE_DELETE_C(a)  if (a != NULL) { free(a);a = NULL;}
 
 #define  INSERT_SEGS(list, seg, id, name)											\
 	memcpy(g_recIndex[id-1].section, g_recIndex[seg->ID-1].section, 10);            \
@@ -72,7 +60,6 @@ static int InitCpuGlobalList()
 	char *pvRes = (char *)::LockResource(hgRes);
 	if(!pvRes){	
 		LogPrinter("加载xml文件错误\n");
-		DBGCore( "加载xml文件错误\n");
 		return CardInitErr;
 	}
 
@@ -84,13 +71,6 @@ static int InitCpuGlobalList()
 	InitionCpuGList(pvRes);
 	return 0;
 }
-
-//static void InitGlobalMap()
-//{
-//	g_sourceValueMap.insert(std::make_pair("STAGENO", QueryColum(2, 4, "STAGENO", "000000")));
-//	g_segMap["CARDNO"] = 201;
-//	g_segMap["MEDICARECERTIFICATENO"] = 207;
-//}
 
 static int InitionCpuGList(char *xmlstr)
 {
@@ -259,7 +239,7 @@ static int InitionCpuGList(char *xmlstr)
 				memcpy(g_recIndex[nSegID-1].fileName, cFileType.c_str(), cFileType.size());
 				g_CpuXmlListHead->SegTailer->Next = pSeg;
 				g_CpuXmlListHead->SegTailer = pSeg;
-				}
+			}
 		}
 
 	}
@@ -270,8 +250,7 @@ static int InitionCpuGList(char *xmlstr)
 }
 
 static int  CpuConvertXmlByList(struct XmlSegmentS *listHead, 
-								char *xml, 
-								int *length)
+								char *xml, int *length)
 {
 	struct XmlSegmentS *SegmentElement = NULL;
 	struct XmlColumnS *ColumnElement = NULL;
@@ -313,7 +292,7 @@ static int  CpuConvertXmlByList(struct XmlSegmentS *listHead,
 
 					Cloumn = new TiXmlElement("COLUMN");
 					Cloumn->SetAttribute("ID", buf);
-					//Cloumn->SetAttribute("SOURCE", ColumnElement->Source);
+					Cloumn->SetAttribute("SOURCE", ColumnElement->Source);
 
 					Cloumn->SetAttribute("VALUE", ColumnElement->Value);
 
@@ -461,7 +440,6 @@ static struct XmlSegmentS*  CpuConvertXmltoList(char *xml)
 					}
 				}
 
-
 				HexstrToBin((BYTE*)HexString+padding, (BYTE*)tmpString, ElemLen);
 
 				if (ElemLen > sizeof(tmpArray)) {
@@ -502,6 +480,8 @@ CardOps * __stdcall InitCpuCardOps()
 	g_CpuCardOps.iConvertXmlByList = CpuConvertXmlByList;
 	g_CpuCardOps.iConvertXmltoList = CpuConvertXmltoList;
 	g_CpuCardOps.iInitGList = InitCpuGlobalList;
+
+	g_CpuCardOps.iInitGList();
 	g_CpuCardOps.programXmlList = g_CpuXmlListHead;
 
 	g_SegHelper = new CSegmentHelper(&g_CpuCardOps);

@@ -26,8 +26,7 @@ CardOps*  GetCardOps(int type)
 	return cardOpsArray[type];
 }
 
-int IsAllTheSameFlag(const unsigned char *szBuf,
-					 int nLen, unsigned char cflag)
+int IsAllTheSameFlag(const unsigned char *szBuf, int nLen, unsigned char cflag)
 {
 	int i=0;
 	for (; i<nLen; ++i){
