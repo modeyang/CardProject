@@ -32,10 +32,6 @@ using namespace std;
 
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 
-#define CPU_ONLY	1
-#define CPU_M1		0
-
-
 #define DBGCore(format, ...) LogWithTime(0, format)
 
 #define ISSCANCARD { if (iScanCard() != 0) return CardScanErr;}
@@ -983,7 +979,7 @@ int __stdcall iReadInfo(int flag, char *xml)
 			flag = 0x1 | 0x2 | 0x8 | 32 | 64 | 128;
 		}
 	}
-	#endif
+#endif
 
 	char readxml[1024*10];
 	ZeroMemory(readxml, sizeof(readxml));
@@ -991,6 +987,11 @@ int __stdcall iReadInfo(int flag, char *xml)
 	int status = _iReadInfo(flag, readxml);
 
 	//convert cpu xml to m1 xml;
+	if(status != 0) {
+		strcpy(xml, readxml);
+		return CardReadErr;
+	}
+
 	if (g_CardOps->cardAdapter->type == eM1Card) {
 		strcpy(xml, readxml);
 	} else if (g_CardOps->cardAdapter->type == eCPUCard) {
@@ -1206,16 +1207,13 @@ int __stdcall iQueryInfo(char *name, char *xml)
 	}
 
 	if (!bReadQuery) {
-		for (size_t i=0; i<vecQuery.size(); ++i){
-			std::string &strColum = vecQuery[i];
+		for (size_t i=0; i<vecResult.size(); ++i){
+			QueryColum & stQuery = vecResult[i];
 
-			QueryColum stQuery;
 			ZeroMemory(readbuf, sizeof(readbuf));
-			if (QueryItem(g_CardOps->cardAdapter->type, strColum.c_str(), 
-				readbuf, nLen, stQuery) == 0){
-
-				vecResult.push_back(stQuery);
-			}
+			QueryItem(g_CardOps->cardAdapter->type, 
+						stQuery.szSource.c_str(), 
+						readbuf, nLen, stQuery);
 		}
 
 	} else {
@@ -1525,20 +1523,7 @@ int __stdcall iRegMsgForNHLog(char *pszCardServerURL, char* pszLogXml, char* psz
 	return CardProcSuccess;
 }
 
-
-int __stdcall iReadCardMessageForNHLocal(char* pszLogXml, char* pszXml)
-{
-	std::string strMedicalID;
-	int status = ParseValueQuery("MEDICARECERTIFICATENO", strMedicalID);
-	if (status != 0) {
-		CXmlUtil::CreateResponXML(CardReadErr, "获取参合号失败", pszXml);
-		return CardReadErr;
-	}
-	return iCheckMsgForNHLocal(pszLogXml, pszXml);
-}
-
-//卡校验 黑名单校验
-int __stdcall iCheckMsgForNHLocal(char* pszLogXml, char* pszXml)
+static int _checkMsgForLocalWithLog(char* pszLogXml, char* pszXml, char *logname)
 {
 	int status = iCheckException(pszLogXml, pszXml);
 	if (status != CardProcSuccess) {
@@ -1547,6 +1532,36 @@ int __stdcall iCheckMsgForNHLocal(char* pszLogXml, char* pszXml)
 
 	if (CardProcSuccess != iReadInfo(2, pszXml)) {
 		return CardReadErr;
+	}
+	CLogHelper LogHelper(pszLogXml);
+	LogHelper.setLogParams(0, logname);
+	LogHelper.setCardInfo(pszXml);
+	LogHelper.geneHISLog();
+	return CardProcSuccess;
+}
+
+int __stdcall iReadCardMessageForNHLocal(char* pszLogXml, char* pszXml)
+{
+	int status =  _checkMsgForLocalWithLog(pszLogXml, pszXml, "iReadCardMessageForNHLocal");
+	if (status != CardProcSuccess) {
+		return CardCheckError;
+	}
+
+	std::string strMedicalID;
+	status = ParseValueQuery("MEDICARECERTIFICATENO", strMedicalID);
+	if (status != 0) {
+		CXmlUtil::CreateResponXML(CardReadErr, "获取参合号失败", pszXml);
+		return CardReadErr;
+	}
+	return CardProcSuccess;
+}
+
+//卡校验 黑名单校验
+int __stdcall iCheckMsgForNHLocal(char* pszLogXml, char* pszXml)
+{
+	int status =  _checkMsgForLocalWithLog(pszLogXml, pszXml, "iCheckMsgForNHLocal");
+	if (status != CardProcSuccess) {
+		return CardCheckError;
 	}
 	return CardProcSuccess;
 }
@@ -1567,9 +1582,17 @@ int __stdcall iReadCardMessageForNHLog(char *pszCardCheckWSDL,
 	return CardProcSuccess;
 }
 
-int __stdcall iReadOnlyCardMessageForNH(char* pszXml)
+int __stdcall iReadOnlyCardMessageForNH(char *pszLogXml, char* pszXml)
 {
-	return iReadInfo(2, pszXml);
+	int status = iReadInfo(2, pszXml);
+	if (status != CardProcSuccess) {
+		return CardReadErr;
+	} 
+	CLogHelper LogHelper(pszLogXml);
+	LogHelper.setLogParams(0, "iReadOnlyCardMessageForNH");
+	LogHelper.setCardInfo(pszXml);
+	LogHelper.geneHISLog();
+	return CardProcSuccess;
 }
 
 int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerURL, char* pszXml)
@@ -1675,8 +1698,8 @@ int __stdcall apt_InitGList(CardType eType)
 
 #if CPU_M1
 		g_sourceValueMap.insert(std::make_pair("STAGENO", QueryColum(2, 4, "STAGENO", "000000")));
-		//g_segMap["CARDNO"] = 201;
-		//g_segMap["MEDICARECERTIFICATENO"] = 207;
+		g_segMap["CARDNO"] = 201;
+		g_segMap["MEDICARECERTIFICATENO"] = 207;
 #endif
 
 	} else {

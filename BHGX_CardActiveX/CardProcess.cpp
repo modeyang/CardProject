@@ -832,10 +832,14 @@ STDMETHODIMP CCardProcess::iATLCheckMsgForNHLocal(BSTR pszLogXml, BSTR* pszXml)
 	return S_OK;
 }
 
-STDMETHODIMP CCardProcess::iATLReadOnlyCardMessageForNH(BSTR* pszXml)
+STDMETHODIMP CCardProcess::iATLReadOnlyCardMessageForNH(BSTR pszLogXml, BSTR* pszXml)
 {
-	int status = iReadOnlyCardMessageForNH(g_ReadBuff);
+	_bstr_t bsLog(pszLogXml);
+	int ret = iReadOnlyCardMessageForNH((char*)bsLog, g_ReadBuff);
+	if (ret != 0) {
+		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	}
 	_bstr_t bstr(g_ReadBuff);
 	*pszXml = bstr.Detach();
-	return status;
+	return S_OK;
 }

@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0366 */
-/* at Sun Aug 24 12:04:12 2014
+/* at Sat Sep 27 15:27:47 2014
  */
 /* Compiler settings for .\BHGX_CardActiveX.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -322,6 +322,7 @@ EXTERN_C const IID IID_ICardProcess;
             /* [retval][out] */ BSTR *pszXml) = 0;
         
         virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadOnlyCardMessageForNH( 
+            BSTR pszLogXml,
             /* [retval][out] */ BSTR *pszXml) = 0;
         
     };
@@ -659,6 +660,7 @@ EXTERN_C const IID IID_ICardProcess;
         
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadOnlyCardMessageForNH )( 
             ICardProcess * This,
+            BSTR pszLogXml,
             /* [retval][out] */ BSTR *pszXml);
         
         END_INTERFACE
@@ -856,8 +858,8 @@ EXTERN_C const IID IID_ICardProcess;
 #define ICardProcess_iATLCheckMsgForNHLocal(This,pszLogXml,pszXml)	\
     (This)->lpVtbl -> iATLCheckMsgForNHLocal(This,pszLogXml,pszXml)
 
-#define ICardProcess_iATLReadOnlyCardMessageForNH(This,pszXml)	\
-    (This)->lpVtbl -> iATLReadOnlyCardMessageForNH(This,pszXml)
+#define ICardProcess_iATLReadOnlyCardMessageForNH(This,pszLogXml,pszXml)	\
+    (This)->lpVtbl -> iATLReadOnlyCardMessageForNH(This,pszLogXml,pszXml)
 
 #endif /* COBJMACROS */
 
@@ -1577,6 +1579,7 @@ void __RPC_STUB ICardProcess_iATLCheckMsgForNHLocal_Stub(
 
 /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadOnlyCardMessageForNH_Proxy( 
     ICardProcess * This,
+    BSTR pszLogXml,
     /* [retval][out] */ BSTR *pszXml);
 
 

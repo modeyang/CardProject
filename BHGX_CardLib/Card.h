@@ -12,6 +12,9 @@ extern "C" {
 #pragma warning (disable : 4267)
 #pragma warning (disable : 4020)
 
+#define CPU_ONLY	1
+#define CPU_M1		0
+
 #define	CARDSEAT_RF		0	//0：非接用户卡 
 #define CARDSEAT_PSAM1	1	//1：SAM卡编号1
 #define CARDSEAT_M1		2	//2：M1

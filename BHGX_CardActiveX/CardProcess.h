@@ -108,7 +108,7 @@ public:
 	STDMETHOD(iATLReadMedicalInfoOnlyLog)(BSTR pszCode, BSTR pszLogXml, BSTR* xml);
 	STDMETHOD(iATLReadCardMessageForNHLocal)(BSTR pszLogXml, BSTR* pszXml);
 	STDMETHOD(iATLCheckMsgForNHLocal)(BSTR pszLogXml, BSTR* pszXml);
-	STDMETHOD(iATLReadOnlyCardMessageForNH)(BSTR* pszXml);
+	STDMETHOD(iATLReadOnlyCardMessageForNH)(BSTR pszLogXml, BSTR* pszXml);
 
 protected:
 	void GetErrInfo(int nProcRet, LONG &nRet);

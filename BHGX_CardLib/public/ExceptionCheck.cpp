@@ -1,19 +1,26 @@
+#include <map>
+#include <vector>
 #include "ExceptionCheck.h"
+#include "Markup.h"
+#include "TimeUtil.h"
+#include "XmlUtil.h"
+#include "../Card.h"
 #include "../BHGX_CardLib.h"
 #include "../public/liberr.h"
 #include "../tinyxml/headers/tinyxml.h"
 #include "../Encry/DESEncry.h"
-#include "Markup.h"
-#include <map>
-#include <vector>
-#include "TimeUtil.h"
-#include "XmlUtil.h"
 
 using namespace std;
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 
-#define CARDNO			1
-#define CARDSEQ			10
+#if CPU_ONLY
+	#define CARDNO			8
+	#define CARDSEQ			10
+#else
+	#define CARDNO			1
+	#define CARDSEQ			10
+#endif
+
 
 #pragma warning (disable : 4996)
 

@@ -92,6 +92,7 @@ extern "C" {
 		);
 
 	DLL_EXPORT int __stdcall iReadOnlyCardMessageForNH( 
+		char *pszLogXml,
 		char* pszXml
 		);
 
