@@ -181,6 +181,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\LogHelper.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Markup.cpp"
 				>
 			</File>
@@ -200,6 +204,10 @@
 			>
 			<File
 				RelativePath=".\BHGX_HospitalProcess.h"
+				>
+			</File>
+			<File
+				RelativePath=".\LogHelper.h"
 				>
 			</File>
 			<File

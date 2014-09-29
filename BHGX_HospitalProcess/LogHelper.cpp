@@ -2,7 +2,7 @@
 #include "LogHelper.h"
 #include "XmlUtil.h"
 #include "TimeUtil.h"
-#include "../tinyxml/headers/tinyxml.h"
+#include "tinyxml/headers/tinyxml.h"
 
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 
@@ -25,15 +25,25 @@ void CLogHelper::setLogParams(int rwFlag, char * processName)
 
 void CLogHelper::setCardInfo(char *cardXml)
 {
+	m_pCardInfo = cardXml;
 	CXmlUtil::parseHISXml(cardXml, m_MapReaderInfo);
 }
 
-void CLogHelper::geneHISLog(char *pszContent)
+void CLogHelper::getDefaultMap(std::map<std::string, std::string> &mapScValue)
+{
+	std::map<std::string, ColumInfo>::iterator iter = m_MapReaderInfo.begin();
+	for (; iter!=m_MapReaderInfo.end(); iter++) {
+		ColumInfo &info = iter->second;
+		mapScValue[iter->first] = info.strValue; 
+	}
+}
+
+void CLogHelper::geneHISLog()
 {
 	TiXmlDocument XmlDoc;
 	TiXmlElement  *RootElement;
 	TiXmlElement  *Segment;
-	XmlDoc.Parse(pszContent);
+	XmlDoc.Parse(m_pCardInfo);
 	RootElement = XmlDoc.RootElement();
 	Segment = RootElement->FirstChildElement();
 
@@ -71,11 +81,13 @@ void CLogHelper::geneHISLog(char *pszContent)
 	char timeStr[64];
 	CTimeUtil::getCurrentTime(timeStr);
 	std::map<int, std::string> contentMap = m_MapLogConfig[2];
-	contentMap[-1] = m_MapReaderInfo[2];
-	contentMap[0] = m_MapReaderInfo[5];
-	contentMap[8] = m_MapReaderInfo[1];
-	contentMap[9] = m_MapReaderInfo[10];
-	contentMap[10] = m_MapReaderInfo[9];
+	std::map<std::string, std::string> mapScValue;
+	getDefaultMap(mapScValue);
+	contentMap[-1] = mapScValue["ISSUEUNIT"];
+	contentMap[0] = mapScValue["CARDCODE"];
+	contentMap[8] = mapScValue["CARDNO"];
+	contentMap[9] = mapScValue["IDNUMBER"];
+	contentMap[10] = mapScValue["NAME"];
 	contentMap[11] = timeStr;
 	if (m_rwFlag == 0)  {
 		contentMap[12] = "0";
