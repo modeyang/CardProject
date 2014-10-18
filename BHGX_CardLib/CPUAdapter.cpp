@@ -54,7 +54,14 @@ static int InitCpuGlobalList()
 
 	// 在资源文件里边提取XML文件并且初始化他
 	HINSTANCE hInstance = ::LoadLibrary("BHGX_CardLib.dll");
-	HRSRC hResInfo = ::FindResource(hInstance, MAKEINTRESOURCE(IDR_XML4),"XML");
+	int res_id = IDR_XML4;
+	if (CPU_M1 == 1 || CPU_ONLY == 1) {
+		res_id = IDR_XML6;
+	} else if (CPU_8K == 1) {
+		res_id = IDR_XML5;
+	}
+	
+	HRSRC hResInfo = ::FindResource(hInstance, MAKEINTRESOURCE(res_id),"XML");
 	HGLOBAL hgRes = ::LoadResource(hInstance, hResInfo);
 	DWORD cbRes = ::SizeofResource(hInstance, hResInfo);
 	char *pvRes = (char *)::LockResource(hgRes);

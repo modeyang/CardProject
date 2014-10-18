@@ -55,7 +55,11 @@ static int g_BinAccessMap[BIN_START] = {0};
 static BOOL g_SureFill[BIN_START] = {0};
 
 //每个字段的最大记录条数
+#if CPU_8K
+static int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
+#else
 static int g_RecMap[BIN_START] = {0, 10, 5, 1, 7, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
+#endif
 
 //CPU初始化后的工作
 static int	CpuLastInit(void*);

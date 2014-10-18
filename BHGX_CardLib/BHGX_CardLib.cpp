@@ -920,7 +920,7 @@ done:
  *
  */
 
-static int _iReadInfo(int flag, char *xml) 
+static int _iReadInfo(int flag, char *xml, int del_flag=-1) 
 {
 	struct XmlSegmentS	*list = NULL;
 	struct RWRequestS	*RequestList = NULL;
@@ -944,6 +944,26 @@ static int _iReadInfo(int flag, char *xml)
 	// 设备的真实读取
 	status = g_CardOps->cardAdapter->iReadCard(RequestList, g_CardOps->cardAdapter);
 
+	// delete flag
+	if (del_flag > 0) {
+		struct XmlSegmentS *pDel = NULL, *pCur=list;
+		while (pCur != NULL){
+			if (pCur->ID == del_flag) {
+				pDel = pCur;
+				if (pCur == list) {
+					list = list->Next;
+				} else {
+					pCur = pCur->Next;
+				}
+			}
+			pCur = pCur->Next;
+		}
+		if (pDel != NULL) {
+			pDel->Next = NULL;
+			DestroyList(pDel, 1);
+		}
+	}
+
 	// 通过链表产生XML字符串
 	g_CardOps->iConvertXmlByList(list, xml, &length);
 
@@ -963,15 +983,17 @@ int __stdcall iReadInfo(int flag, char *xml)
 	}
 	
 	ISSCANCARD;
+	int del_flag    = -1;
 	int bNHInfoRead = 0;
 	if (g_CardOps->cardAdapter->type == eM1Card ) {
 
 		// 根据Flag产生List,健康档案号在第五区
 		if ((flag & 0x2) && !(flag & 0x10)){
 			flag = flag | 0x10;
+			del_flag = 5;
 		}
 	} 
-#if CPU_M1
+#if (CPU_M1 || CPU_8K)
 	else {
 
 		if ((flag & 0x2) == 0x2) {
@@ -984,7 +1006,7 @@ int __stdcall iReadInfo(int flag, char *xml)
 	char readxml[1024*10];
 	ZeroMemory(readxml, sizeof(readxml));
 
-	int status = _iReadInfo(flag, readxml);
+	int status = _iReadInfo(flag, readxml, del_flag);
 
 	//convert cpu xml to m1 xml;
 	if(status != 0) {
@@ -1125,7 +1147,7 @@ int __stdcall iWriteInfo(char *xml)
 				xml2Map((char*)xmlStr.c_str(), mapCpuInfo, eCPUCard, false);
 			}
 		} 
-#if CPU_M1
+#if (CPU_M1 || CPU_8K)
 		else {
 			if (vecRecFlag.size() > 0 || vecBinFlag.size() > 0) {
 
@@ -1696,7 +1718,7 @@ int __stdcall apt_InitGList(CardType eType)
 		g_CpuCardOps = InitCpuCardOps();
 		g_CardOps = g_CpuCardOps;
 
-#if CPU_M1
+#if (CPU_M1 || CPU_8K)
 		g_sourceValueMap.insert(std::make_pair("STAGENO", QueryColum(2, 4, "STAGENO", "000000")));
 		g_segMap["CARDNO"] = 201;
 		g_segMap["MEDICARECERTIFICATENO"] = 207;

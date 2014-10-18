@@ -7,6 +7,8 @@
 #define IDR_XML2                        105
 #define IDR_XML3                        108
 #define IDR_XML4                        110
+#define IDR_XML5                        115
+#define IDR_XML6                        116
 
 // Next default values for new objects
 // 

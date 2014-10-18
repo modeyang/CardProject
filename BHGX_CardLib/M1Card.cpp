@@ -980,7 +980,7 @@ static int CombineColValue(struct XmlColumnS *ColumnElement,
 				}
 
 				pPri->Next = pTel->Next;
-				free(pTel);
+				SAFE_DELETE_C(pTel);
 			}
 		}
 	}
@@ -1039,52 +1039,52 @@ static int M1ConvertXmlByList(struct XmlSegmentS *listHead, char *xml, int *leng
 						struct XmlSegmentS *pSegPri, *pCur = NULL;
 
 						switch (ColumnElement->ID){
-				case 9:
-					CombineColValue(ColumnElement, std::make_pair(9,78),0, SegmentElement, ColmnBuf);
-					if (Is_IntName(ColmnBuf)){
-						szName = CConvertUtil::uf_gbk_int_covers(ColmnBuf,"togbk");
-						memcpy(ColmnBuf, szName.c_str(), szName.size());
-						ColmnBuf[szName.size()] = 0;
-					}
-					break;
-				case 10://add by yanggx5-28 为解决身份证末尾为字母的错误
-					pBuf = ColumnElement->Value;
-					while (*(pBuf) != 0)
-						pBuf++;
-					pBuf--;
-					if (*pBuf > '9' || *pBuf < '0')
-						*pBuf = 'X';
+							case 9:
+								CombineColValue(ColumnElement, std::make_pair(9,78),0, SegmentElement, ColmnBuf);
+								if (Is_IntName(ColmnBuf)){
+									szName = CConvertUtil::uf_gbk_int_covers(ColmnBuf,"togbk");
+									memcpy(ColmnBuf, szName.c_str(), szName.size());
+									ColmnBuf[szName.size()] = 0;
+								}
+								break;
+							case 10://add by yanggx5-28 为解决身份证末尾为字母的错误
+								pBuf = ColumnElement->Value;
+								while (*(pBuf) != 0)
+									pBuf++;
+								pBuf--;
+								if (*pBuf > '9' || *pBuf < '0')
+									*pBuf = 'X';
 
-					strcpy(ColmnBuf, ColumnElement->Value);
-					break;
-				case 22:
-					CombineColValue(ColumnElement, std::make_pair(22,75), '/', SegmentElement, ColmnBuf);
-					break;
-				case 24:
-					CombineColValue(ColumnElement, std::make_pair(24,77),0, SegmentElement, ColmnBuf);
-					if (Is_IntName(ColmnBuf)){
-						szName = CConvertUtil::uf_gbk_int_covers(ColmnBuf,"togbk");
-						memcpy(ColmnBuf, szName.c_str(), szName.size());
-						ColmnBuf[szName.size()] = 0;
-					}
-					break;
+								strcpy(ColmnBuf, ColumnElement->Value);
+								break;
+							case 22:
+								CombineColValue(ColumnElement, std::make_pair(22,75), '/', SegmentElement, ColmnBuf);
+								break;
+							case 24:
+								CombineColValue(ColumnElement, std::make_pair(24,77),0, SegmentElement, ColmnBuf);
+								if (Is_IntName(ColmnBuf)){
+									szName = CConvertUtil::uf_gbk_int_covers(ColmnBuf,"togbk");
+									memcpy(ColmnBuf, szName.c_str(), szName.size());
+									ColmnBuf[szName.size()] = 0;
+								}
+								break;
 
-				case 25:
-					CombineColValue(ColumnElement, std::make_pair(25,76), '/', SegmentElement, ColmnBuf);
-					pCur = SegmentElement;
-					while (pCur->Next != NULL){
-						pSegPri = pCur;
-						pCur = pCur->Next;
-					}
+							case 25:
+								CombineColValue(ColumnElement, std::make_pair(25,76), '/', SegmentElement, ColmnBuf);
+								pCur = SegmentElement;
+								while (pCur->Next != NULL){
+									pSegPri = pCur;
+									pCur = pCur->Next;
+								}
 
-					if (IsAllTheSameFlag((unsigned char*)&pCur->ColumnHeader->Value,18, '0') == 0){
-							pSegPri->Next = pCur->Next;
-							SAFE_DELETE_C(pCur);
-					}
-					break; 
-				default:
-					strcpy(ColmnBuf, ColumnElement->Value);
-					break;
+								if (IsAllTheSameFlag((unsigned char*)&pCur->ColumnHeader->Value,18, '0') == 0){
+										pSegPri->Next = pCur->Next;
+										SAFE_DELETE_C(pCur);
+								}
+								break; 
+							default:
+								strcpy(ColmnBuf, ColumnElement->Value);
+								break;
 
 						}
 					} else {
