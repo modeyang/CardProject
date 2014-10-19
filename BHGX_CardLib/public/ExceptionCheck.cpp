@@ -42,12 +42,17 @@ CExceptionCheck::~CExceptionCheck(void)
 int CExceptionCheck::parseExceptionXml(char *filePath, std::vector<excepRecord> &vecRecord)
 {
 	CMarkup xml;
-	CDESEncry encry;
-	if (!encry.DesryFile(filePath)){
-		return 1;
+
+	if (ENCRYPT == 1) {
+		CDESEncry encry;
+		if (!encry.DesryFile(filePath)){
+			return 1;
+		}
+		xml.SetDoc(encry.GetDescryContent());
+	} else {
+		xml.Load(filePath);
 	}
-	xml.SetDoc(encry.GetDescryContent());
-	//xml.Load(filePath);
+
 	
 	if (!xml.FindElem("members")) {
 		return -1;

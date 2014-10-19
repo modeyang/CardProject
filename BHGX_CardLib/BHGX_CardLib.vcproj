@@ -397,6 +397,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\cpuprogram_32k.xml"
+			>
+		</File>
+		<File
+			RelativePath=".\cpuprogram_8k.xml"
+			>
+		</File>
+		<File
 			RelativePath=".\device.c"
 			>
 		</File>
