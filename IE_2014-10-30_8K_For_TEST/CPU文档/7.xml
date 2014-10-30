@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<SEGMENTS PROGRAMID="001">
+    <SEGMENT ID="7">
+        <COLUMN ID="34" VALUE="11" />
+        <COLUMN ID="35" VALUE="22" />
+        <COLUMN ID="36" VALUE="33" />
+    </SEGMENT>
+</SEGMENTS>

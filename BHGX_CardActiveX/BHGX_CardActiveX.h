@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0366 */
-/* at Sat Sep 27 15:27:47 2014
+/* at Fri Oct 31 00:15:09 2014
  */
 /* Compiler settings for .\BHGX_CardActiveX.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -322,7 +322,16 @@ EXTERN_C const IID IID_ICardProcess;
             /* [retval][out] */ BSTR *pszXml) = 0;
         
         virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadOnlyCardMessageForNH( 
-            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *pszXml) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadAll( 
+            /* [retval][out] */ BSTR *xml) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLRWRecycle( 
+            BSTR pszCardCorp,
+            BSTR pszXinCorp,
+            LONG counts,
+            BSTR write_xml,
             /* [retval][out] */ BSTR *pszXml) = 0;
         
     };
@@ -660,7 +669,18 @@ EXTERN_C const IID IID_ICardProcess;
         
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadOnlyCardMessageForNH )( 
             ICardProcess * This,
-            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *pszXml);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadAll )( 
+            ICardProcess * This,
+            /* [retval][out] */ BSTR *xml);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLRWRecycle )( 
+            ICardProcess * This,
+            BSTR pszCardCorp,
+            BSTR pszXinCorp,
+            LONG counts,
+            BSTR write_xml,
             /* [retval][out] */ BSTR *pszXml);
         
         END_INTERFACE
@@ -858,8 +878,14 @@ EXTERN_C const IID IID_ICardProcess;
 #define ICardProcess_iATLCheckMsgForNHLocal(This,pszLogXml,pszXml)	\
     (This)->lpVtbl -> iATLCheckMsgForNHLocal(This,pszLogXml,pszXml)
 
-#define ICardProcess_iATLReadOnlyCardMessageForNH(This,pszLogXml,pszXml)	\
-    (This)->lpVtbl -> iATLReadOnlyCardMessageForNH(This,pszLogXml,pszXml)
+#define ICardProcess_iATLReadOnlyCardMessageForNH(This,pszXml)	\
+    (This)->lpVtbl -> iATLReadOnlyCardMessageForNH(This,pszXml)
+
+#define ICardProcess_iATLReadAll(This,xml)	\
+    (This)->lpVtbl -> iATLReadAll(This,xml)
+
+#define ICardProcess_iATLRWRecycle(This,pszCardCorp,pszXinCorp,counts,write_xml,pszXml)	\
+    (This)->lpVtbl -> iATLRWRecycle(This,pszCardCorp,pszXinCorp,counts,write_xml,pszXml)
 
 #endif /* COBJMACROS */
 
@@ -1579,11 +1605,38 @@ void __RPC_STUB ICardProcess_iATLCheckMsgForNHLocal_Stub(
 
 /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadOnlyCardMessageForNH_Proxy( 
     ICardProcess * This,
-    BSTR pszLogXml,
     /* [retval][out] */ BSTR *pszXml);
 
 
 void __RPC_STUB ICardProcess_iATLReadOnlyCardMessageForNH_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadAll_Proxy( 
+    ICardProcess * This,
+    /* [retval][out] */ BSTR *xml);
+
+
+void __RPC_STUB ICardProcess_iATLReadAll_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLRWRecycle_Proxy( 
+    ICardProcess * This,
+    BSTR pszCardCorp,
+    BSTR pszXinCorp,
+    LONG counts,
+    BSTR write_xml,
+    /* [retval][out] */ BSTR *pszXml);
+
+
+void __RPC_STUB ICardProcess_iATLRWRecycle_Stub(
     IRpcStubBuffer *This,
     IRpcChannelBuffer *_pRpcChannelBuffer,
     PRPC_MESSAGE _pRpcMessage,

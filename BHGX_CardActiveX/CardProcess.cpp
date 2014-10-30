@@ -832,13 +832,36 @@ STDMETHODIMP CCardProcess::iATLCheckMsgForNHLocal(BSTR pszLogXml, BSTR* pszXml)
 	return S_OK;
 }
 
-STDMETHODIMP CCardProcess::iATLReadOnlyCardMessageForNH(BSTR pszLogXml, BSTR* pszXml)
+STDMETHODIMP CCardProcess::iATLReadOnlyCardMessageForNH(BSTR* pszXml)
 {
-	_bstr_t bsLog(pszLogXml);
-	int ret = iReadOnlyCardMessageForNH((char*)bsLog, g_ReadBuff);
+	int ret = iReadOnlyCardMessageForNH(g_ReadBuff);
 	if (ret != 0) {
 		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
 	}
+	_bstr_t bstr(g_ReadBuff);
+	*pszXml = bstr.Detach();
+	return S_OK;
+}
+
+STDMETHODIMP CCardProcess::iATLReadAll(BSTR* xml)
+{
+	int ret = iReadAll(g_ReadBuff);
+	if (ret != 0) {
+		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	}
+	_bstr_t bstr(g_ReadBuff);
+	*xml = bstr.Detach();
+	return S_OK;
+}
+
+STDMETHODIMP CCardProcess::iATLRWRecycle(BSTR pszCardCorp, BSTR pszXinCorp, 
+										 LONG counts, BSTR write_xml, 
+										 BSTR* pszXml)
+{
+	_bstr_t bsCardCorp(pszCardCorp);
+	_bstr_t bsXinCorp(pszXinCorp);
+	_bstr_t bsWriteXml(write_xml);
+	iRWRecycle((char*)bsCardCorp, (char*)bsXinCorp, (int)counts, (char*)write_xml, g_ReadBuff);
 	_bstr_t bstr(g_ReadBuff);
 	*pszXml = bstr.Detach();
 	return S_OK;

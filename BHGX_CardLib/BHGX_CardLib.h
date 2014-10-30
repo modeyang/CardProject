@@ -91,8 +91,12 @@ extern "C" {
 		char* pszXml
 		);
 
-	DLL_EXPORT int __stdcall iReadOnlyCardMessageForNH( 
+	DLL_EXPORT int __stdcall iReadOnlyCardMessageForNHLog( 
 		char *pszLogXml,
+		char* pszXml
+		);
+
+	DLL_EXPORT int __stdcall iReadOnlyCardMessageForNH( 
 		char* pszXml
 		);
 
@@ -146,6 +150,18 @@ extern "C" {
 	DLL_EXPORT int __stdcall iCheckException(
 		char *pszLogXml,
 		char *pszXml
+		);
+
+	DLL_EXPORT bool __stdcall isCardAuth();
+
+	DLL_EXPORT int __stdcall iReadAll(char *xml);
+
+	DLL_EXPORT int __stdcall iRWRecycle(
+		char *pszCardCorp,
+		char *pszXinCorp,
+		int   counts,
+		char *xml,
+		char *pszRetInfo
 		);
 
 

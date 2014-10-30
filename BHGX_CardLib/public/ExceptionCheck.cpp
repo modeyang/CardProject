@@ -13,11 +13,11 @@
 using namespace std;
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 
-#if CPU_ONLY
-	#define CARDNO			8
+#if (CPU_M1 || CPU_8K)
+	#define CARDNO			1
 	#define CARDSEQ			10
 #else
-	#define CARDNO			1
+	#define CARDNO			8
 	#define CARDSEQ			10
 #endif
 

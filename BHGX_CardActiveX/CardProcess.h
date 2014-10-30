@@ -108,7 +108,9 @@ public:
 	STDMETHOD(iATLReadMedicalInfoOnlyLog)(BSTR pszCode, BSTR pszLogXml, BSTR* xml);
 	STDMETHOD(iATLReadCardMessageForNHLocal)(BSTR pszLogXml, BSTR* pszXml);
 	STDMETHOD(iATLCheckMsgForNHLocal)(BSTR pszLogXml, BSTR* pszXml);
-	STDMETHOD(iATLReadOnlyCardMessageForNH)(BSTR pszLogXml, BSTR* pszXml);
+	STDMETHOD(iATLReadOnlyCardMessageForNH)(BSTR* pszXml);
+	STDMETHOD(iATLReadAll)(BSTR* xml);
+	STDMETHOD(iATLRWRecycle)(BSTR pszCardCorp, BSTR pszXinCorp, LONG counts, BSTR write_xml, BSTR* pszXml);
 
 protected:
 	void GetErrInfo(int nProcRet, LONG &nRet);
@@ -120,6 +122,6 @@ protected:
 protected:
 	char m_strErr[1024];
 	
-	};
+};
 
 OBJECT_ENTRY_AUTO(__uuidof(CardProcess), CCardProcess)

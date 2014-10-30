@@ -117,8 +117,7 @@ int __stdcall apt_IOCtl(int cmd, void *data)
 	unsigned char result = 0;
 
 	// 如果设置了这些函数
-	if(Instance && Instance->iIOCtl) 
-	{
+	if(Instance && Instance->iIOCtl) {
 		result = (unsigned char)Instance->iIOCtl(cmd, data, 0);
 	}
 

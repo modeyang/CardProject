@@ -55,7 +55,7 @@ static int g_BinAccessMap[BIN_START] = {0};
 static BOOL g_SureFill[BIN_START] = {0};
 
 //每个字段的最大记录条数
-#if CPU_8K
+#if (CPU_8K || CPU_8K_TEST)
 static int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
 #else
 static int g_RecMap[BIN_START] = {0, 10, 5, 1, 7, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
@@ -521,32 +521,42 @@ int __stdcall FormatCpuCard(char c)
 
 		status |= Instance->iUCardAuthSys(KEY_UK_DF03_1);
 
-		strcpy((char*)send, "EE01");
-		length = START_POS_1 - END_OFFSET;
-		status = Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
+		if (CPU_8K==1 || CPU_8K_TEST==1) {
+			strcpy((char*)send, "EE01");
+			length = START_POS_1 - END_OFFSET;
+			status = Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
 
-		strcpy((char*)send, "EE02");
-		length = START_POS_1 - END_OFFSET;
-		status |= Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
+			strcpy((char*)send, "ED01");
+			status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, START_POS_2 - END_OFFSET, 0);
+		} else {
+			strcpy((char*)send, "EE01");
+			length = START_POS_1 - END_OFFSET;
+			status = Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
 
-		strcpy((char*)send, "EE03");
-		length = START_POS_1 - END_OFFSET;
-		status |= Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
+			strcpy((char*)send, "ED01");
+			status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, START_POS_2 - END_OFFSET, 0);
 
-		strcpy((char*)send, "ED01");
-		status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, START_POS_2 - END_OFFSET, 0);
+			strcpy((char*)send, "EE02");
+			length = START_POS_1 - END_OFFSET;
+			status |= Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
 
-		strcpy((char*)send, "ED02");
-		status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, START_POS_2 - END_OFFSET, 0);
+			strcpy((char*)send, "EE03");
+			length = START_POS_1 - END_OFFSET;
+			status |= Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
 
-		strcpy((char*)send, "ED03");
-		status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, START_POS_2 - END_OFFSET, 0);
 
-		strcpy((char*)send, "ED04");
-		status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, START_POS_2 - END_OFFSET, 0);
+			strcpy((char*)send, "ED02");
+			status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, START_POS_2 - END_OFFSET, 0);
 
-		strcpy((char*)send, "ED05");
-		status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, START_POS_2 - END_OFFSET, 0);
+			strcpy((char*)send, "ED03");
+			status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, START_POS_2 - END_OFFSET, 0);
+
+			strcpy((char*)send, "ED04");
+			status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, START_POS_2 - END_OFFSET, 0);
+
+			strcpy((char*)send, "ED05");
+			status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, START_POS_2 - END_OFFSET, 0);
+		}
 	}
 	return status;
 }

@@ -235,6 +235,7 @@ int __stdcall iReadOnlyHIS(char *xml)
 {
 	char szRead[BUFF_SIZE];
 	memset(szRead, 0, sizeof(szRead));
+	isCardAuth();
 
 	HISProcess his(HIS_FLAG);
 	int status = his.readHISBaseInfo("", "", NULL, szRead, false, false);

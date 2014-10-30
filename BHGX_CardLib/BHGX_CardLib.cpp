@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 #include <set>
+#include <iostream>
+#include <fstream>
 
 #include "Card.h"
 #include "adapter.h"
@@ -34,7 +36,10 @@ using namespace std;
 
 #define DBGCore(format, ...) LogWithTime(0, format)
 
-#define ISSCANCARD { if (iScanCard() != 0) return CardScanErr;}
+#define ISSCANCARD {							\
+	if (iScanCard() != 0)						\
+		return CardScanErr;						\
+}												\
 											
 #define ISGWCARD(a) ((a[0]) == '1')
 
@@ -139,6 +144,7 @@ std::map<string, int> g_segMap;
 CBHGX_Printer *m_pBHPrinter = NULL;
 BOOL g_bPreLoad = FALSE;
 BOOL g_bCardOpen = FALSE;
+BOOL g_bAuthed   = TRUE;
 
 static CardOps *g_CardOps = NULL;
 static CardOps *g_CpuCardOps = NULL;
@@ -916,6 +922,8 @@ done:
 	return status;
 }
 
+	
+
 /**
  *
  */
@@ -995,7 +1003,6 @@ int __stdcall iReadInfo(int flag, char *xml)
 	} 
 #if (CPU_M1 || CPU_8K)
 	else {
-
 		if ((flag & 0x2) == 0x2) {
 			bNHInfoRead = 1;
 			flag = 0x1 | 0x2 | 0x8 | 32 | 64 | 128;
@@ -1454,8 +1461,13 @@ int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServerURL,char*
 	WebServiceUtil checkUtil(pszCardCheckWSDL, pszCardServerURL);
 	status = checkUtil.NHCheckValid(strCardNO, pszXml);
 	
+	isCardAuth();
 	if (status == CardProcSuccess){
-		status = iReadInfo(2, pszXml);
+		int flag = 2;
+		if (CPU_8K_TEST == 1 || CPU_ONLY == 1) {
+			flag = 2 + (1 << 7);
+		}
+		status = iReadInfo(flag, pszXml);
 	}
 	return status;
 }
@@ -1523,7 +1535,11 @@ int __stdcall iRegMsgForNH(char *pszCardServerURL, char* pszXml)
 	}
 
 	if (status == CardProcSuccess){
-		status = iReadInfo(2 , pszXml);
+		int flag = 2;
+		if (CPU_8K_TEST == 1 || CPU_ONLY == 1) {
+			flag = 2 + (1 << 7);
+		}
+		status = iReadInfo(flag, pszXml);
 	}
 	return status;
 }
@@ -1552,7 +1568,11 @@ static int _checkMsgForLocalWithLog(char* pszLogXml, char* pszXml, char *logname
 		return status;
 	}
 
-	if (CardProcSuccess != iReadInfo(2, pszXml)) {
+	int flag = 2;
+	if (CPU_8K_TEST == 1 || CPU_ONLY == 1) {
+		flag = 2 + (1 << 7);
+	}
+	if (CardProcSuccess != iReadInfo(flag, pszXml)) {
 		return CardReadErr;
 	}
 	CLogHelper LogHelper(pszLogXml);
@@ -1604,16 +1624,29 @@ int __stdcall iReadCardMessageForNHLog(char *pszCardCheckWSDL,
 	return CardProcSuccess;
 }
 
-int __stdcall iReadOnlyCardMessageForNH(char *pszLogXml, char* pszXml)
+int __stdcall iReadOnlyCardMessageForNHLog(char *pszLogXml, char* pszXml)
 {
-	int status = iReadInfo(2, pszXml);
+	int status = iReadOnlyCardMessageForNH(pszXml);
 	if (status != CardProcSuccess) {
 		return CardReadErr;
 	} 
 	CLogHelper LogHelper(pszLogXml);
-	LogHelper.setLogParams(0, "iReadOnlyCardMessageForNH");
+	LogHelper.setLogParams(0, "iReadOnlyCardMessageForNHLog");
 	LogHelper.setCardInfo(pszXml);
 	LogHelper.geneHISLog();
+	return CardProcSuccess;
+}
+
+int __stdcall iReadOnlyCardMessageForNH(char* pszXml)
+{
+	int flag = 2;
+	if (CPU_8K_TEST == 1 || CPU_ONLY == 1) {
+		flag = 2 + (1 << 7);
+	}
+	int status = iReadInfo(flag, pszXml);
+	if (status != CardProcSuccess) {
+		return CardReadErr;
+	}
 	return CardProcSuccess;
 }
 
@@ -1652,16 +1685,20 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 	status = checkUtil.NHCheckValid(strCardNO, pszXml);
 	if (status == CardProcSuccess && g_CardOps->cardAdapter->type == eM1Card){
 		status = checkUtil.NHRegCard(strCardNO, pszXml);
-	}	
-	if (status == CardProcSuccess) {
-		status = iWriteInfo(pszXml);
-		if (status != CardProcSuccess) {
-			CXmlUtil::CreateResponXML(2, "卡回写失败", pszXml);
+		if (status == CardProcSuccess) {
+			status = iWriteInfo(pszXml);
+			if (status != CardProcSuccess) {
+				CXmlUtil::CreateResponXML(2, "卡回写失败", pszXml);
+			}
 		}
-	}
+	}	
 
 	if (status == CardProcSuccess){
-		status = iReadInfo(2, pszXml);
+		int flag = 2;
+		if (CPU_8K_TEST == 1 || CPU_ONLY == 1) {
+			flag = 2 + (1 << 7);
+		}
+		status = iReadInfo(flag, pszXml);
 	}
 	return status;
 }
@@ -1730,5 +1767,90 @@ int __stdcall apt_InitGList(CardType eType)
 	}
 	g_XmlListHead = g_CardOps->programXmlList;
 	g_SegHelper = new CSegmentHelper(g_XmlListHead, g_CardOps); 
+	return 0;
+}
+
+
+bool __stdcall isCardAuth()
+{
+	if (CPU_8K_TEST != 1) {
+		return true;
+	}
+	std::vector<QueryColum> vecQuery;
+	_iReadQuery(1, vecQuery);
+	QueryColum cloumn;
+	for (int i=0; i<vecQuery.size(); i++) {
+		if (vecQuery[i].nID == 5) {
+			cloumn = vecQuery[i];
+			break;
+		}
+	}
+	bool bAuthed = (strcmp(cloumn.szValue.c_str(), "8D") == 0);
+	if (!bAuthed) {
+		Sleep(500);
+	}
+	return bAuthed;
+}
+
+int __stdcall iReadAll(char *xml)
+{
+	isCardAuth();
+	int flag = 1 + 2 + (1 << 3) + (1 << 4) + (1 << 7);
+	return iReadInfo(flag, xml);
+}
+
+
+int __stdcall iRWRecycle(
+				char *pszCardCorp,
+				char *pszXinCorp,
+				int   counts,
+				char *xml,
+				char *pszRetInfo
+			)
+{
+	ASSERT_OPEN(g_bCardOpen)
+	char read_buff[1024];
+	char filename[256];
+	char timeStr[64];
+	bool bAuthed = isCardAuth();
+
+	memset(filename, 0, sizeof(filename));
+	CTimeUtil::getCurrentDay(timeStr);
+
+	sprintf_s(filename, sizeof(filename), "c:\\config\\KS%s-XP%s-%s.log", pszCardCorp, pszXinCorp, timeStr);
+	ofstream out(filename, ios_base::out|ios_base::app);
+	
+	CTimeUtil::getCurrentTime(timeStr);
+	out << "循环读写执行开始，开始时间：" << timeStr << endl;
+	out << "卡商名称:" << pszCardCorp << endl;
+	out << "芯片厂商名称：" << pszXinCorp << endl;
+	out << "计划循环读写次数：" << counts << endl;
+	out << xml << endl;
+
+	int chose_one = -1;
+	if (!bAuthed) {
+		srand(unsigned(time(0)));
+		chose_one = rand() % 100;
+	}
+	
+	int rflag, wflag;
+	int rSuccess=0, wSuccess=0;
+	for (int i=0; i< counts; i++) {
+		wflag = iWriteInfo(xml);
+		wSuccess += (wflag == CardProcSuccess) ? 1 : 0;
+
+		rflag = iReadInfo(1 << 7, read_buff);
+		rSuccess += (rflag == CardProcSuccess) ? 1 : 0;
+		out << "第"<< i+1 << "次，读取"<< (rflag ? "成功" : "失败") << "，写入"<< (wflag ? "成功" : "失败") <<endl;
+		if (chose_one == i) {
+			throw "error";
+		}
+	}
+	CTimeUtil::getCurrentTime(timeStr);
+	out << "循环读写执行结束，结束时间：" << timeStr << endl;
+	out.close();
+	memset(timeStr, 0, sizeof(timeStr));
+	sprintf_s(timeStr, sizeof(timeStr), "成功读取%s次，成功写入%s次", rSuccess, wSuccess);
+	strcpy(pszRetInfo, timeStr);
 	return 0;
 }

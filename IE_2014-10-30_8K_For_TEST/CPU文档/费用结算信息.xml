@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<SEGMENTS PROGRAMID="001">
+    <SEGMENT ID="15">
+        <COLUMN ID="3"  VALUE="11111" />
+        <COLUMN ID="5"  VALUE="11111" />
+        <COLUMN ID="72"  VALUE="32432" />
+        <COLUMN ID="138"  VALUE="11111" />
+        <COLUMN ID="139"  VALUE="11111" />
+        <COLUMN ID="140"  VALUE="32432" />
+        <COLUMN ID="141"  VALUE="432412" />
+        <COLUMN ID="142"  VALUE="4354345" />
+        <COLUMN ID="143"  VALUE="213132" />
+        <COLUMN ID="144"  VALUE="654654" />
+        <COLUMN ID="145"  VALUE="123132" />
+        <COLUMN ID="146"  VALUE="11111" />
+        <COLUMN ID="147"  VALUE="11111" />
+        </SEGMENT>
+</SEGMENTS>
