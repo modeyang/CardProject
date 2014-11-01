@@ -288,12 +288,28 @@
 			SourceControlFiles="false"
 			>
 			<File
-				RelativePath=".\BHGX_CardActiveX_i.c"
+				RelativePath=".\BHGX_CardActiveX.h"
 				>
 			</File>
 			<File
-				RelativePath=".\BHGX_CardActiveX_p.c"
+				RelativePath=".\BHGX_CardActiveX_i.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<File
