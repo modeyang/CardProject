@@ -12,10 +12,12 @@ struct RecFolder{
 	BYTE    subSection[10];   //DF
 	BYTE	fileName[10];     //EF, ED....
 };
-
+ 
 adapter* __stdcall InitCpuAdapter();
 
 int __stdcall FormatCpuCard(char c);
+
+int __stdcall get_sec_counts(int sec);
 
 #ifdef  __cplusplus
 }

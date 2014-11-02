@@ -1343,8 +1343,10 @@ CardOps * __stdcall InitM1CardOps()
 
 	g_CardOps.iInitGList();
 	g_CardOps.programXmlList = g_XmlListHead;
-
-	g_SegHelper = new CSegmentHelper(g_XmlListHead, &g_CardOps); 
+	
+	if (g_SegHelper == NULL) {
+		g_SegHelper = new CSegmentHelper(g_XmlListHead, &g_CardOps); 
+	}
 	return &g_CardOps;
 }
 

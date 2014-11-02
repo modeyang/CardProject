@@ -861,7 +861,7 @@ STDMETHODIMP CCardProcess::iATLRWRecycle(BSTR pszCardCorp, BSTR pszXinCorp,
 	_bstr_t bsCardCorp(pszCardCorp);
 	_bstr_t bsXinCorp(pszXinCorp);
 	_bstr_t bsWriteXml(write_xml);
-	iRWRecycle((char*)bsCardCorp, (char*)bsXinCorp, (int)counts, (char*)write_xml, g_ReadBuff);
+	iRWRecycle((char*)bsCardCorp, (char*)bsXinCorp, (int)counts, (char*)bsWriteXml, g_ReadBuff);
 	_bstr_t bstr(g_ReadBuff);
 	*pszXml = bstr.Detach();
 	return S_OK;

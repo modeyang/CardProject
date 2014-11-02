@@ -41,9 +41,15 @@
 #define KEY_UK_DF03_2		10
 
 #define PADDING     2
-
 #define BIN_START   15
 #define BIN_END		22
+
+//每个字段的最大记录条数
+#if (CPU_8K || CPU_8K_TEST)
+int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
+#else
+int g_RecMap[BIN_START] = {0, 10, 5, 1, 7, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
+#endif
 
 extern  struct RecFolder g_recIndex[30];
 extern  struct CardDevice *Instance;
@@ -53,13 +59,6 @@ static int g_BinAccessMap[BIN_START] = {0};
 
 //判断定长文件是否读过标记
 static BOOL g_SureFill[BIN_START] = {0};
-
-//每个字段的最大记录条数
-#if (CPU_8K || CPU_8K_TEST)
-static int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
-#else
-static int g_RecMap[BIN_START] = {0, 10, 5, 1, 7, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
-#endif
 
 //CPU初始化后的工作
 static int	CpuLastInit(void*);
@@ -168,7 +167,7 @@ int  CpuReadCard(struct RWRequestS *list, void *apt)
 
 }
 
-int  CpuWriteCard(struct RWRequestS *list,  adapter *apt)
+int  CpuWriteCard(struct RWRequestS *list,  void *apt)
 {
 	struct RWRequestS *AgentList = NULL;
 	int res = 0;
@@ -247,6 +246,7 @@ static struct RWRequestS  *_CreateReadList(struct RWRequestS *ReqList, int mode)
 #define		END_OFFSET	0
 #define     START_POS_1 1893
 #define		START_POS_2 3267
+#define		CPU_8K_OFFSET	254
 static int _iReadCard(struct RWRequestS *list)
 {
 	struct RWRequestS *pReq = list;
@@ -257,13 +257,13 @@ static int _iReadCard(struct RWRequestS *list)
 			status = 0;
 			if (strlen((char*)(g_recIndex[pReq->nID-1].section)) > 0) {
 				status = Instance->iSelectFile(CARDSEAT_RF, g_recIndex[pReq->nID-1].section);
-				UCardFlag = GetFloderKeyID(g_recIndex[pReq->nID-1].section);
+				UCardFlag = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].section);
 				status |= Instance->iUCardAuthSys(UCardFlag);
 			}
 
 			if (strlen((char*)(g_recIndex[pReq->nID-1].subSection)) > 0) {
 				status |= Instance->iSelectFile(CARDSEAT_RF, g_recIndex[pReq->nID-1].subSection);
-				UCardFlag = GetFloderKeyID(g_recIndex[pReq->nID-1].subSection);
+				UCardFlag = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].subSection);
 				status |= Instance->iUCardAuthSys(UCardFlag);
 			}
 
@@ -405,13 +405,13 @@ static int _iWriteCard(struct RWRequestS *list)
 			status = 0;
 			if (strlen((char*)(g_recIndex[pReq->nID-1].section)) > 0) {
 				status = Instance->iSelectFile(CARDSEAT_RF, g_recIndex[pReq->nID-1].section);
-				UKey = GetFloderKeyID(g_recIndex[pReq->nID-1].section);
+				UKey = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].section);
 				status |= Instance->iUCardAuthSys(UKey);
 			}
 
 			if (strlen((char*)(g_recIndex[pReq->nID-1].subSection)) > 0) {
 				status |= Instance->iSelectFile(CARDSEAT_RF, g_recIndex[pReq->nID-1].subSection);
-				UKey = GetFloderKeyID(g_recIndex[pReq->nID-1].subSection);
+				UKey = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].subSection);
 				status |= Instance->iUCardAuthSys(UKey);
 			}
 
@@ -523,11 +523,12 @@ int __stdcall FormatCpuCard(char c)
 
 		if (CPU_8K==1 || CPU_8K_TEST==1) {
 			strcpy((char*)send, "EE01");
-			length = START_POS_1 - END_OFFSET;
+			length = START_POS_1 - END_OFFSET - CPU_8K_OFFSET;
 			status = Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
 
 			strcpy((char*)send, "ED01");
-			status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, START_POS_2 - END_OFFSET, 0);
+			length = START_POS_2 - END_OFFSET - CPU_8K_OFFSET;
+			status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, length, 0);
 		} else {
 			strcpy((char*)send, "EE01");
 			length = START_POS_1 - END_OFFSET;
@@ -559,4 +560,11 @@ int __stdcall FormatCpuCard(char c)
 		}
 	}
 	return status;
+}
+
+int __stdcall get_sec_counts(int sec) {
+	if (sec < 0 || sec >= BIN_START) {
+		return -1;
+	}
+	return g_RecMap[sec];
 }

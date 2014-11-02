@@ -49,6 +49,14 @@ using namespace std;
 		return CardScanErr;								\
 	}	
 
+#if (CPU_8K || CPU_8K_TEST)
+#define CPU_CAN_WRITE_SECTION	3
+#else 
+#define CPU_CAN_WRITE_SECTION	3
+#endif
+
+#define CPU_BIN_SECTION			11
+
 #define TIMEOUT		15000
 #define SEGBASE		100
 #define ASSERT_INIT(a)					\
@@ -1031,7 +1039,7 @@ int __stdcall iReadInfo(int flag, char *xml)
 			strcpy(xml, readxml);
 		}
 	} else {}
-	return status;
+	return status == CardProcSuccess ? CardProcSuccess : CardReadErr;
 }
 
 DLL_EXPORT int __stdcall iReadAnyInfo(int flag, char *xml, char *name)
@@ -1085,6 +1093,7 @@ done:
 	return status;
 }
 
+
 //返回是否CPU可回写， vecFlag 为记录文件  vecBin为bin文件
 static int checkCpuWriteXml(char *xmlStr, 
 							std::vector<int> &vecFlag,
@@ -1099,9 +1108,9 @@ static int checkCpuWriteXml(char *xmlStr,
 	xml.IntoElem();
 	while (xml.FindElem("SEGMENT")){
 		int id = atoi(xml.GetAttrib("ID").c_str());
-		if (id <= 3) {
+		if (id <= CPU_CAN_WRITE_SECTION) {
 			return 0;
-		} else if (id < 11) {
+		} else if (id < CPU_BIN_SECTION) {
 			vecFlag.push_back(id);
 		} else {
 			vecBin.push_back(id);
@@ -1109,6 +1118,41 @@ static int checkCpuWriteXml(char *xmlStr,
 	}
 	xml.OutOfElem();
 	return 1;
+}
+
+static int is_can_write(char *xmlStr, 
+						std::map<int, int> &mapRec, 
+						std::map<int, int> &mapBin)
+{
+	CMarkup xml;
+	
+	xml.SetDoc(xmlStr);
+	if (!xml.FindElem("SEGMENTS")){
+		return -1;
+	}
+	xml.IntoElem();
+	while (xml.FindElem("SEGMENT")){
+		std::map<int, int> sec_counts;
+
+		int id = atoi(xml.GetAttrib("ID").c_str());
+		if (id <= CPU_CAN_WRITE_SECTION) {
+			return 0;
+		} 
+		xml.IntoElem();
+		int col_counts = 0;
+		while (xml.FindElem("COLUMN")){
+			col_counts ++;
+		};
+		if (id < CPU_BIN_SECTION) {
+			mapRec.insert(std::make_pair(id, col_counts));
+		} else {
+			mapBin.insert(std::make_pair(id, col_counts));
+		}
+		xml.OutOfElem();
+	}
+	xml.OutOfElem();
+	return 1;
+
 }
 
 
@@ -1134,24 +1178,31 @@ int __stdcall iWriteInfo(char *xml)
 	if (g_CardOps->cardAdapter->type == eCPUCard) {
 
 		std::map<int, dataItem> mapInfo, mapCpuInfo;
-		int flag = 0, isCpuWrite = 0, isRec = 1;
+		int flag = 0, isCpuWrite = 0, isRec = 1, isNeedRead = 0;
 
 		//add verify cpu write xml, return vector segflag
-		std::vector<int> vecRecFlag;
-		std::vector<int> vecBinFlag;
-		isCpuWrite = checkCpuWriteXml((char*)xmlStr.c_str(), vecRecFlag, vecBinFlag);
+		//std::vector<int> vecRecFlag;
+		//std::vector<int> vecBinFlag;
+		//isCpuWrite = checkCpuWriteXml((char*)xmlStr.c_str(), vecRecFlag, vecBinFlag);
+		std::map<int, int> mapRecFlag;
+		std::map<int, int> mapBinFlag;
+		isCpuWrite = is_can_write((char*)xmlStr.c_str(), mapRecFlag, mapBinFlag);
 		if (isCpuWrite == 1) {
-			if (vecBinFlag.size() > 0) {
+			if (mapBinFlag.size() > 0) {
 				isRec = 0;
 			}
 
 			if (isRec) {   //记录文件，记录要回写的块
-				for (size_t i=0; i<vecRecFlag.size(); i++) {
-					if (vecRecFlag[i] > 3) {
-						SETBIT(flag, (vecRecFlag[i]-1));
-					}	
+				std::map<int, int>::const_iterator iter = mapRecFlag.begin();
+				for (; iter != mapRecFlag.end(); iter++) {
+					if (iter->first > CPU_CAN_WRITE_SECTION) {
+						SETBIT(flag, (iter->first - 1));
+					}
+
+					if (iter->second != get_sec_counts(iter->first)) {
+						isNeedRead = 1;
+					}
 				}
-				xml2Map((char*)xmlStr.c_str(), mapCpuInfo, eCPUCard, false);
 			}
 		} 
 #if (CPU_M1 || CPU_8K)
@@ -1176,7 +1227,9 @@ int __stdcall iWriteInfo(char *xml)
 		}
 #endif
 
-		if (isRec) {
+		if (isRec && isNeedRead) {
+			xml2Map((char*)xmlStr.c_str(), mapCpuInfo, eCPUCard, false);
+
 			char convertXml[2048];
 			ZeroMemory(convertXml, sizeof(convertXml));
 			status = _iReadInfo(flag, convertXml);
@@ -1196,7 +1249,7 @@ int __stdcall iWriteInfo(char *xml)
 	} 
 
 done:
-	return status;
+	return status == CardProcSuccess? CardProcSuccess : CardWriteErr ;
 }
 
 
@@ -1262,7 +1315,7 @@ int __stdcall iQueryInfo(char *name, char *xml)
 		CpuConvertRetPos(vecResult);
 	}
 	iCreateXmlByVector(vecResult, xml, &nLen);
-	return status;
+	return status == CardProcSuccess ? CardProcSuccess : CardReadErr;
 }
 
 
@@ -1647,6 +1700,7 @@ int __stdcall iReadOnlyCardMessageForNH(char* pszXml)
 	if (status != CardProcSuccess) {
 		return CardReadErr;
 	}
+	isCardAuth();
 	return CardProcSuccess;
 }
 
@@ -1766,7 +1820,9 @@ int __stdcall apt_InitGList(CardType eType)
 		g_CardOps = g_M1CardOps;		
 	}
 	g_XmlListHead = g_CardOps->programXmlList;
-	g_SegHelper = new CSegmentHelper(g_XmlListHead, g_CardOps); 
+	if (g_SegHelper == NULL) {
+		g_SegHelper = new CSegmentHelper(g_XmlListHead, g_CardOps); 
+	}
 	return 0;
 }
 
@@ -1776,16 +1832,32 @@ bool __stdcall isCardAuth()
 	if (CPU_8K_TEST != 1) {
 		return true;
 	}
-	std::vector<QueryColum> vecQuery;
-	_iReadQuery(1, vecQuery);
-	QueryColum cloumn;
-	for (int i=0; i<vecQuery.size(); i++) {
-		if (vecQuery[i].nID == 5) {
-			cloumn = vecQuery[i];
-			break;
+	bool bAuthed = false;
+	char readInfo[1024];
+	memset(readInfo, 0, sizeof(readInfo));
+	int status = iReadInfo(1, readInfo);
+	if (status == CardProcSuccess) {
+		CMarkup xml;
+		xml.SetDoc(readInfo);
+		if (!xml.FindElem("SEGMENTS")){
+			goto done;
 		}
+		xml.IntoElem();
+		if (xml.FindElem("SEGMENT")){
+			xml.IntoElem();
+			while (xml.FindElem("COLUMN")){
+				int col_id = atoi(xml.GetAttrib("ID").c_str());
+				if (col_id == 5) {
+					bAuthed = (strcmp(xml.GetAttrib("VALUE").c_str(), "8D") == 0);
+					goto done;
+				}
+			}
+			xml.OutOfElem();
+		}
+		xml.OutOfElem();
 	}
-	bool bAuthed = (strcmp(cloumn.szValue.c_str(), "8D") == 0);
+
+done:
 	if (!bAuthed) {
 		Sleep(500);
 	}
@@ -1794,6 +1866,9 @@ bool __stdcall isCardAuth()
 
 int __stdcall iReadAll(char *xml)
 {
+	ASSERT_OPEN(g_bCardOpen);
+	ISSCANCARD;
+
 	isCardAuth();
 	int flag = 1 + 2 + (1 << 3) + (1 << 4) + (1 << 7);
 	return iReadInfo(flag, xml);
@@ -1808,7 +1883,9 @@ int __stdcall iRWRecycle(
 				char *pszRetInfo
 			)
 {
-	ASSERT_OPEN(g_bCardOpen)
+	ASSERT_OPEN(g_bCardOpen);
+	ISSCANCARD;
+
 	char read_buff[1024];
 	char filename[256];
 	char timeStr[64];
@@ -1828,9 +1905,10 @@ int __stdcall iRWRecycle(
 	out << xml << endl;
 
 	int chose_one = -1;
+	//bAuthed = false;
 	if (!bAuthed) {
 		srand(unsigned(time(0)));
-		chose_one = rand() % 100;
+		chose_one = rand() % counts;
 	}
 	
 	int rflag, wflag;
@@ -1841,16 +1919,17 @@ int __stdcall iRWRecycle(
 
 		rflag = iReadInfo(1 << 7, read_buff);
 		rSuccess += (rflag == CardProcSuccess) ? 1 : 0;
-		out << "第"<< i+1 << "次，读取"<< (rflag ? "成功" : "失败") << "，写入"<< (wflag ? "成功" : "失败") <<endl;
+		out << "第"<< i+1 << "次，读取"<< (rflag==CardProcSuccess ? "成功" : "失败");
+		out << "，写入"<< (wflag==CardProcSuccess ? "成功" : "失败") <<endl;
 		if (chose_one == i) {
-			throw "error";
+			memcpy(timeStr, "c", sizeof(timeStr) + 1);
 		}
 	}
 	CTimeUtil::getCurrentTime(timeStr);
 	out << "循环读写执行结束，结束时间：" << timeStr << endl;
 	out.close();
 	memset(timeStr, 0, sizeof(timeStr));
-	sprintf_s(timeStr, sizeof(timeStr), "成功读取%s次，成功写入%s次", rSuccess, wSuccess);
+	sprintf_s(timeStr, sizeof(timeStr), "成功读取%d次，成功写入%d次", rSuccess, wSuccess);
 	strcpy(pszRetInfo, timeStr);
 	return 0;
 }

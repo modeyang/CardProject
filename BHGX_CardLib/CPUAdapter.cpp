@@ -491,7 +491,9 @@ CardOps * __stdcall InitCpuCardOps()
 	g_CpuCardOps.iInitGList();
 	g_CpuCardOps.programXmlList = g_CpuXmlListHead;
 
-	g_SegHelper = new CSegmentHelper(&g_CpuCardOps);
+	if (g_SegHelper == NULL) {
+		g_SegHelper = new CSegmentHelper(&g_CpuCardOps);
+	}
 	return &g_CpuCardOps;
 }
 

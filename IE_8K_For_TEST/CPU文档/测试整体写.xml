@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<SEGMENTS PROGRAMID="001">
+    <SEGMENT ID="4">
+        <COLUMN ID="7" VALUE="20180808" />
+        <COLUMN ID="16" VALUE="12312312" />
+        <COLUMN ID="17" VALUE="21321421" />
+        <COLUMN ID="18" VALUE="2" />
+        <COLUMN ID="19" VALUE="2" />
+        <COLUMN ID="20" VALUE="0" />
+    </SEGMENT>
+    <SEGMENT ID="5">
+        <COLUMN ID="21" VALUE="01" />
+        <COLUMN ID="22" VALUE="中关村" />
+        <COLUMN ID="23" VALUE="02" />
+        <COLUMN ID="24" VALUE="中关村" />
+    </SEGMENT>
+    <SEGMENT ID="8">
+        <COLUMN ID="37" VALUE="12345" />
+        <COLUMN ID="38" VALUE="12345" />
+        <COLUMN ID="39" VALUE="123456789" />
+        <COLUMN ID="40" VALUE="123456789" />
+    </SEGMENT>
+</SEGMENTS>

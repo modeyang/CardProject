@@ -91,8 +91,8 @@ int __stdcall apt_ScanCard()
 		return CardInitErr;
 	}
 
-	status = Instance->iIOCtl( CMD_BEEP, &para , 2);
-	status = Instance->iIOCtl( CMD_LED, &para , 2);
+	//status = Instance->iIOCtl( CMD_BEEP, &para , 2);
+	//status = Instance->iIOCtl( CMD_LED, &para , 2);
 	status = Instance->ICCSet( CARDSEAT_RF, &cardType , resp);
 
 	if (cardType == eCPUCard) {
