@@ -357,7 +357,8 @@ static void ListParseContent(struct RWRequestS *list)
 static void ParseWriteContent(struct RWRequestS *list)
 {
 	struct XmlColumnS *ColumnElement = NULL;
-	struct RWRequestS   *CurrRequest = list;
+	struct RWRequestS *CurrRequest = list;
+	struct RWRequestS *prevRequest = NULL;
 	struct RWRequestS *Agent = NULL;
 	BYTE *bcd = NULL;
 	int nByteLen = 0;
@@ -370,12 +371,14 @@ static void ParseWriteContent(struct RWRequestS *list)
 		datatype = CurrRequest->datatype;
 		ColumnElement = (struct XmlColumnS *)CurrRequest->pri;
 
-		if ((CurrRequest->offset - Agent->offset) == 0 && bAgent){
-			bcd = Agent->value;
+		//fix 8k时，如果首文件记录为空，则会出现bcd值偏移，出现错误
+		if ((CurrRequest->offset - Agent->offset) == 0){
+			if (prevRequest == NULL || prevRequest->length !=0) {
+				bcd = Agent->value;
+			}
 		}
-
+		
 		if (datatype == eRecType) { //记录文件
-			bAgent = FALSE;
 			memcpy(bcd, CurrRequest->value, CurrRequest->length + PADDING);
 			*bcd++ = (BYTE)CurrRequest->nColumID;
 			*bcd++ =(BYTE)CurrRequest->length;
@@ -385,6 +388,7 @@ static void ParseWriteContent(struct RWRequestS *list)
 			memcpy(bcd, CurrRequest->value, CurrRequest->length);
 			bcd += CurrRequest->length;
 		}
+		prevRequest = CurrRequest;
 		CurrRequest = CurrRequest->Next;
 	}
 
@@ -398,6 +402,11 @@ static int _iWriteCard(struct RWRequestS *list)
 	int status = 1;
 	int UKey = 0;
 	int mode = 0;
+	char write_flag = 0xff;
+	if (CPU_8K==1 || CPU_8K_TEST==1) {
+		write_flag = 1;
+	} 
+
 	if (Instance)
 	{
 		while (pReq)
@@ -433,7 +442,7 @@ static int _iWriteCard(struct RWRequestS *list)
 				{
 				case eRecType:
 					status |= Instance->iWriteRec(CARDSEAT_RF, g_recIndex[pReq->nID-1].fileName, pReq->value,
-						pReq->length ,0xff, g_RecMap[pReq->nID]);
+						pReq->length , write_flag, g_RecMap[pReq->nID]);
 					break;
 				case eBinType:
 					status |= Instance->iWriteBin(CARDSEAT_RF, g_recIndex[pReq->nID-1].fileName , pReq->value, 0, 

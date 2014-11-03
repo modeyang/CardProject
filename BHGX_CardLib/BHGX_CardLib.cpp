@@ -1131,7 +1131,7 @@ static int is_can_write(char *xmlStr,
 		return -1;
 	}
 	xml.IntoElem();
-	while (xml.FindElem("SEGMENT")){
+	do{
 		std::map<int, int> sec_counts;
 
 		int id = atoi(xml.GetAttrib("ID").c_str());
@@ -1149,7 +1149,8 @@ static int is_can_write(char *xmlStr,
 			mapBin.insert(std::make_pair(id, col_counts));
 		}
 		xml.OutOfElem();
-	}
+	} while (xml.FindElem("SEGMENT"));
+	
 	xml.OutOfElem();
 	return 1;
 

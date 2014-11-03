@@ -7,12 +7,29 @@
         <COLUMN ID="18" VALUE="2" />
         <COLUMN ID="19" VALUE="2" />
         <COLUMN ID="20" VALUE="0" />
+        <COLUMN ID="58" VALUE="0" />
     </SEGMENT>
     <SEGMENT ID="5">
         <COLUMN ID="21" VALUE="01" />
-        <COLUMN ID="22" VALUE="ä¸­å…³æ‘" />
+        <COLUMN ID="22" VALUE="º£µíÇø" />
         <COLUMN ID="23" VALUE="02" />
-        <COLUMN ID="24" VALUE="ä¸­å…³æ‘" />
+        <COLUMN ID="24" VALUE="²ýÆ½Çø" />
+    </SEGMENT>
+    <SEGMENT ID="6">
+        <COLUMN ID="25" VALUE="²ÌÒã" />
+        <COLUMN ID="26" VALUE="1" />
+        <COLUMN ID="27" VALUE="15120010743" />
+        <COLUMN ID="28" VALUE="²ÌÒã" />
+        <COLUMN ID="29" VALUE="1" />
+        <COLUMN ID="30" VALUE="15120010742" />
+        <COLUMN ID="31" VALUE="²ÌÒã" />
+        <COLUMN ID="32" VALUE="1" />
+        <COLUMN ID="33" VALUE="15120010741" />
+    </SEGMENT>
+    <SEGMENT ID="7">
+        <COLUMN ID="34" VALUE="1" />
+        <COLUMN ID="35" VALUE="1" />
+        <COLUMN ID="36" VALUE="232" />
     </SEGMENT>
     <SEGMENT ID="8">
         <COLUMN ID="37" VALUE="12345" />
