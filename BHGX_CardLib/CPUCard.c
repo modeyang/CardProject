@@ -373,7 +373,7 @@ static void ParseWriteContent(struct RWRequestS *list)
 
 		//fix 8k时，如果首文件记录为空，则会出现bcd值偏移，出现错误
 		if ((CurrRequest->offset - Agent->offset) == 0){
-			if (prevRequest == NULL || prevRequest->length !=0) {
+			if (prevRequest == NULL || prevRequest->nID != CurrRequest->nID) {
 				bcd = Agent->value;
 			}
 		}

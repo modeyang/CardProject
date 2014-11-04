@@ -152,7 +152,7 @@ extern "C" {
 		char *pszXml
 		);
 
-	DLL_EXPORT bool __stdcall isCardAuth();
+	DLL_EXPORT bool __stdcall isCardAuth(int timeout=1);
 
 	DLL_EXPORT int __stdcall iReadAll(char *xml);
 

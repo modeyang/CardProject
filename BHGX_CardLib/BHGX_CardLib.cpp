@@ -1170,7 +1170,7 @@ int __stdcall iWriteInfo(char *xml)
 	}
 	
 	ISSCANCARD;
-
+	isCardAuth(5);
 	if (g_CardOps->cardAdapter->type == eM1Card) {
 		status =  _iWriteInfo((char*)xmlStr.c_str());
 		goto done;
@@ -1828,7 +1828,7 @@ int __stdcall apt_InitGList(CardType eType)
 }
 
 
-bool __stdcall isCardAuth()
+bool __stdcall isCardAuth(int timeout)
 {
 	if (CPU_8K_TEST != 1) {
 		return true;
@@ -1860,7 +1860,7 @@ bool __stdcall isCardAuth()
 
 done:
 	if (!bAuthed) {
-		Sleep(500);
+		Sleep(timeout * 1000);
 	}
 	return bAuthed;
 }
@@ -1870,7 +1870,7 @@ int __stdcall iReadAll(char *xml)
 	ASSERT_OPEN(g_bCardOpen);
 	ISSCANCARD;
 
-	isCardAuth();
+	isCardAuth(3);
 	int flag = 1 + 2 + (1 << 3) + (1 << 4) + (1 << 7);
 	return iReadInfo(flag, xml);
 }
