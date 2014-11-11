@@ -32,8 +32,8 @@
 }							\
 
 
-#define BUFFSIZE	8096
-char g_ReadBuff[BUFFSIZE];
+#define MAX_BUFF_SIZE   (1024 * 24)
+char g_ReadBuff[MAX_BUFF_SIZE];
 
 std::map<std::string, std::string> m_mapCodeDesc;
 

@@ -45,7 +45,7 @@
 #define BIN_END		22
 
 //每个字段的最大记录条数
-#if (CPU_8K || CPU_8K_TEST)
+#if (CPU_8K || CPU_8K_TEST ||  CPU_8K_ONLY)
 int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
 #else
 int g_RecMap[BIN_START] = {0, 10, 5, 1, 7, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
@@ -112,7 +112,7 @@ static int GetUpdateKeyID(int SegID,int mode)
 	else if (SegID < 13)
 		return KEY_UK_DF02_3;
 	else {
-		if (!mode && SegID < 15)
+		if (!mode && SegID < BIN_START)
 			return KEY_UK_DF03_2;
 		return KEY_UK_DF03_1;
 	}
@@ -373,7 +373,8 @@ static void ParseWriteContent(struct RWRequestS *list)
 
 		//fix 8k时，如果首文件记录为空，则会出现bcd值偏移，出现错误
 		if ((CurrRequest->offset - Agent->offset) == 0){
-			if (prevRequest == NULL || prevRequest->nID != CurrRequest->nID) {
+			if (prevRequest == NULL || prevRequest->nID != CurrRequest->nID
+				|| CurrRequest->nID >= BIN_START) {
 				bcd = Agent->value;
 			}
 		}
@@ -403,7 +404,7 @@ static int _iWriteCard(struct RWRequestS *list)
 	int UKey = 0;
 	int mode = 0;
 	char write_flag = 0xff;
-	if (CPU_8K==1 || CPU_8K_TEST==1) {
+	if (CPU_8K==1 || CPU_8K_TEST==1 || CPU_8K_ONLY==1) {
 		write_flag = 1;
 	} 
 
@@ -424,20 +425,20 @@ static int _iWriteCard(struct RWRequestS *list)
 				status |= Instance->iUCardAuthSys(UKey);
 			}
 
+			if (pReq->datatype == eSureType) {
+				mode = *(BYTE*)(pReq->value);
+				mode = (mode==0 ? 1 : 0);
+			}
+
+			UKey = GetUpdateKeyID(pReq->nID, mode);
+			status |= Instance->iUCardAuthSys(UKey);
+			if (status) {
+				goto done;
+			}
+
 			pOldReq = pReq;
 			while (IsSameFile(pOldReq, pReq))
 			{
-				if (pReq->datatype == eSureType) {
-					mode = *(BYTE*)(pReq->value);
-					mode = (mode==0 ? 1 : 0);
-				}
-
-				UKey = GetUpdateKeyID(pReq->nID, mode);
-				status |= Instance->iUCardAuthSys(UKey);
-				if (status) {
-					goto done;
-				}
-
 				switch (pReq->datatype)
 				{
 				case eRecType:
@@ -530,7 +531,7 @@ int __stdcall FormatCpuCard(char c)
 
 		status |= Instance->iUCardAuthSys(KEY_UK_DF03_1);
 
-		if (CPU_8K==1 || CPU_8K_TEST==1) {
+		if (CPU_8K==1 || CPU_8K_TEST==1 || CPU_8K_ONLY==1) {
 			strcpy((char*)send, "EE01");
 			length = START_POS_1 - END_OFFSET - CPU_8K_OFFSET;
 			status = Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);

@@ -15,8 +15,9 @@ extern "C" {
 #define CPU_ONLY	0
 #define CPU_M1		0
 #define CPU_8K		0
+#define CPU_8K_ONLY	1
 // for cpu test
-#define CPU_8K_TEST    1
+#define CPU_8K_TEST 0
 
 #define ENCRYPT		0
 
@@ -28,6 +29,8 @@ extern "C" {
 #define CMD_LED		2
 
 typedef unsigned char BYTE;
+
+#define MAX_BUFF_SIZE   (1024 * 24)
 
 
 #define SAFE_DELETE(a)  if (a != NULL) { delete(a);a = NULL;}

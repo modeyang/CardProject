@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<SEGMENTS PROGRAMID="001">
+    <SEGMENT ID="4">
+        <COLUMN ID="7" VALUE="20190909" />
+        <COLUMN ID="16" VALUE="12312312" />
+        <COLUMN ID="17" VALUE="21321421" />
+        <COLUMN ID="18" VALUE="2" />
+        <COLUMN ID="19" VALUE="2" />
+        <COLUMN ID="20" VALUE="0" />
+    </SEGMENT>
+    <SEGMENT ID="5">
+        <COLUMN ID="21" VALUE="01" />
+        <COLUMN ID="22" VALUE="海淀区" />
+        <COLUMN ID="23" VALUE="02" />
+        <COLUMN ID="24" VALUE="昌平区" />
+    </SEGMENT>
+    <SEGMENT ID="6">
+        <COLUMN ID="25" VALUE="蔡" />
+        <COLUMN ID="26" VALUE="1" />
+        <COLUMN ID="27" VALUE="15120010743" />
+        <COLUMN ID="28" VALUE="蔡" />
+        <COLUMN ID="29" VALUE="1" />
+        <COLUMN ID="30" VALUE="15120010742" />
+        <COLUMN ID="31" VALUE="蔡" />
+        <COLUMN ID="32" VALUE="1" />
+        <COLUMN ID="33" VALUE="15120010741" />
+    </SEGMENT>
+    <SEGMENT ID="7">
+        <COLUMN ID="34" VALUE="1" />
+        <COLUMN ID="35" VALUE="1" />
+        <COLUMN ID="36" VALUE="232" />
+    </SEGMENT>
+    <SEGMENT ID="8">
+        <COLUMN ID="37" VALUE="12345" />
+        <COLUMN ID="38" VALUE="12345" />
+        <COLUMN ID="39" VALUE="123456789" />
+        <COLUMN ID="40" VALUE="123456789" />
+    </SEGMENT>
+    <SEGMENT ID="9">
+        <COLUMN ID="41" VALUE="0" />
+        <COLUMN ID="42" VALUE="0" />
+        <COLUMN ID="43" VALUE="1" />
+        <COLUMN ID="44" VALUE="1" />
+        <COLUMN ID="45" VALUE="1" />
+        <COLUMN ID="46" VALUE="1" />
+        <COLUMN ID="47" VALUE="0" />
+        <COLUMN ID="48" VALUE="0" />
+        <COLUMN ID="49" VALUE="0" />
+        <COLUMN ID="50" VALUE="0" />
+        <COLUMN ID="51" VALUE="0" />
+        <COLUMN ID="52" VALUE="0" />
+        <COLUMN ID="53" VALUE="0" />
+        <COLUMN ID="54" VALUE="0" />
+        <COLUMN ID="55" VALUE="0" />
+    </SEGMENT>
+    <SEGMENT ID="10">
+        <COLUMN ID="56" VALUE="2" />
+    </SEGMENT>
+    <SEGMENT ID="15">
+        <COLUMN ID="1" VALUE="32443" />
+        <COLUMN ID="2" VALUE="4324" />
+        <COLUMN ID="3" VALUE="000001" />
+        <COLUMN ID="4" VALUE="0000" />
+        <COLUMN ID="5" VALUE="" />
+        <COLUMN ID="6" VALUE="" />
+        <COLUMN ID="7" VALUE="00" />
+        <COLUMN ID="8" VALUE="" />
+        <COLUMN ID="9" VALUE="" />
+        <COLUMN ID="10" VALUE="00" />
+        <COLUMN ID="11" VALUE="00" />
+        <COLUMN ID="12" VALUE="" />
+        <COLUMN ID="13" VALUE="43243" />
+        <COLUMN ID="14" VALUE="00000000" />
+        <COLUMN ID="15" VALUE="" />
+        <COLUMN ID="16" VALUE="00" />
+        <COLUMN ID="17" VALUE="" />
+        <COLUMN ID="18" VALUE="00" />
+        <COLUMN ID="19" VALUE="00" />
+        <COLUMN ID="20" VALUE="" />
+        <COLUMN ID="21" VALUE="" />
+        <COLUMN ID="22" VALUE="00000000" />
+        <COLUMN ID="23" VALUE="" />
+        <COLUMN ID="24" VALUE="00" />
+        <COLUMN ID="25" VALUE="00" />
+        <COLUMN ID="58" VALUE="00" />
+        <COLUMN ID="59" VALUE="001" />
+        <COLUMN ID="60" VALUE="" />
+        <COLUMN ID="70" VALUE="0000" />
+        <COLUMN ID="71" VALUE="0000" />
+        <COLUMN ID="72" VALUE="00000000" />
+        <COLUMN ID="73" VALUE="" />
+        <COLUMN ID="74" VALUE="002100" />
+        <COLUMN ID="75" VALUE="00" />
+        <COLUMN ID="76" VALUE="00" />
+        <COLUMN ID="77" VALUE="00" />
+        <COLUMN ID="78" VALUE="432" />
+        <COLUMN ID="79" VALUE="32432" />
+        <COLUMN ID="80" VALUE="1213000000" />
+        <COLUMN ID="3"  VALUE="11111" />
+        <COLUMN ID="5"  VALUE="11111" />
+        <COLUMN ID="72"  VALUE="32432" />
+        <COLUMN ID="138"  VALUE="11111" />
+        <COLUMN ID="139"  VALUE="11111" />
+        <COLUMN ID="140"  VALUE="32432" />
+        <COLUMN ID="141"  VALUE="432412" />
+        <COLUMN ID="142"  VALUE="4354345" />
+        <COLUMN ID="143"  VALUE="213132" />
+        <COLUMN ID="144"  VALUE="654654" />
+        <COLUMN ID="145"  VALUE="123132" />
+        <COLUMN ID="146"  VALUE="11111" />
+        <COLUMN ID="147"  VALUE="11111" />
+    </SEGMENT>
+    <SEGMENT ID="18">
+        <COLUMN ID="1"  VALUE="12312" />
+        <COLUMN ID="2"  VALUE="" />
+        <COLUMN ID="3"  VALUE="123" />
+        <COLUMN ID="4"  VALUE="3213" />
+        <COLUMN ID="5"  VALUE="" />
+        <COLUMN ID="6"  VALUE="00" />
+        <COLUMN ID="7"  VALUE="" />
+        <COLUMN ID="8"  VALUE="" />
+        <COLUMN ID="9"  VALUE="0543" />
+        <COLUMN ID="10" VALUE="" />
+        <COLUMN ID="11"  VALUE="" />
+        <COLUMN ID="12"  VALUE="34234" />
+        <COLUMN ID="13" VALUE="2432" />
+        <COLUMN ID="42"  VALUE="" />
+        <COLUMN ID="43"  VALUE="32" />
+        <COLUMN ID="44"  VALUE="34243" />
+        <COLUMN ID="45"  VALUE="" />
+        <COLUMN ID="46"  VALUE="2342432" />
+        <COLUMN ID="92"  VALUE="" />
+        <COLUMN ID="93"  VALUE="24" />
+        <COLUMN ID="94" VALUE="232" />
+        <COLUMN ID="95" VALUE="" />
+        <COLUMN ID="96"  VALUE="" />
+        <COLUMN ID="97"  VALUE="321" />
+        <COLUMN ID="98" VALUE="1231" />
+        <COLUMN ID="99"  VALUE="21" />
+        <COLUMN ID="132"  VALUE="" />
+        <COLUMN ID="133" VALUE="" />
+        <COLUMN ID="134"  VALUE="1234" />
+        <COLUMN ID="141"  VALUE="12321" />
+        <COLUMN ID="142"  VALUE="4" />
+        <COLUMN ID="143" VALUE="432430" />
+    </SEGMENT>
+</SEGMENTS>

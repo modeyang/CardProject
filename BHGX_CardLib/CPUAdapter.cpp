@@ -57,7 +57,7 @@ static int InitCpuGlobalList()
 	int res_id = IDR_XML4;
 	if (CPU_M1 == 1 || CPU_ONLY == 1) {
 		res_id = IDR_XML6;
-	} else if (CPU_8K == 1 || CPU_8K_TEST == 1) {
+	} else if (CPU_8K == 1 || CPU_8K_TEST == 1 || CPU_8K_ONLY==1) {
 		res_id = IDR_XML5;
 	}
 	

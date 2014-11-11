@@ -49,13 +49,15 @@ using namespace std;
 		return CardScanErr;								\
 	}	
 
-#if (CPU_8K || CPU_8K_TEST)
+#if (CPU_8K || CPU_8K_TEST || CPU_8K_ONLY)
 #define CPU_CAN_WRITE_SECTION	3
 #else 
 #define CPU_CAN_WRITE_SECTION	3
 #endif
 
 #define CPU_BIN_SECTION			11
+
+class unknowException {};
 
 #define TIMEOUT		15000
 #define SEGBASE		100
@@ -1018,7 +1020,7 @@ int __stdcall iReadInfo(int flag, char *xml)
 	}
 #endif
 
-	char readxml[1024*10];
+	char readxml[MAX_BUFF_SIZE];
 	ZeroMemory(readxml, sizeof(readxml));
 
 	int status = _iReadInfo(flag, readxml, del_flag);
@@ -1131,7 +1133,7 @@ static int is_can_write(char *xmlStr,
 		return -1;
 	}
 	xml.IntoElem();
-	do{
+	while (xml.FindElem("SEGMENT")){
 		std::map<int, int> sec_counts;
 
 		int id = atoi(xml.GetAttrib("ID").c_str());
@@ -1149,7 +1151,7 @@ static int is_can_write(char *xmlStr,
 			mapBin.insert(std::make_pair(id, col_counts));
 		}
 		xml.OutOfElem();
-	} while (xml.FindElem("SEGMENT"));
+	} 
 	
 	xml.OutOfElem();
 	return 1;
@@ -1231,7 +1233,7 @@ int __stdcall iWriteInfo(char *xml)
 		if (isRec && isNeedRead) {
 			xml2Map((char*)xmlStr.c_str(), mapCpuInfo, eCPUCard, false);
 
-			char convertXml[2048];
+			char convertXml[MAX_BUFF_SIZE];
 			ZeroMemory(convertXml, sizeof(convertXml));
 			status = _iReadInfo(flag, convertXml);
 			if (status) {
@@ -1518,7 +1520,7 @@ int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServerURL,char*
 	isCardAuth();
 	if (status == CardProcSuccess){
 		int flag = 2;
-		if (CPU_8K_TEST == 1 || CPU_ONLY == 1) {
+		if (CPU_8K_TEST == 1 || CPU_ONLY == 1 || CPU_8K_ONLY==1) {
 			flag = 2 + (1 << 7);
 		}
 		status = iReadInfo(flag, pszXml);
@@ -1590,7 +1592,7 @@ int __stdcall iRegMsgForNH(char *pszCardServerURL, char* pszXml)
 
 	if (status == CardProcSuccess){
 		int flag = 2;
-		if (CPU_8K_TEST == 1 || CPU_ONLY == 1) {
+		if (CPU_8K_TEST == 1 || CPU_ONLY == 1 || CPU_8K_ONLY==1) {
 			flag = 2 + (1 << 7);
 		}
 		status = iReadInfo(flag, pszXml);
@@ -1623,7 +1625,7 @@ static int _checkMsgForLocalWithLog(char* pszLogXml, char* pszXml, char *logname
 	}
 
 	int flag = 2;
-	if (CPU_8K_TEST == 1 || CPU_ONLY == 1) {
+	if (CPU_8K_TEST == 1 || CPU_ONLY == 1 || CPU_8K_ONLY==1) {
 		flag = 2 + (1 << 7);
 	}
 	if (CardProcSuccess != iReadInfo(flag, pszXml)) {
@@ -1694,7 +1696,7 @@ int __stdcall iReadOnlyCardMessageForNHLog(char *pszLogXml, char* pszXml)
 int __stdcall iReadOnlyCardMessageForNH(char* pszXml)
 {
 	int flag = 2;
-	if (CPU_8K_TEST == 1 || CPU_ONLY == 1) {
+	if (CPU_8K_TEST == 1 || CPU_ONLY == 1 || CPU_8K_ONLY==1) {
 		flag = 2 + (1 << 7);
 	}
 	int status = iReadInfo(flag, pszXml);
@@ -1750,7 +1752,7 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 
 	if (status == CardProcSuccess){
 		int flag = 2;
-		if (CPU_8K_TEST == 1 || CPU_ONLY == 1) {
+		if (CPU_8K_TEST == 1 || CPU_ONLY == 1 || CPU_8K_ONLY==1) {
 			flag = 2 + (1 << 7);
 		}
 		status = iReadInfo(flag, pszXml);
@@ -1869,9 +1871,14 @@ int __stdcall iReadAll(char *xml)
 {
 	ASSERT_OPEN(g_bCardOpen);
 	ISSCANCARD;
+	int flag = 0;
 
 	isCardAuth(3);
-	int flag = 1 + 2 + (1 << 3) + (1 << 4) + (1 << 7);
+	if (CPU_8K_TEST == 1) {
+		flag = 1 + 2 + (1 << 3) + (1 << 4) + (1 << 7);
+	} else {
+		flag = 1 + 2 + (1 << 3) + (1 << 4) + (1 << 5) + (1 << 6) + (1 << 7) + (1 << 8) + (1 << 9) + (1 << 14) + (1 << 17);
+	}
 	return iReadInfo(flag, xml);
 }
 
@@ -1886,7 +1893,8 @@ int __stdcall iRWRecycle(
 {
 	ASSERT_OPEN(g_bCardOpen);
 	ISSCANCARD;
-
+	
+	std::locale::global(std::locale(""));
 	char read_buff[1024];
 	char filename[256];
 	char timeStr[64];
@@ -1906,7 +1914,6 @@ int __stdcall iRWRecycle(
 	out << xml << endl;
 
 	int chose_one = -1;
-	//bAuthed = false;
 	if (!bAuthed) {
 		srand(unsigned(time(0)));
 		chose_one = rand() % counts;
@@ -1923,7 +1930,7 @@ int __stdcall iRWRecycle(
 		out << "第"<< i+1 << "次，读取"<< (rflag==CardProcSuccess ? "成功" : "失败");
 		out << "，写入"<< (wflag==CardProcSuccess ? "成功" : "失败") <<endl;
 		if (chose_one == i) {
-			memcpy(timeStr, "c", sizeof(timeStr) + 1);
+			throw unknowException();
 		}
 	}
 	CTimeUtil::getCurrentTime(timeStr);
