@@ -1,0 +1,927 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+    <title>内部测试版本</title>
+
+    <script type="text/javascript">
+		
+	var SavePath = "C:\\CardSave.xml";
+
+    //你好
+	var fso = new ActiveXObject("Scripting.FileSystemObject");
+   	var obj = new ActiveXObject("BHGX_CardActiveX.CardProcess.1");
+	     loadXML = function(xmlString){
+         var xmlDoc=null;
+        //判断浏览器的类型
+        //支持IE浏览器 
+        if(!window.DOMParser && window.ActiveXObject){   //window.DOMParser 判断是否是非ie浏览器
+             var xmlDomVersions = ['MSXML.2.DOMDocument.6.0','MSXML.2.DOMDocument.3.0','Microsoft.XMLDOM'];
+            for(var i=0;i<xmlDomVersions.length;i++){
+                try{
+                     xmlDoc = new ActiveXObject(xmlDomVersions[i]);
+                     xmlDoc.async = false;
+                     xmlDoc.loadXML(xmlString); //loadXML方法载入xml字符串
+                    break;
+                 }catch(e){
+                 }
+             }
+         }
+        //支持Mozilla浏览器
+        else if(window.DOMParser && document.implementation && document.implementation.createDocument){
+            try{
+                /* DOMParser 对象解析 XML 文本并返回一个 XML Document 对象。
+                  * 要使用 DOMParser，使用不带参数的构造函数来实例化它，然后调用其 parseFromString() 方法
+                  * parseFromString(text, contentType) 参数text:要解析的 XML 标记 参数contentType文本的内容类型
+                  * 可能是 "text/xml" 、"application/xml" 或 "application/xhtml+xml" 中的一个。注意，不支持 "text/html"。
+                 */
+                 domParser = new   DOMParser();
+                 xmlDoc = domParser.parseFromString(xmlString, 'text/xml');
+             }catch(e){
+             }
+         }
+        else{
+            return null;
+         }
+
+        return xmlDoc;
+     }
+
+
+  //对xml对象进行判断
+     checkXMLDocObj = function(xmlString){
+         var xmlDoc = loadXML(xmlString);
+        if(xmlDoc==null){
+             alert('您的浏览器不支持xml文件读取,于是本页面禁止您的操作,推荐使用IE5.0以上可以解决此问题!');
+            //window.location.href='某某地址(比如首页)';
+         }
+        return xmlDoc;
+     }
+     
+
+     		    //参数1:控件id号,参数2:理解为定位节点
+     initializeSelect = function(printerXML){
+         var xmlDoc = checkXMLDocObj(printerXML);
+         var n;
+         var l;
+         var Sel = document.getElementById("PrinterList");  //得到下拉列表框控件
+        if(Sel != null){
+             n = xmlDoc.getElementsByTagName("PrinterName");
+             l = n.length;
+            //循环添加列表子项
+            for(var i=0;i<l;i++){
+                 var Option=document.createElement("OPTION"); 
+                 Option.value = n[i].getAttribute("NAME");
+                 Option.text = n[i].getAttribute("NAME");
+                 Sel.options.add(Option);
+             }
+         }
+     }
+
+     function GetDateDiffBySeconds(sTime, eTime) {
+
+        //作为除数的数字
+        var divNum = 1000;
+        return parseInt((eTime.getTime() - sTime.getTime()) / parseInt(divNum));
+    }
+
+	function GetFileContent(filepath)
+	{
+		var text;
+		try{
+		    var file = fso.OpenTextFile(filepath, 1, false, 0); 
+		    text = file.ReadAll();
+			file.close(); 
+		}catch(e){
+			alert(e);
+		}
+		return text;
+	}
+	
+   function GetVersion()
+   {
+        try {
+            var ver=obj.iATLGetCardVersion();
+            var info = "version=[" + ver + "]";
+            alert(info);
+        }  catch (e) {
+            alert(e);
+        }
+    }
+	
+    function CardInit() {
+        try {		
+		    var ret = obj.iATLCardInit();
+		    if (ret != 0) {
+			    var strErr = obj.iATLerr();
+			    alert(strErr);
+		    } else {
+			    alert("系统初始化成功");
+		    }
+	    } catch (e) {
+		    alert(e);
+	    }
+    }
+    
+    function CardDeinit()
+	{
+	    try{
+			var ret = obj.iATLCardDeinit();
+			if (ret != 0) {
+		   		var strErr = obj.iATLerr();
+				alert(strErr);
+		   } else{
+		   		alert("系统关闭");
+           }
+		}catch(e){
+			alert(a);
+		}
+	}
+	
+	function CardOpen()
+	{
+		try{
+			var ret = obj.iATLCardOpen();
+			if (ret != 0){
+		   		var strErr = obj.iATLerr();
+				alert(strErr);
+		    }else{
+		   		alert("打开设备成功");
+            }
+		}catch(e){
+			alert(a);
+		}
+	}
+	
+	function CardClose()
+	{
+		try{
+		    var ret = obj.iATLCardClose();
+			if (ret != 0) {
+		   		var strErr = obj.iATLerr();
+				alert(strErr);
+		    }else{
+		   		alert("关闭设备成功");
+            }
+		}catch(e){
+			alert(a);
+		}
+	}
+
+	function ScanCard()
+	{
+		try{
+			var ret = obj.iATLScanCard();
+	        if (ret != 0){
+		   		var strErr = obj.iATLerr();
+				alert(strErr);
+		    }else{
+	   		    alert("寻卡成功");
+            }
+		}catch(e){}
+	}
+		
+	function  CardIsEmpty()
+	{
+		try{
+		    var ret = obj.iATLCardIsEmpty();
+		    if (ret != 0) {
+		        var strErr = obj.iATLerr();
+				alert(strErr);
+		    } else {
+		        alert("卡是空卡");
+		    }
+		}catch(e){
+		    alert(e);
+		}
+	}
+	
+    function Read() {
+        try {
+			var ID=document.getElementsByName("ReadText")[0].value;
+			if (ID == "" || typeof(ID) == "undefined"){
+				alert("请选择卡要查询的ID号");
+				return;
+			}
+            var OutXML=obj.iATLReadInfo(ID);
+            alert(OutXML);
+			var filesave = fso.createtextfile(SavePath, true, false);
+			 filesave.Write(OutXML);
+			filesave.close();
+        } catch(e){
+            alert(e);
+        }
+    }
+    
+    function ReadClinicInfo() 
+    {
+        try{
+        	var ID=document.getElementsByName("CodeText")[0].value;
+            var OutXML=obj.iATLReadClinicInfo(ID);
+            alert(OutXML);
+        }catch(e){
+            alert(e);
+        }
+    }
+    
+    function ReadMedicalInfo() 
+    {
+        try {
+            var ID=document.getElementsByName("CodeText")[0].value;
+            var OutXML=obj.iATLReadMedicalInfo(ID);
+            alert(OutXML);
+        } catch(e) {
+            alert(e);
+        }
+    }
+    
+    function ReadFeeInfo() 
+    {
+        try{
+            var ID=document.getElementsByName("CodeText")[0].value;
+            var OutXML=obj.iATLReadFeeInfo(ID);
+            alert(OutXML);
+        } catch(e) {
+            alert(e);
+        }
+    }
+    
+    function ReadClinicInfoLog() 
+    {
+        try{
+        	var ID=document.getElementsByName("CodeText")[0].value;
+        	var logConf = document.getElementsByName("LogXML")[0].value;
+            if (logConf == "") {
+                alert("请选择日志参数xml");
+                return;
+            }
+            content = GetFileContent(logConf);
+            var OutXML=obj.iATLReadClinicInfoLog(ID, content);
+            alert(OutXML);
+        }catch(e){
+            alert(e);
+        }
+    }
+    
+    function ReadMedicalInfoLog() 
+    {
+        try {
+            var ID=document.getElementsByName("CodeText")[0].value;
+             var logConf = document.getElementsByName("LogXML")[0].value;
+            if (logConf == "") {
+                alert("请选择日志参数xml");
+                return;
+            }
+            content = GetFileContent(logConf);
+            var OutXML=obj.iATLReadMedicalInfoLog(ID, content);
+            alert(OutXML);
+        } catch(e) {
+            alert(e);
+        }
+    }
+    
+    function ReadFeeInfoLog() 
+    {
+        try{
+            var ID=document.getElementsByName("CodeText")[0].value;
+            var logConf = document.getElementsByName("LogXML")[0].value;
+            if (logConf == "") {
+                alert("请选择日志参数xml");
+                return;
+            }
+            content = GetFileContent(logConf);
+            var OutXML=obj.iATLReadFeeInfoLog(ID, content);
+            alert(OutXML);
+        } catch(e) {
+            alert(e);
+        }
+    }
+    
+    function ReadClinicInfoLocal() 
+    {
+        try{
+        	var ID=document.getElementsByName("CodeText")[0].value;
+        	var logConf = document.getElementsByName("LogXML")[0].value;
+            if (logConf == "") {
+                alert("请选择日志参数xml");
+                return;
+            }
+            content = GetFileContent(logConf);
+            var OutXML=obj.iATLReadClinicInfoLocal(ID, content);
+            alert(OutXML);
+        }catch(e){
+            alert(e);
+        }
+    }
+    
+    function ReadMedicalInfoLocal() 
+    {
+        try {
+            var ID=document.getElementsByName("CodeText")[0].value;
+             var logConf = document.getElementsByName("LogXML")[0].value;
+            if (logConf == "") {
+                alert("请选择日志参数xml");
+                return;
+            }
+            content = GetFileContent(logConf);
+            var OutXML=obj.iATLReadMedicalInfoLocal(ID, content);
+            alert(OutXML);
+        } catch(e) {
+            alert(e);
+        }
+    }
+    
+    function ReadFeeInfoLocal() 
+    {
+        try{
+            var ID=document.getElementsByName("CodeText")[0].value;
+            var logConf = document.getElementsByName("LogXML")[0].value;
+            if (logConf == "") {
+                alert("请选择日志参数xml");
+                return;
+            }
+            content = GetFileContent(logConf);
+            var OutXML=obj.iATLReadFeeInfoLocal(ID, content);
+            alert(OutXML);
+        } catch(e) {
+            alert(e);
+        }
+    }
+    
+    function ReadOnlyHIS() {
+        try {
+			var starttime = new Date();
+			var ret = obj.iATLReadOnlyHIS();
+			alert('用时: ' + GetDateDiffBySeconds(starttime, new Date()) + 's\n' + ret);
+        } catch(e){
+            alert(e);
+        }
+    }
+    function ReadOnlyHISLocal() {
+        try {
+            var logConf = document.getElementsByName("LogXML")[0].value;
+            if (logConf == "") {
+                alert("请选择日志参数xml");
+                return;
+            }
+            content = GetFileContent(logConf);
+            var OutXML=obj.iATLReadOnlyHISLocal(content);
+            alert(OutXML);
+        } catch(e){
+            alert(e);
+        }
+    }
+      
+   function ReadOnlyHISLog() {
+        try {
+            var logConf = document.getElementsByName("LogXML")[0].value;
+            if (logConf == "") {
+                alert("请选择日志参数xml");
+                return;
+            }
+            content = GetFileContent(logConf);
+            var OutXML=obj.iATLReadOnlyHISLog(content);
+            alert(OutXML);
+        } catch(e){
+            alert(e);
+        }
+    }
+    
+    function ReadHIS() {
+        try{
+        	var CardPath=document.getElementsByName("URL")[0].value;
+	        if (CardPath == ""){
+				alert("请输入服务器URL");
+				return;
+			}
+  
+	        var RegPath = document.getElementsByName("RegXML")[0].value;
+	       
+			if (RegPath == ""){
+				alert("请选择校验的WSDL路径");
+				return;
+			}
+			var starttime = new Date();
+			var ret = obj.iATLReadHISInfo(RegPath, CardPath);
+			alert('用时: ' + GetDateDiffBySeconds(starttime, new Date()) + 's\n' + ret);
+        } catch(e) {
+            alert(e);
+        }
+    }
+    
+    function ReadHISLocal() {
+        try{
+        	var CardPath=document.getElementsByName("URL")[0].value;
+	        if (CardPath == ""){
+				alert("请输入服务器URL");
+				return;
+			}
+  
+	        var RegPath = document.getElementsByName("RegXML")[0].value;
+	       
+			if (RegPath == ""){
+				alert("请选择校验的WSDL路径");
+				return;
+			}
+			
+			var logConf = document.getElementsByName("LogXML")[0].value;
+            if (logConf == "") {
+                alert("请选择日志参数xml");
+                return;
+            }
+            content = GetFileContent(logConf);
+            
+            var OutXML=obj.iATLReadHISInfoLocal(RegPath, CardPath, content);
+            alert(OutXML);
+        } catch(e) {
+            alert(e);
+        }
+    }
+    
+    function ReadHISLog() {
+        try{
+        	var CardPath=document.getElementsByName("URL")[0].value;
+	        if (CardPath == ""){
+				alert("请输入服务器URL");
+				return;
+			}
+  
+	        var RegPath = document.getElementsByName("RegXML")[0].value;
+	       
+			if (RegPath == ""){
+				alert("请选择校验的WSDL路径");
+				return;
+			}
+			
+			var logConf = document.getElementsByName("LogXML")[0].value;
+            if (logConf == "") {
+                alert("请选择日志参数xml");
+                return;
+            }
+            content = GetFileContent(logConf);
+            
+            var OutXML=obj.iATLReadHISInfoLog(RegPath, CardPath, content);
+            alert(OutXML);
+        } catch(e) {
+            alert(e);
+        }
+    }
+    
+      function ReadXJLocal() {
+        try{
+            var CardPath=document.getElementsByName("URL")[0].value;
+	        if (CardPath == ""){
+				alert("请输入服务器URL");
+				return;
+			}
+  
+	        var RegPath = document.getElementsByName("RegXML")[0].value;
+	       
+			if (RegPath == ""){
+				alert("请选择校验的WSDL路径");
+				return;
+			}
+			
+			var logConf = document.getElementsByName("LogXML")[0].value;
+            if (logConf == "") {
+                alert("请选择日志参数xml");
+                return;
+            }
+            content = GetFileContent(logConf);
+            
+            var OutXML=obj.iATLReadInfoForXJLocal(RegPath, CardPath, content);
+            alert(OutXML);
+
+        }catch(e){
+            alert(e);
+        }
+    }
+    
+     function ReadXJLog() {
+        try{
+            var CardPath=document.getElementsByName("URL")[0].value;
+	        if (CardPath == ""){
+				alert("请输入服务器URL");
+				return;
+			}
+  
+	        var RegPath = document.getElementsByName("RegXML")[0].value;
+	       
+			if (RegPath == ""){
+				alert("请选择校验的WSDL路径");
+				return;
+			}
+			
+			var logConf = document.getElementsByName("LogXML")[0].value;
+            if (logConf == "") {
+                alert("请选择日志参数xml");
+                return;
+            }
+            content = GetFileContent(logConf);
+            
+            var OutXML=obj.iATLReadInfoForXJLog(RegPath, CardPath, content);
+            alert(OutXML);
+
+        }catch(e){
+            alert(e);
+        }
+    }
+    
+    function ReadXJ() {
+        try{
+            var CardPath=document.getElementsByName("URL")[0].value;
+	        if (CardPath == ""){
+				alert("请输入服务器URL");
+				return;
+			}
+  
+	        var RegPath = document.getElementsByName("RegXML")[0].value;
+	       
+			if (RegPath == ""){
+				alert("请选择校验的WSDL路径");
+				return;
+			}
+            var OutXML=obj.iATLReadInfoForXJ(RegPath, CardPath);
+            alert(OutXML);
+
+        }catch(e){
+            alert(e);
+        }
+    }
+
+
+    function QueryInfo() {
+        try {
+			var str = document.getElementsByName("Source")[0].value;
+			if (str != ""){
+			    var xml = obj.iATLQueryInfo(str);
+        		alert(xml);
+			}
+
+        } catch (e) {
+            alert(e);
+        }
+    }
+
+    function WriteInfo() {
+     try {
+			var CardPath=document.getElementsByName("WriteXML")[0].value;
+			if (CardPath == "" || typeof(CardPath) == "undefined"){
+				alert("请选择写卡的XML文件");
+				return;
+			}
+			
+			var TestXML = GetFileContent(CardPath);
+			starttime = new Date();
+			var ret = obj.iATLWriteInfo(TestXML);
+			var strErr = "";
+			if(ret != 0){
+				strErr = obj.iATLerr();
+			}
+			else{
+				strErr = "卡写入成功";
+			}
+			alert('用时: ' + GetDateDiffBySeconds(starttime, new Date()) + 's\n' + strErr);
+        }catch (e) {
+            alert(e);
+        }
+    }
+    
+   function WriteHospInfo() {
+        try {
+			var CardPath=document.getElementsByName("WriteXML")[0].value;
+			if (CardPath == "" || typeof(CardPath) == "undefined"){
+				alert("请选择写卡的XML文件");
+				return;
+			}
+			var TestXML = GetFileContent(CardPath);
+            var ret = obj.iATLWriteHospInfo(TestXML);
+            var info = "WriteHospInfo = [" + TestXML + "]";
+            if (ret != 0){
+		   		var strErr = obj.iATLerr();
+				alert(strErr);
+		    }else{
+		   		alert("写卡数据成功");
+        	}
+        }catch (e) {
+            alert(e);
+        }
+    }
+
+   function WriteHospInfoLog() {
+        try {
+			var CardPath=document.getElementsByName("WriteXML")[0].value;
+			if (CardPath == "" || typeof(CardPath) == "undefined"){
+				alert("请选择写卡的XML文件");
+				return;
+			}
+			var TestXML = GetFileContent(CardPath);
+			var logConf = document.getElementsByName("LogXML")[0].value;
+            if (logConf == "") {
+                alert("请选择日志参数xml");
+                return;
+            }
+            content = GetFileContent(logConf);
+            
+            var ret = obj.iATLWriteHospInfoLog(TestXML, content);
+            var info = "WriteHospInfoLog = [" + TestXML + "]";
+            if (ret != 0){
+		   		var strErr = obj.iATLerr();
+				alert(strErr);
+		    }else{
+		   		alert("写卡数据成功");
+        	}
+        }catch (e) {
+            alert(e);
+        }
+    }
+    
+       function WriteHospInfoLocal() {
+        try {
+			var CardPath=document.getElementsByName("WriteXML")[0].value;
+			if (CardPath == "" || typeof(CardPath) == "undefined"){
+				alert("请选择写卡的XML文件");
+				return;
+			}
+			var TestXML = GetFileContent(CardPath);
+			var logConf = document.getElementsByName("LogXML")[0].value;
+            if (logConf == "") {
+                alert("请选择日志参数xml");
+                return;
+            }
+            content = GetFileContent(logConf);
+            
+            var ret = obj.iATLWriteHospInfoLocal(TestXML, content);
+            var info = "WriteHospInfoLocal = [" + TestXML + "]";
+            if (ret != 0){
+		   		var strErr = obj.iATLerr();
+				alert(strErr);
+		    }else{
+		   		alert("写卡数据成功");
+        	}
+        }catch (e) {
+            alert(e);
+        }
+    }
+    
+	
+	function PrintCard()
+	{
+		try{
+		    var List = document.getElementById("PrinterList");
+		    var PrinterName = List.options[List.selectedIndex].value;
+		    if (PrinterName == "")
+		    {
+		      alert("请选择打印机");
+		    }
+		   
+			var CardPath=document.getElementsByName("CardCoverDataXML")[0].value;
+			if(CardPath=="")
+			{
+				alert("请选择打印卡面的文件");
+				return;
+			}
+		
+			var strCardCover = GetFileContent(CardPath);
+			CardPath=document.getElementsByName("CardCoverStyleXML")[0].value;
+			if(CardPath=="")
+			{
+				alert("请选择打印卡面的文件");
+				return;
+			}
+			var strCoverStyle = GetFileContent(CardPath);
+			var ret = obj.iATLPrintCard(PrinterName, strCardCover, strCoverStyle);
+            
+           if (ret != 0)
+		   {
+		   		var strErr = obj.iATLerr();
+				alert(strErr);
+		   }
+		   else
+		   	{
+		   		alert("打印成功");
+		   	}
+		}
+		catch(e){
+			alert(e);
+		}
+	}
+	
+	function PatchCard()
+	{
+		try{
+		    var List = document.getElementById("PrinterList");
+		    var PrinterName = List.options[List.selectedIndex].value;
+		    if (PrinterName == "")
+		    {
+		      alert("请选择打印机");
+		    }
+			var CardPath=document.getElementsByName("CardDataXML")[0].value;
+			
+			if(CardPath=="")
+			{
+				alert("请选择制卡的文件");
+				return;
+			}
+			var strCardData = GetFileContent(CardPath);
+			
+			CardPath=document.getElementsByName("CardCoverDataXML")[0].value;
+			
+			if(CardPath=="")
+			{
+				alert("请选择打印卡面的文件");
+				return;
+			}
+			
+			var strCardCover = GetFileContent(CardPath);
+			CardPath=document.getElementsByName("CardCoverStyleXML")[0].value;
+			if(CardPath == "")
+			{
+				alert("请选择打印卡面的文件");
+				return;
+			}
+			
+			var strCoverStyle = GetFileContent(CardPath);
+			var ret = obj.iATLPatchCard(strCardData, strCardCover, PrinterName, strCoverStyle);
+				            
+           if (ret != 0)
+		   {
+		   		var strErr = obj.iATLerr();
+				alert(strErr);
+		   }
+		   else
+		   	{
+		   		alert("制卡并打印成功");
+		   	}
+		}
+		catch(e){
+			alert(e);
+		}
+	}
+
+	
+	function CardFormatHosp()
+	{
+		try {
+			    starttime = new Date();
+				var ret = obj.iATLFormatHospInfo();
+				var strErr = "";
+				if(ret != 0){
+					strErr = obj.iATLerr();
+				}
+				else{
+					strErr = "格式化卡成功";
+				}
+				alert('用时: ' + GetDateDiffBySeconds(starttime, new Date()) + 's\n' + strErr);
+	
+			} catch (e) {
+				alert(e);
+			
+			}
+	}
+
+	
+	function CardCheck()
+	{
+	    try{
+	        
+	        var CardPath=document.getElementsByName("URL")[0].value;
+	        if (CardPath == "")
+			{
+				alert("请输入服务器URL");
+				return;
+			}
+  
+	    var RegPath = document.getElementsByName("RegXML")[0].value;
+	       
+			if (RegPath == "")
+			{
+				alert("请选择校验的WSDL路径");
+				return;
+			}
+			starttime = new Date();
+			var ret = obj.iATLFormatHospInfo();
+			alert('用时: ' + GetDateDiffBySeconds(starttime, new Date()) + 's\n' + ret);
+			var ret = obj.iATLCheckMsgForNH(RegPath, CardPath);
+			alert(ret);
+	    }catch(e) {
+	        alert(e);
+	    }
+		
+	}
+
+    function NHRead()
+	{
+		try{
+	        
+	        var CardPath=document.getElementsByName("URL")[0].value;
+	        if (CardPath == "")
+			{
+				alert("请输入服务器URL");
+				return;
+			}
+			
+			var RegPath = document.getElementsByName("RegXML")[0].value;
+			if (RegPath == "")
+			{
+				alert("请选择校验的WSDL路径");
+				return;
+			}
+
+            starttime = new Date();
+			var ret = obj.iATLReadCardMessageForNH(RegPath, CardPath);
+			alert('用时: ' + GetDateDiffBySeconds(starttime, new Date()) + 's\n' + ret);
+	    }catch(e) {
+	        alert(e);
+	    }
+	}
+	
+	function NHReadOnly()
+	{
+		try{
+			starttime = new Date();
+			var ret = obj.iATLReadOnlyCardMessageForNH();
+			alert('用时: ' + GetDateDiffBySeconds(starttime, new Date()) + 's\n' + ret);
+		}catch(e) {
+			alert(e)
+		}
+	}
+
+    function ReadAll() {
+        try {
+			starttime = new Date();
+			var OutXML=obj.iATLReadAll();
+			alert('用时: ' + GetDateDiffBySeconds(starttime, new Date()) + 's\n' + OutXML);
+        } catch(e){
+            alert(e);
+        }
+    }
+
+	function rwCycle() {
+		try {
+			var card_corp=document.getElementsByName("card_corp")[0].value;
+			if (card_corp == "" || typeof(card_corp) == "undefined"){
+				alert("请输入卡片厂商名称");
+				return;
+			}
+
+			var xin_corp=document.getElementsByName("xin_corp")[0].value;
+			if (xin_corp == "" || typeof(xin_corp) == "undefined"){
+				alert("请输入芯片厂商名称");
+				return;
+			}
+
+			var cyc_counts=document.getElementsByName("cyc_counts")[0].value;
+			if (cyc_counts == "" || typeof(cyc_counts) == "undefined"){
+				alert("请输入循环读写次数");
+				return;
+			}
+			cyc_counts = parseInt(cyc_counts);
+			if (cyc_counts <=0){
+				alert("请输入大于0的循环次数");
+				return;
+			}
+
+			var CardPath=document.getElementsByName("Write_cyc_XML")[0].value;
+			if (CardPath == "" || typeof(CardPath) == "undefined"){
+				alert("请选择循环读写卡的XML文件");
+				return;
+			}
+			
+			var TestXML = GetFileContent(CardPath);
+			starttime = new Date();
+			var ret = obj.iATLRWRecycle(card_corp, xin_corp, cyc_counts, TestXML);
+			alert('用时: ' + GetDateDiffBySeconds(starttime, new Date()) + 's\n' + ret);
+        }catch (e) {
+            alert(e);
+        }
+    }
+    </script>
+
+</head>
+<body>
+    <input type="button" value="系统初始化" onclick="CardInit()" />
+    <input type="button" value="系统关闭" onclick="CardDeinit()" />
+    <input type="button" value="打开卡" onclick="CardOpen()" />
+    <input type="button" value="关闭卡" onclick="CardClose()" /><hr />
+    <input type="button" value="寻卡" onclick="ScanCard()" />
+    <input type="button" value="判卡为空" onclick="CardIsEmpty()" />
+    <input type="button" value="格式化卡医院信息" onclick="CardFormatHosp()" />
+    <input type="button" value="读取整体卡片数据" onclick="ReadAll()" /><hr />
+    写卡文件选择:<input type="file" name="WriteXML" />
+    <input type="button" value="更新整体卡片数据" onclick="WriteInfo()" /><hr/>
+    服务端URL:
+    <input type="text" name="URL" size="80" value="http://192.168.1.71/nh_webservice/n_api.asmx?op=nh_pipe" /><hr />
+    注册WSDL路径:<input type="text" name="RegXML" size="80" value="http://192.168.1.67:8000/ccss/ws/oneCardWebService?wsdl" />
+    <input type="button" value="卡校验" onclick="CardCheck()" /><hr />
+    <input type="button" value="农合读卡校验" onclick="NHRead()" />
+	<input type="button" value="农合系统只读" onclick="NHReadOnly()" />
+    <input type="button" value="HIS只读" onclick="ReadOnlyHIS()" />
+    <input type="button" value="HIS读接口" onclick="ReadHIS()" /><hr />
+	卡片厂商名称:<input type="text" name="card_corp" />
+	芯片厂商名称:<input type="text" name="xin_corp" />
+	循环读写次数:<input type="text" name="cyc_counts" /><hr/>
+	写卡文件选择:<input type="file" name="Write_cyc_XML" />
+	<input type="button" value="卡片循环读写" onclick="rwCycle()" /><hr />
+</body>
+</html>

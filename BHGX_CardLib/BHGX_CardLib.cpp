@@ -57,7 +57,6 @@ using namespace std;
 
 #define CPU_BIN_SECTION			11
 
-class unknowException {};
 
 #define TIMEOUT		15000
 #define SEGBASE		100
@@ -1832,7 +1831,7 @@ int __stdcall apt_InitGList(CardType eType)
 
 bool __stdcall isCardAuth(int timeout)
 {
-	if (CPU_8K_TEST != 1) {
+	if ((CPU_8K_TEST | CPU_8K_TEST_ALL) == 0) {
 		return true;
 	}
 	bool bAuthed = false;
@@ -1930,7 +1929,7 @@ int __stdcall iRWRecycle(
 		out << "第"<< i+1 << "次，读取"<< (rflag==CardProcSuccess ? "成功" : "失败");
 		out << "，写入"<< (wflag==CardProcSuccess ? "成功" : "失败") <<endl;
 		if (chose_one == i) {
-			throw unknowException();
+			memset(xml, 0, strlen(xml));
 		}
 	}
 	CTimeUtil::getCurrentTime(timeStr);
