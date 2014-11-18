@@ -1171,7 +1171,7 @@ int __stdcall iWriteInfo(char *xml)
 	}
 	
 	ISSCANCARD;
-	isCardAuth(5);
+	isCardAuth(7);
 	if (g_CardOps->cardAdapter->type == eM1Card) {
 		status =  _iWriteInfo((char*)xmlStr.c_str());
 		goto done;
@@ -1872,7 +1872,7 @@ int __stdcall iReadAll(char *xml)
 	ISSCANCARD;
 	int flag = 0;
 
-	isCardAuth(3);
+	isCardAuth(5);
 	if (CPU_8K_TEST == 1) {
 		flag = 1 + 2 + (1 << 3) + (1 << 4) + (1 << 7);
 	} else {
@@ -1897,7 +1897,7 @@ int __stdcall iRWRecycle(
 	char read_buff[1024];
 	char filename[256];
 	char timeStr[64];
-	bool bAuthed = isCardAuth();
+	bool bAuthed = isCardAuth(40);
 
 	memset(filename, 0, sizeof(filename));
 	CTimeUtil::getCurrentDay(timeStr);
