@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<SEGMENTS PROGRAMID="001">
+    <SEGMENT ID="12">
+        <COLUMN ID="1" VALUE="抗体" />
+        <COLUMN ID="2" VALUE="20120902" />
+    </SEGMENT>
+</SEGMENTS>

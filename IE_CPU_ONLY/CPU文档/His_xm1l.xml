@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="gb2312" standalone="no"?><SEGMENTS PROGRAMID="001">
+  <SEGMENT ID="18">
+    <COLUMN ID="42" VALUE="一般诊疗费" />
+    <COLUMN ID="43" VALUE="" />
+    <COLUMN ID="44" VALUE="" />
+    <COLUMN ID="45" VALUE="" />
+    <COLUMN ID="46" VALUE="" />
+    <COLUMN ID="141" VALUE="门诊西药" />
+    <COLUMN ID="142" VALUE="fy001" />
+    <COLUMN ID="143" VALUE="0" />
+    <COLUMN ID="144" VALUE="其他费" />
+    <COLUMN ID="145" VALUE="" />
+    <COLUMN ID="146" VALUE="0" />
+    <COLUMN ID="147" VALUE="诊查费" />
+    <COLUMN ID="148" VALUE="fy003" />
+    <COLUMN ID="149" VALUE="0" />
+    <COLUMN ID="1" VALUE="大泉湾乡卫生院" />
+    <COLUMN ID="2" VALUE="103" />
+    <COLUMN ID="3" VALUE="20130116034627" />
+    <COLUMN ID="4" VALUE="201301160002" />
+    <COLUMN ID="5" VALUE="口腔科" />
+    <COLUMN ID="6" VALUE="3" />
+    <COLUMN ID="9" VALUE="20130116" />
+    <COLUMN ID="10" VALUE="" />
+  </SEGMENT>
+</SEGMENTS>

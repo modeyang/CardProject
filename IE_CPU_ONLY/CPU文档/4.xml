@@ -1,0 +1,12 @@
+        <?xml version="1.0" encoding="gb2312" ?>
+<SEGMENTS PROGRAMID="001">
+    <SEGMENT ID="4">
+        <COLUMN ID="7" VALUE="20160804" />
+        <COLUMN ID="16" VALUE="12312312" />
+        <COLUMN ID="17" VALUE="21321421" />
+        <COLUMN ID="18" VALUE="1" />
+        <COLUMN ID="19" VALUE="2" />
+        <COLUMN ID="20" VALUE="0" />
+        <COLUMN ID="58" VALUE="0" />
+    </SEGMENT>
+</SEGMENTS>

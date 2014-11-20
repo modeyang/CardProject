@@ -12,15 +12,15 @@ extern "C" {
 #pragma warning (disable : 4267)
 #pragma warning (disable : 4020)
 
-#define CPU_ONLY	0
+#define CPU_ONLY	1
 #define CPU_M1		0
 #define CPU_8K		0
-#define CPU_8K_ONLY	1
+#define CPU_8K_ONLY	0
 // for cpu test
 #define CPU_8K_TEST 0
 
 // for cpu test all, combination with CPU_8K_ONLY flag
-#define CPU_8K_TEST_ALL 1
+#define CPU_8K_TEST_ALL 0
 
 #define ENCRYPT		0
 
