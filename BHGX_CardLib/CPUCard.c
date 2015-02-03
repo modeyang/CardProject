@@ -47,8 +47,10 @@
 //每个字段的最大记录条数
 #if (CPU_8K || CPU_8K_TEST ||  CPU_8K_ONLY)
 int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
-#else
+#elif ENCRYPT
 int g_RecMap[BIN_START] = {0, 10, 5, 1, 7, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
+#else
+int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
 #endif
 
 extern  struct RecFolder g_recIndex[30];
