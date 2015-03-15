@@ -1,0 +1,629 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+    <title>制卡商测试版本</title>
+
+    <script type="text/javascript">
+		
+	var SavePath = "C:\\CardSave.xml";
+
+    //你好
+	var fso = new ActiveXObject("Scripting.FileSystemObject");
+   	var obj = new ActiveXObject("BHGX_CardActiveX.CardProcess.1");
+	     loadXML = function(xmlString){
+         var xmlDoc=null;
+        //判断浏览器的类型
+        //支持IE浏览器 
+        if(!window.DOMParser && window.ActiveXObject){   //window.DOMParser 判断是否是非ie浏览器
+             var xmlDomVersions = ['MSXML.2.DOMDocument.6.0','MSXML.2.DOMDocument.3.0','Microsoft.XMLDOM'];
+            for(var i=0;i<xmlDomVersions.length;i++){
+                try{
+                     xmlDoc = new ActiveXObject(xmlDomVersions[i]);
+                     xmlDoc.async = false;
+                     xmlDoc.loadXML(xmlString); //loadXML方法载入xml字符串
+                    break;
+                 }catch(e){
+                 }
+             }
+         }
+        //支持Mozilla浏览器
+        else if(window.DOMParser && document.implementation && document.implementation.createDocument){
+            try{
+                /* DOMParser 对象解析 XML 文本并返回一个 XML Document 对象。
+                  * 要使用 DOMParser，使用不带参数的构造函数来实例化它，然后调用其 parseFromString() 方法
+                  * parseFromString(text, contentType) 参数text:要解析的 XML 标记 参数contentType文本的内容类型
+                  * 可能是 "text/xml" 、"application/xml" 或 "application/xhtml+xml" 中的一个。注意，不支持 "text/html"。
+                 */
+                 domParser = new   DOMParser();
+                 xmlDoc = domParser.parseFromString(xmlString, 'text/xml');
+             }catch(e){
+             }
+         }
+        else{
+            return null;
+         }
+
+        return xmlDoc;
+     }
+
+
+  //对xml对象进行判断
+     checkXMLDocObj = function(xmlString){
+         var xmlDoc = loadXML(xmlString);
+        if(xmlDoc==null){
+             alert('您的浏览器不支持xml文件读取,于是本页面禁止您的操作,推荐使用IE5.0以上可以解决此问题!');
+            //window.location.href='某某地址(比如首页)';
+         }
+        return xmlDoc;
+     }
+     
+     		    //参数1:控件id号,参数2:理解为定位节点
+     initializeSelect = function(printerXML){
+         var xmlDoc = checkXMLDocObj(printerXML);
+         var n;
+         var l;
+         var Sel = document.getElementById("PrinterList");  //得到下拉列表框控件
+        if(Sel != null){
+             n = xmlDoc.getElementsByTagName("PrinterName");
+             l = n.length;
+            //循环添加列表子项
+            for(var i=0;i<l;i++){
+                 var Option=document.createElement("OPTION"); 
+                 Option.value = n[i].getAttribute("NAME");
+                 Option.text = n[i].getAttribute("NAME");
+                 Sel.options.add(Option);
+             }
+         }
+     }
+
+
+
+	function GetFileContent(filepath)
+	{
+		var text;
+		try
+		{
+		    var file = fso.OpenTextFile(filepath, 1, false, 0); 
+		    text = file.ReadAll();
+			file.close(); 
+		}
+		catch(e)
+		{
+			alert(e);
+		}
+		return text;
+	}
+	
+    function GetVersion()
+     {
+        try
+        {
+            var ver=obj.iATLGetCardVersion();
+            var info = "version=[" + ver + "]";
+            alert(info);
+        }
+        catch (e) 
+        {
+            alert(e);
+
+        }
+    }
+	
+	    function CardInit() {
+        try {		
+			var ret = obj.iATLCardInit();
+			if (ret != 0) {
+				var strErr = obj.iATLerr();
+				alert(strErr);
+			}
+			else {
+				alert("初始化卡成功");
+			}
+		} 
+		catch (e) {
+			alert(e);
+		}
+    }
+	
+    	function CardDeinit()
+	{
+		try{
+			var ret = obj.iATLCardDeinit();
+			if (ret != 0)
+		   {
+		   		var strErr = obj.iATLerr();
+				alert(strErr);
+		   }
+		   	else
+		   	{
+		   		alert("系统关闭");
+        }
+		}
+		catch(e)
+		{
+			alert(a);
+		}
+	}
+	
+		function CardOpen()
+	{
+		try{
+			var ret = obj.iATLCardOpen();
+			if (ret != 0)
+		   {
+		   		var strErr = obj.iATLerr();
+				alert(strErr);
+		   }
+		   	else
+		   	{
+		   		alert("打开卡成功");
+        }
+		}
+		catch(e)
+		{
+			alert(a);
+		}
+	}
+	
+	function CardClose()
+	{
+		try{
+			var ret = obj.iATLCardClose();
+			if (ret != 0)
+		   {
+		   		var strErr = obj.iATLerr();
+				alert(strErr);
+		   }
+		   	else
+		   	{
+		   		alert("关闭卡成功");
+        }
+		}
+		catch(e)
+		{
+			alert(a);
+		}
+	}
+
+		function ScanCard()
+		{
+			try{
+				var ret = obj.iATLScanCard();
+		           if (ret != 0)
+			   {
+			   		var strErr = obj.iATLerr();
+					alert(strErr);
+			   }
+			   else
+		   	{
+		   		alert("寻卡成功");
+        }
+			}
+			catch(e){
+			}
+		}
+		
+		function  CardIsEmpty()
+		{
+			try
+			{
+			    var ret = obj.iATLCardIsEmpty();
+			    if (ret != 0)
+			    {
+			        var strErr = obj.iATLerr();
+					alert(strErr);
+			    }
+			    else
+			    {
+			        alert("卡是空卡");
+			    }
+			}
+			catch(e)
+			{
+			    alert(e);
+			}
+		}
+    function Read() {
+        try
+        {
+			var ID=document.getElementsByName("ReadText")[0].value;
+			if (ID == "" || typeof(ID) == "undefined")
+			{
+				alert("请选择卡要查询的ID号");
+				return;
+			}
+            var OutXML=obj.iATLReadInfo(ID);
+            alert(OutXML);
+			var filesave = fso.createtextfile(SavePath, true, false);
+			 filesave.Write(OutXML);
+			filesave.close();
+        }
+        catch(e)
+        {
+            alert(e);
+        }
+    }
+    
+       function ReadOnlyHIS() {
+        try
+        {
+
+            var OutXML=obj.iATLReadOnlyHIS();
+            alert(OutXML);
+        }
+        catch(e)
+        {
+            alert(e);
+        }
+    }
+    
+        function ReadHIS() {
+        try
+        {
+        	var CardPath=document.getElementsByName("URL")[0].value;
+	        if (CardPath == "")
+			{
+				alert("请输入服务器URL");
+				return;
+			}
+  
+	        var RegPath = document.getElementsByName("RegXML")[0].value;
+	       
+			if (RegPath == "")
+			{
+				alert("请选择校验的WSDL路径");
+				return;
+			}
+            var OutXML=obj.iATLReadHISInfo(RegPath, CardPath);
+            alert(OutXML);
+//			var filesave = fso.createtextfile(SavePath, true, false);
+//			 filesave.Write(OutXML);
+//			filesave.close();
+        }
+        catch(e)
+        {
+            alert(e);
+        }
+    }
+    
+        function ReadXJ() {
+        try
+        {
+            var CardPath=document.getElementsByName("URL")[0].value;
+	        if (CardPath == "")
+			{
+				alert("请输入服务器URL");
+				return;
+			}
+  
+	         var RegPath = document.getElementsByName("RegXML")[0].value;
+	       
+			if (RegPath == "")
+			{
+				alert("请选择校验的WSDL路径");
+				return;
+			}
+            var OutXML=obj.iATLReadInfoForXJ(RegPath, CardPath);
+            alert(OutXML);
+
+        }
+        catch(e)
+        {
+            alert(e);
+        }
+    }
+
+
+    function QueryInfo() {
+        try {
+			var str = document.getElementsByName("Source")[0].value;
+			if (str != "")
+			{
+				    var xml = obj.iATLQueryInfo(str);
+            		alert(xml);
+			}
+
+        }
+        catch (e) {
+            alert(e);
+        }
+    }
+
+    function WriteInfo(filepath) {
+        try {
+			var CardPath=document.getElementsByName("WriteXML")[0].value;
+			if (CardPath == "" || typeof(CardPath) == "undefined")
+			{
+				alert("请选择写卡的XML文件");
+				return;
+			}
+			var TestXML = GetFileContent(CardPath);
+            var ret = obj.iATLWriteInfo(TestXML);
+            var info = "WriteInfo = [" + TestXML + "]";
+           if (ret != 0)
+		   {
+		   		var strErr = obj.iATLerr();
+				alert(strErr);
+		   }
+		   	else
+		   	{
+		   		alert("写卡数据成功");
+        	}
+        }
+        catch (e) {
+            alert(e);
+        }
+    }
+
+	function CreateCard()
+	{
+		try{
+			var CardPath=document.getElementsByName("CardDataXML")[0].value;
+			if (CardPath == "" || typeof(CardPath) == "undefined")
+			{
+				alert("请选择创建卡XML文件");
+				return;
+			}
+			var TestXML = GetFileContent(CardPath);
+			var ret = obj.iATLCreateCard(TestXML);
+            var info = "CreateCard = [" + CreateCard + "]";
+            
+           if (ret != 0)
+		   {
+		   		var strErr = obj.iATLerr();
+				alert(strErr);
+		   }
+		   	else
+		   	{
+		   		alert("制卡成功");
+       		 }
+		}
+		catch(e){
+			alert(e);
+		}
+	}
+	
+	function PrintCard()
+	{
+		try{
+		    var List = document.getElementById("PrinterList");
+		    var PrinterName = List.options[List.selectedIndex].value;
+		    if (PrinterName == "")
+		    {
+		      alert("请选择打印机");
+		    }
+		   
+			var CardPath=document.getElementsByName("CardCoverDataXML")[0].value;
+			if(CardPath=="")
+			{
+				alert("请选择打印卡面的文件");
+				return;
+			}
+		
+			var strCardCover = GetFileContent(CardPath);
+			CardPath=document.getElementsByName("CardCoverStyleXML")[0].value;
+			if(CardPath=="")
+			{
+				alert("请选择打印卡面的文件");
+				return;
+			}
+			var strCoverStyle = GetFileContent(CardPath);
+			var ret = obj.iATLPrintCard(PrinterName, strCardCover, strCoverStyle);
+            
+           if (ret != 0)
+		   {
+		   		var strErr = obj.iATLerr();
+				alert(strErr);
+		   }
+		   else
+		   	{
+		   		alert("打印成功");
+		   	}
+		}
+		catch(e){
+			alert(e);
+		}
+	}
+	
+	function PatchCard()
+	{
+		try{
+		    var List = document.getElementById("PrinterList");
+		    var PrinterName = List.options[List.selectedIndex].value;
+		    if (PrinterName == "")
+		    {
+		      alert("请选择打印机");
+		    }
+			var CardPath=document.getElementsByName("CardDataXML")[0].value;
+			
+			if(CardPath=="")
+			{
+				alert("请选择制卡的文件");
+				return;
+			}
+			var strCardData = GetFileContent(CardPath);
+			
+			CardPath=document.getElementsByName("CardCoverDataXML")[0].value;
+			
+			if(CardPath=="")
+			{
+				alert("请选择打印卡面的文件");
+				return;
+			}
+			
+			var strCardCover = GetFileContent(CardPath);
+			CardPath=document.getElementsByName("CardCoverStyleXML")[0].value;
+			if(CardPath == "")
+			{
+				alert("请选择打印卡面的文件");
+				return;
+			}
+			
+			var strCoverStyle = GetFileContent(CardPath);
+			var ret = obj.iATLPatchCard(strCardData, strCardCover, PrinterName, strCoverStyle);
+				            
+           if (ret != 0)
+		   {
+		   		var strErr = obj.iATLerr();
+				alert(strErr);
+		   }
+		   else
+		   	{
+		   		alert("制卡并打印成功");
+		   	}
+		}
+		catch(e){
+			alert(e);
+		}
+	}
+	
+	function CardFormat()
+	{
+		try {
+				var ret = obj.iATLFormatCard();
+				if(ret != 0)
+				{
+					var strErr = obj.iATLerr();
+					alert(strErr);
+				}
+				else
+					{
+						alert("格式化卡成功");
+					}
+	
+			} catch (e) {
+				alert(e);
+			
+			}
+	}
+
+	
+	function CardCheck()
+	{
+	    try{
+	        
+	        var CardPath=document.getElementsByName("URL")[0].value;
+	        if (CardPath == "")
+			{
+				alert("请输入服务器URL");
+				return;
+			}
+  
+	    var RegPath = document.getElementsByName("RegXML")[0].value;
+	       
+			if (RegPath == "")
+			{
+				alert("请选择校验的WSDL路径");
+				return;
+			}
+      
+			var ret = obj.iATLCheckMsgForNH(RegPath, CardPath);
+			alert(ret);
+	    }catch(e) {
+	        alert(e);
+	    }
+		
+	}
+	
+	function ReadConfigInfo()
+	{
+	    try{
+	        
+  
+	    var RegPath = document.getElementsByName("ConfigXML")[0].value;
+	       
+			if (RegPath == "")
+			{
+				alert("选择配置项");
+				return;
+			}
+      
+			var ret = obj.iATLReadConfigMsg(RegPath);
+			alert(ret);
+	    }catch(e) {
+	        alert(e);
+	    }
+	}
+	
+	function CardRegister()
+	{
+			    try{
+	        
+	        var CardPath=document.getElementsByName("URL")[0].value;
+	        if (CardPath == "")
+			{
+				alert("请输入服务器URL");
+				return;
+			}
+
+			var ret = obj.iATLRegMsgForNH(CardPath);
+			alert(ret);
+	    }catch(e) {
+	        alert(e);
+	    }
+	}
+	
+	function EncryFile()
+	{
+	    try{
+	        
+	        var CardPath=document.getElementsByName("JM_SOURCE")[0].value;
+	        if (CardPath == "")
+			{
+				alert("请选择需要加密的文件");
+				return;
+			}
+
+			var ret = obj.iATLEncryFile(CardPath);
+			if (0 == ret)
+			{
+			    alert("加密文件成功");
+			}
+			else
+			{
+			    alert("加密文件失败");
+			}
+	    }catch(e) {
+	        alert(e);
+	    }
+	}
+
+     
+	function GetPrinterList()
+	{
+		try{
+		    var list = obj.iATLGetPrinterList();
+		    initializeSelect(list);
+		}
+		catch(e)
+		{
+		    alert(e);
+		}
+	}
+
+    </script>
+
+</head>
+<body>
+    <input type="button" value="系统初始化" onclick="CardInit()" />
+    <input type="button" value="系统关闭" onclick="CardDeinit()" />
+    <input type="button" value="打开卡" onclick="CardOpen()" />
+    <input type="button" value="关闭卡" onclick="CardClose()" /><hr />
+    <input type="button" value="寻卡" onclick="ScanCard()" />
+    <input type="button" value="判卡为空" onclick="CardIsEmpty()" />
+    <input type="button" value="格式化卡" onclick="CardFormat()" /><hr />
+    <input type="text" name="ReadText" />
+    <input type="button" value="读卡数据" onclick="Read()" /><hr />
+    写卡文件选择:<input type="file" name="WriteXML" />
+    <input type="button" value="写数据" onclick="WriteInfo()" /><hr />
+    制卡数据选择:<input type="file" name="CardDataXML" />
+    <input type="button" value="制卡" onclick="CreateCard()" /><hr />
+    卡面数据选择:<input type="file" name="CardCoverDataXML" /><hr />
+    卡面风格数据选择:<input type="file" name="CardCoverStyleXML" /><hr />
+     打印机选择:<input type="button" value="获取打印机" onclick="GetPrinterList()" />
+     <select id="PrinterList"></select><hr />
+    <input type="button" value="打印卡面" onclick="PrintCard()" />
+    <input type="button" value="制卡并打印卡面" onclick="PatchCard()" /><hr />
+</body>
+</html>

@@ -116,6 +116,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="F:\BaiduYun\git_workspace\sqlite3_c"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -223,6 +224,30 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+		</Filter>
+		<Filter
+			Name="sqlitedb"
+			>
+			<File
+				RelativePath=".\sqlite3\sqlite3.c"
+				>
+			</File>
+			<File
+				RelativePath=".\sqlite3\sqlite3.h"
+				>
+			</File>
+			<File
+				RelativePath=".\sqlite3\sqlite3ext.h"
+				>
+			</File>
+			<File
+				RelativePath=".\sqlite3\SQLiteHelper.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\sqlite3\SQLiteHelper.h"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"

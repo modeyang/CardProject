@@ -43,3 +43,8 @@ protected:
 	std::string m_strCardSeq;
 	std::map<int, std::map<int, std::string> > mapLogConfig;
 };
+
+class CDBExceptionCheck: CExceptionCheck
+{
+
+};

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<CardProcess>
+  <!--  1: 卡校验失败
+        2: 卡回写失败
+        3: 读卡失败
+    -->
+  <ReturnInfo ID="1" Desc="卡校验失败" />
+</CardProcess>
