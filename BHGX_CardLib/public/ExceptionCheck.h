@@ -4,6 +4,7 @@
 #include <map>
 #include <stdlib.h>
 #include <io.h>
+#include "../sqlite3/SQLiteHelper.h"
 
 using namespace std;
 
@@ -46,5 +47,21 @@ protected:
 
 class CDBExceptionCheck: CExceptionCheck
 {
+public :
+	CDBExceptionCheck(std::map<int, std::map<int, std::string> > logConfig);
+	CDBExceptionCheck(char *logXml);
+	~CDBExceptionCheck(void);
 
+	int filterForbidden(char *xml);
+	int filterWarnning(char *xml);
+protected:
+	int initDBHelper();
+	int isExceptionCard(int checkFlag);
+
+	static int forbidden_query(void *NotUsed, int argc, char **argv, char **azColName);
+	static int warnning_query(void *NotUsed, int argc, char **argv, char **azColName);
+protected:
+	int m_forbidden_flag;
+	int m_warnning_flag;
+	CSQLiteHelper *m_dbHelper;
 };

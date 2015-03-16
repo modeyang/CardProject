@@ -21,6 +21,8 @@ using namespace std;
 	#define CARDSEQ			10
 #endif
 
+#define FORBIDDEN_FLAG		0
+#define WARINNING_FLAG		1
 
 #pragma warning (disable : 4996)
 
@@ -233,4 +235,118 @@ int CExceptionCheck::filterWarnning(char *xml)
 		return CardWarnning;
 	}
 	return CardProcSuccess;
+}
+
+
+CDBExceptionCheck::CDBExceptionCheck(std::map<int, std::map<int, std::string> > logConfig)
+:CExceptionCheck(logConfig){
+	initDBHelper();
+}
+
+CDBExceptionCheck::CDBExceptionCheck(char *logXml)
+:CExceptionCheck(logXml){
+	initDBHelper();
+}
+
+CDBExceptionCheck::~CDBExceptionCheck(void)
+{
+	if (m_dbHelper != NULL) {
+		m_dbHelper->closeDB();
+		m_dbHelper = NULL;
+	}
+}
+
+int CDBExceptionCheck::initDBHelper()
+{
+	m_dbHelper = new CSQLiteHelper();
+	m_dbHelper->openDB((char*)mapLogConfig[1][2].c_str());
+	return 0;
+}
+
+int CDBExceptionCheck::filterForbidden(char *xml)
+{
+	if (isForbidden()) {
+		return CardForbidden;
+	}
+	std::map<int, std::string> &configMap = mapLogConfig[1];
+
+	char szQuery[1024];
+	memset(szQuery, 0, sizeof(szQuery));
+	int n = iQueryInfo("CARDNO|CARDSEQ", szQuery);
+	if (n != 0){
+		CXmlUtil::CreateResponXML(CardReadErr, err(CardReadErr), xml);
+		return CardReadErr;
+	}
+	std::map<int, std::string> mapQueryInfo;
+	CXmlUtil::GetQueryInfos(szQuery, mapQueryInfo);
+	m_strCardNO = mapQueryInfo[CARDNO];
+	m_strCardSeq = mapQueryInfo[CARDSEQ];
+	int status = isExceptionCard(FORBIDDEN_FLAG);
+	//if (index != -1) {
+	//	excepRecord &record = vecForbiddenRecord[index];
+	//	geneForbiddenLog(record);
+	//	writeForbiddenFlag(1);
+	//	CXmlUtil::CreateResponXML(CardForbidden, err(CardForbidden), xml);
+	//	return CardForbidden;
+	//}
+	return CardProcSuccess;
+}
+
+int CDBExceptionCheck::filterWarnning(char *xml)
+{
+	//char szQuery[1024];
+	//memset(szQuery, 0, sizeof(szQuery));
+	//int n = iQueryInfo("IDNUMBER", szQuery);
+	//if (n != 0){
+	//	CXmlUtil::CreateResponXML(CardReadErr, err(CardReadErr), xml);
+	//	return CardReadErr;
+	//}
+	//std::string strIDNumber;
+	//CXmlUtil::GetQueryInfoForOne(szQuery, strIDNumber);
+	//std::map<int, std::string> &configMap = mapLogConfig[1];
+	//std::vector<excepRecord> vecWarnningRecord;
+	//std::string strFilePath(configMap[3]);
+	//strFilePath += strIDNumber.substr(0, 4);
+	//strFilePath += "_greylist.xml";
+	//if (parseExceptionXml((char*)strFilePath.c_str(), vecWarnningRecord) == 1) {
+	//	return DescryFileError;
+	//}
+
+	//if (isExceptionCard(vecWarnningRecord) != -1) {
+	//	CXmlUtil::CreateResponXML(CardWarnning, err(CardWarnning), xml);
+	//	return CardWarnning;
+	//}
+	isExceptionCard(WARINNING_FLAG);
+	return CardProcSuccess;
+}
+
+int CDBExceptionCheck::isExceptionCard(int checkFlag)
+{
+	int queryStatus = 0;
+	char *errMsg;
+	char sql[200];
+	memset(sql, 0, sizeof(sql));
+
+	sprintf_s(sql, sizeof(sql), "select * from card_checks where cardNo='%s' and cardSerialNo='%s' and checkState=%s", 
+		m_strCardNO.c_str(), m_strCardSeq.c_str(), checkFlag);
+
+	if (checkFlag == 0) {
+		queryStatus = m_dbHelper->queryFromCallback(sql, forbidden_query, &errMsg);
+	} else if (checkFlag == 1) {
+		queryStatus = m_dbHelper->queryFromCallback(sql, warnning_query, &errMsg);
+	} else {
+		
+	}
+	return queryStatus;
+
+}
+
+int CDBExceptionCheck::forbidden_query(void *NotUsed, int argc, char **argv, char **azColName)
+{
+	return 0;
+}
+
+int CDBExceptionCheck::warnning_query(void *NotUsed, int argc, char **argv, char **azColName)
+{
+	return 0;
 }

@@ -344,6 +344,34 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="sqlite3"
+			>
+			<File
+				RelativePath=".\sqlite3\shell.c"
+				>
+			</File>
+			<File
+				RelativePath=".\sqlite3\sqlite3.c"
+				>
+			</File>
+			<File
+				RelativePath=".\sqlite3\sqlite3.h"
+				>
+			</File>
+			<File
+				RelativePath=".\sqlite3\sqlite3ext.h"
+				>
+			</File>
+			<File
+				RelativePath=".\sqlite3\SQLiteHelper.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\sqlite3\SQLiteHelper.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath=".\adapter.c"
 			>
