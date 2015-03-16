@@ -41,13 +41,16 @@ int CSQLiteHelper::execSQL(char *sql)
 	return 0;
 }
 
-char **CSQLiteHelper::rawQuery(char *sql,int *row,int *column,char **result)
+int CSQLiteHelper::rawQuery(char *sql, int *row, int *column, char ***result)
 {
-	sqlite3_get_table(db,sql,&result,row,column,0);
-	return result;
+	int res = sqlite3_get_table(db,sql, result,row,column,0);
+	if (res != SQLITE_OK){  
+		return -1;  
+	}  
+	return 0;
 }
 
-int CSQLiteHelper::queryFromCallback(char *sql, callback pfunc_callback, char **errMsg)
+int CSQLiteHelper::queryFromCallback(char *sql, callback pfunc_callback, char  **errMsg)
 {
 	int res = sqlite3_exec(db, sql, pfunc_callback, 0 , errMsg);
 	if (res != SQLITE_OK){  

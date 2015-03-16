@@ -1793,7 +1793,7 @@ int __stdcall iCheckLicense(char *filename,int type)
 
 int __stdcall iCheckException(char *pszLogXml,char *pszXml)
 {
-	CExceptionCheck check(pszLogXml);
+	CDBExceptionCheck check(pszLogXml);
 	int status = check.filterForbidden(pszXml);
 	if (status != CardProcSuccess) {
 		return status;

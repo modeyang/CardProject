@@ -58,10 +58,6 @@ protected:
 	int initDBHelper();
 	int isExceptionCard(int checkFlag);
 
-	static int forbidden_query(void *NotUsed, int argc, char **argv, char **azColName);
-	static int warnning_query(void *NotUsed, int argc, char **argv, char **azColName);
 protected:
-	int m_forbidden_flag;
-	int m_warnning_flag;
 	CSQLiteHelper *m_dbHelper;
 };

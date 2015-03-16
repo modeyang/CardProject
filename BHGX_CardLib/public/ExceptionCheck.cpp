@@ -258,8 +258,11 @@ CDBExceptionCheck::~CDBExceptionCheck(void)
 
 int CDBExceptionCheck::initDBHelper()
 {
-	m_dbHelper = new CSQLiteHelper();
-	m_dbHelper->openDB((char*)mapLogConfig[1][2].c_str());
+	m_dbHelper = NULL;
+	if (fileIsExisted((char*)mapLogConfig[1][2].c_str()) && m_dbHelper == NULL) {
+		m_dbHelper = new CSQLiteHelper();
+		m_dbHelper->openDB((char*)mapLogConfig[1][2].c_str());
+	}
 	return 0;
 }
 
@@ -268,6 +271,11 @@ int CDBExceptionCheck::filterForbidden(char *xml)
 	if (isForbidden()) {
 		return CardForbidden;
 	}
+	if (m_dbHelper == NULL) {
+		CXmlUtil::CreateResponXML(CardDBFileNotFound, err(CardDBFileNotFound), xml);
+		return CardDBFileNotFound;
+	}
+
 	std::map<int, std::string> &configMap = mapLogConfig[1];
 
 	char szQuery[1024];
@@ -282,71 +290,79 @@ int CDBExceptionCheck::filterForbidden(char *xml)
 	m_strCardNO = mapQueryInfo[CARDNO];
 	m_strCardSeq = mapQueryInfo[CARDSEQ];
 	int status = isExceptionCard(FORBIDDEN_FLAG);
-	//if (index != -1) {
-	//	excepRecord &record = vecForbiddenRecord[index];
-	//	geneForbiddenLog(record);
-	//	writeForbiddenFlag(1);
-	//	CXmlUtil::CreateResponXML(CardForbidden, err(CardForbidden), xml);
-	//	return CardForbidden;
-	//}
+	if (status != 0) {
+		CXmlUtil::CreateResponXML(CardForbidden, err(CardForbidden), xml);
+		return CardForbidden;
+	}
 	return CardProcSuccess;
 }
 
 int CDBExceptionCheck::filterWarnning(char *xml)
 {
-	//char szQuery[1024];
-	//memset(szQuery, 0, sizeof(szQuery));
-	//int n = iQueryInfo("IDNUMBER", szQuery);
-	//if (n != 0){
-	//	CXmlUtil::CreateResponXML(CardReadErr, err(CardReadErr), xml);
-	//	return CardReadErr;
-	//}
-	//std::string strIDNumber;
-	//CXmlUtil::GetQueryInfoForOne(szQuery, strIDNumber);
-	//std::map<int, std::string> &configMap = mapLogConfig[1];
-	//std::vector<excepRecord> vecWarnningRecord;
-	//std::string strFilePath(configMap[3]);
-	//strFilePath += strIDNumber.substr(0, 4);
-	//strFilePath += "_greylist.xml";
-	//if (parseExceptionXml((char*)strFilePath.c_str(), vecWarnningRecord) == 1) {
-	//	return DescryFileError;
-	//}
+	if (m_dbHelper == NULL) {
+		CXmlUtil::CreateResponXML(CardDBFileNotFound, err(CardDBFileNotFound), xml);
+		return CardDBFileNotFound;
+	}
 
-	//if (isExceptionCard(vecWarnningRecord) != -1) {
-	//	CXmlUtil::CreateResponXML(CardWarnning, err(CardWarnning), xml);
-	//	return CardWarnning;
-	//}
-	isExceptionCard(WARINNING_FLAG);
+	int status = isExceptionCard(WARINNING_FLAG);
+	if (status != 0) {
+		CXmlUtil::CreateResponXML(CardWarnning, err(CardWarnning), xml);
+		return CardWarnning;
+	}
 	return CardProcSuccess;
 }
 
 int CDBExceptionCheck::isExceptionCard(int checkFlag)
 {
 	int queryStatus = 0;
-	char *errMsg;
 	char sql[200];
-	memset(sql, 0, sizeof(sql));
 
+	memset(sql, 0, sizeof(sql));
 	sprintf_s(sql, sizeof(sql), "select * from card_checks where cardNo='%s' and cardSerialNo='%s' and checkState=%s", 
 		m_strCardNO.c_str(), m_strCardSeq.c_str(), checkFlag);
 
-	if (checkFlag == 0) {
-		queryStatus = m_dbHelper->queryFromCallback(sql, forbidden_query, &errMsg);
-	} else if (checkFlag == 1) {
-		queryStatus = m_dbHelper->queryFromCallback(sql, warnning_query, &errMsg);
-	} else {
-		
+	int row, col;
+	char **result;
+	queryStatus = m_dbHelper->rawQuery(sql, &row, &col, &result);
+	if (row == 0 || queryStatus != 0) {
+		return CardSQLError;
 	}
-	return queryStatus;
 
-}
+	// get query info
+	std::vector<std::string> vecColName;
+	for (int i=0; i<col; i++) {
+		vecColName.push_back(result[i]);
+	}
 
-int CDBExceptionCheck::forbidden_query(void *NotUsed, int argc, char **argv, char **azColName)
-{
+	std::vector<std::string> vecColValue;
+	for (int j=0; j<col; j++) {
+		vecColValue.push_back(std::string(result[1 * col + j]));
+	}
+
+	// forbidden card, generate log and write flag
+	if (checkFlag == FORBIDDEN_FLAG) {
+		excepRecord record;
+		for (int i=0; i<vecColName.size(); i++) {
+			if (strcmp(vecColName[i].c_str(), "name") == 0) {
+				record.Name = std::string(vecColValue[i]);
+
+			} else if (strcmp(vecColName[i].c_str(), "idCard") == 0) {
+				record.ID = std::string(vecColValue[i]);
+
+			}else if (strcmp(vecColName[i].c_str(), "cardState") == 0) {
+				record.cardState = atoi(vecColValue[i].c_str());
+
+			}else if (strcmp(vecColName[i].c_str(), "cardNo") == 0) {
+				record.cardNO = std::string(vecColValue[i]);
+
+			}else if (strcmp(vecColName[i].c_str(), "cardSerialNo") == 0) {
+				record.cardSeq = std::string(vecColValue[i]);
+
+			}
+		}
+		geneForbiddenLog(record);
+		writeForbiddenFlag(1);
+	}
 	return 0;
-}
 
-int CDBExceptionCheck::warnning_query(void *NotUsed, int argc, char **argv, char **azColName)
-{
-	return 0;
 }

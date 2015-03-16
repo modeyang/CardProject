@@ -37,6 +37,8 @@ enum ErrType
 	CardMedicalFailed,
 	CardNotMedicalCard,
 	ConnectWebServerFailed,
+	CardSQLError,
+	CardDBFileNotFound,
 };
 
 static char *errString[] =
@@ -69,6 +71,8 @@ static char *errString[] =
 	"农合号为空",
 	"非农合卡，请重新换卡",
 	"连接webserver失败",
+	"查询数据库失败",
+	"数据库文件不存在，请确认数据库*.db存在",
 };
 
 char *_err(int errcode);

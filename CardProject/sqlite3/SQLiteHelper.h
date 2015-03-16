@@ -16,7 +16,7 @@ public:
 	void closeDB();
 
 	int execSQL(char *sql);
-	char** rawQuery(char *sql,int *row,int *column,char **result);
+	int rawQuery(char *sql,int *row,int *column,char ***result);
 	int queryFromCallback(char *sql, callback pfunc_callback, char **errMsg);
 
 };
