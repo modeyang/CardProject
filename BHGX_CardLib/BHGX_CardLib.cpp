@@ -1521,7 +1521,7 @@ int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServerURL,char*
 	isCardAuth();
 	if (status == CardProcSuccess){
 		int flag = 2;
-		if (CPU_8K_TEST == 1 || CPU_ONLY == 1 || CPU_8K_ONLY==1) {
+		if ((CPU_8K_TEST | CPU_ONLY | CPU_8K_ONLY) == 1) {
 			flag = 2 + (1 << 7);
 		}
 		status = iReadInfo(flag, pszXml);
@@ -1697,7 +1697,7 @@ int __stdcall iReadOnlyCardMessageForNHLog(char *pszLogXml, char* pszXml)
 int __stdcall iReadOnlyCardMessageForNH(char* pszXml)
 {
 	int flag = 2;
-	if (CPU_8K_TEST == 1 || CPU_ONLY == 1 || CPU_8K_ONLY==1) {
+	if ((CPU_8K_TEST | CPU_ONLY | CPU_8K_ONLY) == 1) {
 		flag = 2 + (1 << 7);
 	}
 	int status = iReadInfo(flag, pszXml);
