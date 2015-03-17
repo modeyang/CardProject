@@ -796,13 +796,15 @@ int __stdcall iCardCompany(char *szCompanyXml)
  */
 int __stdcall iCardInit(char *xml)
 {
-	char szSystem[NAME_MAX_LEN];
-	ZeroMemory(szSystem, sizeof(szSystem));
+	//char szSystem[NAME_MAX_LEN];
+	//ZeroMemory(szSystem, sizeof(szSystem));
+	//ReadConfigFromReg(szSystem);
 
-	ReadConfigFromReg(szSystem);
+	char path[MAX_PATH] = {};
+	GetSystemDirectory(path, MAX_PATH);
 
 	// 对设备进行初始化
-	g_bPreLoad = (apt_InitCoreDevice(szSystem)==0);
+	g_bPreLoad = (apt_InitCoreDevice(path)==0);
 	g_bCardOpen = g_bPreLoad;
 
 	return g_bPreLoad==TRUE ? 0:-1;

@@ -259,7 +259,7 @@ CDBExceptionCheck::~CDBExceptionCheck(void)
 int CDBExceptionCheck::initDBHelper()
 {
 	m_dbHelper = NULL;
-	if (fileIsExisted((char*)mapLogConfig[1][2].c_str()) && m_dbHelper == NULL) {
+	if (fileIsExisted((char*)mapLogConfig[1][2].c_str())) {
 		m_dbHelper = new CSQLiteHelper();
 		m_dbHelper->openDB((char*)mapLogConfig[1][2].c_str());
 	}

@@ -108,13 +108,16 @@ struct CardDevice *getCardDevice(const char *System)
 	struct CardDevice *result = NULL;
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;
-	char Pattern[MAX_PATH];
+	//char Pattern[MAX_PATH];
+	char CurPath[MAX_PATH];
 	int nProbe = 0;
 
 	// 开始查找
-	strcpy(Pattern, System);
-	strcat(Pattern, "BHGX_CARD_*");
-	hFind = FindFirstFile(Pattern, &FindFileData);
+	GetCurrentDirectory(MAX_PATH, CurPath);
+	SetCurrentDirectory(System);
+	//strcpy(Pattern, System);
+	//strcat(Pattern, "BHGX_CARD_*");
+	hFind = FindFirstFile("BHGX_CARD_*", &FindFileData);
 	while (hFind != INVALID_HANDLE_VALUE)
 	{
 		HINSTANCE hInstLibrary;
@@ -136,6 +139,7 @@ struct CardDevice *getCardDevice(const char *System)
 			break;
 	}
 	FindClose(hFind);
+	SetCurrentDirectory(CurPath);
 
 	/**
 	 * 如果设备找到，就打开并且嗡鸣一下
