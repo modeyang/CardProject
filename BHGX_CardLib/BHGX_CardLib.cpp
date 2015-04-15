@@ -1593,7 +1593,7 @@ int __stdcall iRegMsgForNH(char *pszCardServerURL, char* pszXml)
 
 	if (status == CardProcSuccess){
 		int flag = 2;
-		if (CPU_8K_TEST == 1 || CPU_ONLY == 1 || CPU_8K_ONLY==1) {
+		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY) == 1) {
 			flag = 2 + (1 << 7);
 		}
 		status = iReadInfo(flag, pszXml);
@@ -1626,7 +1626,7 @@ static int _checkMsgForLocalWithLog(char* pszLogXml, char* pszXml, char *logname
 	}
 
 	int flag = 2;
-	if (CPU_8K_TEST == 1 || CPU_ONLY == 1 || CPU_8K_ONLY==1) {
+	if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY) == 1) {
 		flag = 2 + (1 << 7);
 	}
 	if (CardProcSuccess != iReadInfo(flag, pszXml)) {
@@ -1753,7 +1753,7 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 
 	if (status == CardProcSuccess){
 		int flag = 2;
-		if (CPU_8K_TEST == 1 || CPU_ONLY == 1 || CPU_8K_ONLY==1) {
+		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY) == 1) {
 			flag = 2 + (1 << 7);
 		}
 		status = iReadInfo(flag, pszXml);

@@ -318,8 +318,9 @@ int CDBExceptionCheck::isExceptionCard(int checkFlag)
 	char sql[200];
 
 	memset(sql, 0, sizeof(sql));
-	sprintf_s(sql, sizeof(sql), "select * from card_checks where cardNo='%s' and cardSerialNo='%s' and checkState=%s", 
-		m_strCardNO.c_str(), m_strCardSeq.c_str(), checkFlag);
+	sprintf_s(sql, sizeof(sql), "select * from card_checks where cardNo='%s' \
+				and cardSerialNo='%s' and checkState=%s", 
+				m_strCardNO.c_str(), m_strCardSeq.c_str(), checkFlag);
 
 	int row, col;
 	char **result;

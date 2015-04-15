@@ -16,6 +16,9 @@ extern "C" {
 #define CPU_M1		0
 #define CPU_8K		0
 #define CPU_8K_ONLY	0
+
+#define CPU_8K_MERGE_16K 1
+
 // for cpu test
 #define CPU_8K_TEST 0
 
