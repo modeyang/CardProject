@@ -79,7 +79,7 @@ int __stdcall apt_CloseDev(void)
  * 成功： 非零
  * 失败：0
  */
-int __stdcall apt_ScanCard()
+int __stdcall apt_ScanCard(unsigned char *card_type)
 {
 	unsigned char cardType = 0, psamType=0;
 	unsigned char resp[260];
@@ -102,6 +102,8 @@ int __stdcall apt_ScanCard()
 	if (status) {
 		return CardScanErr;
 	}
+
+	*card_type = cardType;
 
 	//加载xml文件
 	apt_InitGList(cardType);

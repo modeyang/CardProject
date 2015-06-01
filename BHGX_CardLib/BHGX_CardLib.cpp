@@ -213,6 +213,9 @@ static struct XmlColumnS *
 CpuQueryItem(const char *name, char *xml, int &nLen);
 
 static int 
+iCreateScanXml(int card_type, char *xml);
+
+static int 
 iCreateXmlByVector(const vector<QueryColum>&  v, char *xml, int *length);
 
 
@@ -713,6 +716,47 @@ done:
 	return queryItem;
 }
 
+
+static int iCreateScanXml(int card_type, char *xml)
+{
+	TiXmlDocument *XmlDoc;
+	TiXmlElement *RootElement;
+	TiXmlDeclaration HeadDec;
+	TiXmlElement *Segment;
+	TiXmlPrinter Printer;
+
+	// 创建XML文档
+	XmlDoc = new TiXmlDocument();
+
+	// 增加XML的头部说明
+	HeadDec.Parse("<?xml version=\"1.0\" encoding=\"gb2312\" ?>", 0, TIXML_ENCODING_UNKNOWN);
+	XmlDoc->LinkEndChild(&HeadDec);
+
+	// 产生TiXMLDoc文档
+	RootElement = new TiXmlElement("SEGMENTS");
+	RootElement->SetAttribute("PROGRAMID", "001");
+
+	Segment = new TiXmlElement("SEGMENT");
+	Segment->SetAttribute("ID",0);
+	Segment->SetAttribute("SOURCE", "CARDCATEGORY");
+	if (card_type == eCPUCard) {
+		Segment->SetAttribute("VALUE", "CPU");
+	} else if (card_type == eM1Card) {
+		Segment->SetAttribute("VALUE", "M1");
+	} else {
+		Segment->SetAttribute("VALUE", "UNKNOWN");
+	}
+
+	RootElement->LinkEndChild(Segment);
+	XmlDoc->LinkEndChild(RootElement);
+
+	// 把XML文档的内容传给上层
+	XmlDoc->Accept(&Printer);
+	int length = (int)Printer.Size();
+	memcpy(xml, Printer.CStr(), length);
+	return 0;
+}
+
 /**
 *
 */
@@ -854,10 +898,15 @@ int __stdcall iCardClose()
 }
 
 
-int __stdcall iScanCard()
+int __stdcall iScanCard(char *xml)
 {
 	ASSERT_OPEN(g_bCardOpen);
-	return apt_ScanCard();
+	unsigned char card_type = -1;
+	int status = apt_ScanCard(&card_type);
+	if (xml != NULL) {
+		iCreateScanXml(card_type, xml);
+	}
+	return status;
 }
 /**
 *
@@ -1184,10 +1233,6 @@ int __stdcall iWriteInfo(char *xml)
 		std::map<int, dataItem> mapInfo, mapCpuInfo;
 		int flag = 0, isCpuWrite = 0, isRec = 1, isNeedRead = 0;
 
-		//add verify cpu write xml, return vector segflag
-		//std::vector<int> vecRecFlag;
-		//std::vector<int> vecBinFlag;
-		//isCpuWrite = checkCpuWriteXml((char*)xmlStr.c_str(), vecRecFlag, vecBinFlag);
 		std::map<int, int> mapRecFlag;
 		std::map<int, int> mapBinFlag;
 		isCpuWrite = is_can_write((char*)xmlStr.c_str(), mapRecFlag, mapBinFlag);
@@ -1211,11 +1256,6 @@ int __stdcall iWriteInfo(char *xml)
 		} 
 #if (CPU_M1 || CPU_8K)
 		else {
-			if (vecRecFlag.size() > 0 || vecBinFlag.size() > 0) {
-
-				DBGCore("CPU卡无法回写除2以外的M1数据");
-				return CardWriteErr;
-			}
 
 			xml2Map((char*)xmlStr.c_str(), mapInfo, eM1Card, false);
 
@@ -1653,6 +1693,20 @@ int __stdcall iReadCardMessageForNHLocal(char* pszLogXml, char* pszXml)
 		return CardReadErr;
 	}
 	return CardProcSuccess;
+}
+
+int __stdcall iReadCardMessageForBothNHLocal(
+	char *pszCardCheckWSDL, 
+	char *pszCardServerURL, 
+	char* pszLogXml,
+	char* pszXml
+	)
+{
+	if (strlen(pszCardCheckWSDL)==0 || strlen(pszCardServerURL) == 0) {
+		return iReadCardMessageForNHLocal(pszLogXml, pszXml);
+	} else {
+		return iReadCardMessageForNH(pszCardCheckWSDL, pszCardServerURL, pszXml);
+	}
 }
 
 //卡校验 黑名单校验

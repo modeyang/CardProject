@@ -37,3 +37,4 @@ EXPORTS
 	isCardAuth						@33
 	iReadAll 						@34
 	iRWRecycle						@35
+	iReadCardMessageForBothNHLocal 	@36

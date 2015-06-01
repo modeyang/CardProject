@@ -46,7 +46,7 @@ static unsigned char initCtrl[0x4]=
 {0xff, 0x07, 0x80, 0x69};
 
 #define ISGWCARD(cardno)   (cardno == 1) 
-#define ISAPTSCANCARD {if (apt_ScanCard() != 0) return CardScanErr;}
+#define ISAPTSCANCARD {unsigned char card_type=-1; if (apt_ScanCard(&card_type) != 0) return CardScanErr;}
 
 #define SAFE_DELETE(a)  if (a != NULL) { delete(a);a = NULL;}
 #define SAFE_DELETE_C(a)  if (a != NULL) { free(a);a = NULL;}

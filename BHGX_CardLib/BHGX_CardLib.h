@@ -41,7 +41,7 @@ extern "C" {
 	// 写入xml内容
 	DLL_EXPORT int __stdcall iWriteInfo(char *xml);
 
-	DLL_EXPORT int __stdcall iScanCard();
+	DLL_EXPORT int __stdcall iScanCard(char *xml=NULL);
 
 	//错误信息
 	DLL_EXPORT char* __stdcall err(int errcode);
@@ -121,6 +121,13 @@ extern "C" {
 		);
 
 	DLL_EXPORT int __stdcall iReadCardMessageForNHLocal(
+		char* pszLogXml,
+		char* pszXml
+		);
+
+	DLL_EXPORT int __stdcall iReadCardMessageForBothNHLocal(
+		char *pszCardCheckWSDL, 
+		char *pszCardServerURL, 
 		char* pszLogXml,
 		char* pszXml
 		);
