@@ -59,3 +59,58 @@ int CSQLiteHelper::queryFromCallback(char *sql, callback pfunc_callback, char  *
 	return 0;
 }
 
+
+CSQLServerHelper::CSQLServerHelper()
+{
+
+}
+
+CSQLServerHelper::~CSQLServerHelper()
+{
+
+}
+
+int CSQLServerHelper::openDB(char *path)
+{
+	return this->connect(path);
+}
+
+void CSQLServerHelper::closeDB()
+{
+	if(m_pRecordset!=NULL){
+		m_pRecordset->Close();
+		m_pConnection->Close();
+	}
+
+	::CoUninitialize(); //ÊÍ·Å»·¾³
+}
+
+int CSQLServerHelper::connect(char *addr)
+{
+	try {
+		::CoInitialize(NULL);
+		m_pConnection.CreateInstance(__uuidof(Connection));
+		 
+		char conn_str[200];
+		memset(conn_str, 0, sizeof(conn_str));
+		sprintf_s(conn_str, sizeof(conn_str), 
+			"Provider=SQLOLEDB.1;Password=bhgx@greatsoft.net ; Persist Security Info=True; \
+			User ID=sa;Initial Catalog=bhgx_healthcard ;Data Source=%s", addr);
+
+		_bstr_t bs_conn_str(conn_str);
+		HRESULT hr = m_pConnection->Open(bs_conn_str, "","", adModeUnknown);  
+		if (hr != S_OK) {
+			cout<<"Can not connect to the specified database!"<<endl;
+			return -1;
+		}
+	} catch (_com_error e) {
+		cout<<e.Description()<<endl;
+		return -1;
+	}
+	
+}
+
+int CSQLServerHelper::execSQL(char *sql)
+{
+
+}
