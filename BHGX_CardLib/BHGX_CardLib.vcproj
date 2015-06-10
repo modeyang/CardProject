@@ -425,6 +425,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\cpuprogram_16k.xml"
+			>
+		</File>
+		<File
 			RelativePath=".\cpuprogram_32k.xml"
 			>
 		</File>

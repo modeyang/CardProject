@@ -16,7 +16,7 @@ public:
 
 private:
 	void getDefaultMap(std::map<std::string, std::string> &mapScValue);
-private:
+
 	std::map<int, std::map<int, std::string> > m_MapLogConfig; 
 	std::map<std::string, ColumInfo> m_MapReaderInfo;
 	int			m_rwFlag;

@@ -8,14 +8,6 @@
 
 using namespace std;
 
-struct excepRecord
-{
-	std::string Name;
-	std::string ID;
-	int			cardState;
-	std::string cardNO;
-	std::string cardSeq;
-};
 
 class CExceptionCheck
 {
@@ -31,9 +23,9 @@ public:
 protected:
 	int  writeForbiddenFlag(int flag);
 	bool isForbidden();
-	int  geneForbiddenLog(excepRecord &record);
-	int  isExceptionCard(std::vector<excepRecord> &vecRecord);
-	int  parseExceptionXml(char *filePath, std::vector<excepRecord> &vecRecord);
+	int  geneForbiddenLog(db_check_info &record);
+	int  isExceptionCard(std::vector<db_check_info> &vecRecord);
+	int  parseExceptionXml(char *filePath, std::vector<db_check_info> &vecRecord);
 
 	bool fileIsExisted(char *filename) {
 		return _access(filename, 0) == 0;
@@ -42,6 +34,7 @@ protected:
 protected:
 	std::string m_strCardNO;
 	std::string m_strCardSeq;
+	std::string m_dbPath;
 	std::map<int, std::map<int, std::string> > mapLogConfig;
 };
 
@@ -59,5 +52,5 @@ protected:
 	int isExceptionCard(int checkFlag);
 
 protected:
-	CSQLiteHelper *m_dbHelper;
+	CDBHelper *m_dbHelper;
 };

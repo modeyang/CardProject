@@ -29,11 +29,13 @@ using namespace std;
 CExceptionCheck::CExceptionCheck(std::map<int, std::map<int, std::string> > logConfig)
 {
 	mapLogConfig = logConfig;
+	m_dbPath = mapLogConfig[1][1];
 }
 
 CExceptionCheck::CExceptionCheck(char *logXml)
 {
 	CXmlUtil::paserLogXml(logXml, mapLogConfig);
+	m_dbPath = mapLogConfig[1][1];
 }
 
 CExceptionCheck::~CExceptionCheck(void)
@@ -41,7 +43,7 @@ CExceptionCheck::~CExceptionCheck(void)
 }
 
 
-int CExceptionCheck::parseExceptionXml(char *filePath, std::vector<excepRecord> &vecRecord)
+int CExceptionCheck::parseExceptionXml(char *filePath, std::vector<db_check_info> &vecRecord)
 {
 	CMarkup xml;
 
@@ -61,22 +63,22 @@ int CExceptionCheck::parseExceptionXml(char *filePath, std::vector<excepRecord> 
 	}
 	xml.IntoElem();
 	while (xml.FindElem("member")){
-		excepRecord record;
+		db_check_info record;
 		xml.IntoElem();
 		if (xml.FindElem("name")) {
-			record.Name = xml.GetData();
+			record.name = xml.GetData();
 		}
 		if (xml.FindElem("idCard")) {
-			record.ID = xml.GetData();
+			record.Idcard = xml.GetData();
 		}
 		if (xml.FindElem("cardState")) {
 			record.cardState = atoi((char*)xml.GetData().c_str());
 		}
 		if (xml.FindElem("cardNo")) {
-			record.cardNO = xml.GetData();
+			record.cardNo = xml.GetData();
 		}
 		if (xml.FindElem("cardSerialNo")) {
-			record.cardSeq = xml.GetData();
+			record.cardSerialNo = xml.GetData();
 		}
 		vecRecord.push_back(record);
 		xml.OutOfElem();
@@ -85,19 +87,19 @@ int CExceptionCheck::parseExceptionXml(char *filePath, std::vector<excepRecord> 
 	return 0;
 }
 
-int CExceptionCheck::isExceptionCard(std::vector<excepRecord> &vecRecord)
+int CExceptionCheck::isExceptionCard(std::vector<db_check_info> &vecRecord)
 {
 	for (int i=0; i<vecRecord.size(); i++) {
-		excepRecord &record = vecRecord[i];
-		if (m_strCardNO == record.cardNO && 
-			m_strCardSeq == record.cardSeq) {
+		db_check_info &record = vecRecord[i];
+		if (m_strCardNO == record.cardNo && 
+			m_strCardSeq == record.cardSerialNo) {
 			return i;
 		}
 	}
 	return -1;
 }
 
-int CExceptionCheck::geneForbiddenLog(excepRecord &record) 
+int CExceptionCheck::geneForbiddenLog(db_check_info &record) 
 {
 	std::map<int, std::string> &configMap = mapLogConfig[1];
 	std::map<int, std::string> &contentMap = mapLogConfig[2];
@@ -114,10 +116,10 @@ int CExceptionCheck::geneForbiddenLog(excepRecord &record)
 		xml.IntoElem();
 		xml.AddElem("member");
 		xml.IntoElem();
-		xml.AddElem("name", record.Name);
-		xml.AddElem("idCard", record.ID);
-		xml.AddElem("cardSerialNo", record.cardSeq);
-		xml.AddElem("cardNo", record.cardNO);
+		xml.AddElem("name", record.name);
+		xml.AddElem("idCard", record.Idcard);
+		xml.AddElem("cardSerialNo", record.cardSerialNo);
+		xml.AddElem("cardNo", record.cardNo);
 		xml.OutOfElem();
 		xml.OutOfElem();
 		xml.Save(strFilePath.c_str());
@@ -127,10 +129,10 @@ int CExceptionCheck::geneForbiddenLog(excepRecord &record)
 		xml.IntoElem();
 		xml.AddElem("member");
 		xml.IntoElem();
-		xml.AddElem("name", record.Name);
-		xml.AddElem("idCard", record.ID);
-		xml.AddElem("cardSerialNo", record.cardSeq);
-		xml.AddElem("cardNo", record.cardNO);
+		xml.AddElem("name", record.name);
+		xml.AddElem("idCard", record.Idcard);
+		xml.AddElem("cardSerialNo", record.cardSerialNo);
+		xml.AddElem("cardNo", record.cardNo);
 		xml.OutOfElem();
 		xml.OutOfElem();
 		xml.Save(strFilePath.c_str());
@@ -181,7 +183,7 @@ int CExceptionCheck::filterForbidden(char *xml)
 		return CardForbidden;
 	}
 	std::map<int, std::string> &configMap = mapLogConfig[1];
-	std::vector<excepRecord> vecForbiddenRecord;
+	std::vector<db_check_info> vecForbiddenRecord;
 	if (parseExceptionXml((char*)configMap[2].c_str(), vecForbiddenRecord) == 1) {
 		return DescryFileError;
 	}
@@ -199,7 +201,7 @@ int CExceptionCheck::filterForbidden(char *xml)
 	m_strCardSeq = mapQueryInfo[CARDSEQ];
 	int index = isExceptionCard(vecForbiddenRecord);
 	if (index != -1) {
-		excepRecord &record = vecForbiddenRecord[index];
+		db_check_info &record = vecForbiddenRecord[index];
 		geneForbiddenLog(record);
 		writeForbiddenFlag(1);
 		CXmlUtil::CreateResponXML(CardForbidden, err(CardForbidden), xml);
@@ -222,7 +224,7 @@ int CExceptionCheck::filterWarnning(char *xml)
 	CXmlUtil::GetQueryInfoForOne(szQuery, strIDNumber);
 
 	std::map<int, std::string> &configMap = mapLogConfig[1];
-	std::vector<excepRecord> vecWarnningRecord;
+	std::vector<db_check_info> vecWarnningRecord;
 	std::string strFilePath(configMap[3]);
 	strFilePath += strIDNumber.substr(0, 4);
 	strFilePath += "_greylist.xml";
@@ -259,10 +261,13 @@ CDBExceptionCheck::~CDBExceptionCheck(void)
 int CDBExceptionCheck::initDBHelper()
 {
 	m_dbHelper = NULL;
-	if (fileIsExisted((char*)mapLogConfig[1][2].c_str())) {
+	string &path = m_dbPath;
+	if (TRUE) {
+		m_dbHelper = new CSQLServerHelper();
+	} else if (fileIsExisted((char*)path.c_str())) {
 		m_dbHelper = new CSQLiteHelper();
-		m_dbHelper->openDB((char*)mapLogConfig[1][2].c_str());
 	}
+	m_dbHelper->openDB((char*)path.c_str());
 	return 0;
 }
 
@@ -314,56 +319,19 @@ int CDBExceptionCheck::filterWarnning(char *xml)
 
 int CDBExceptionCheck::isExceptionCard(int checkFlag)
 {
-	int queryStatus = 0;
 	char sql[200];
-
 	memset(sql, 0, sizeof(sql));
 	sprintf_s(sql, sizeof(sql), "select * from card_checks where cardNo='%s' \
 				and cardSerialNo='%s' and checkState=%s", 
 				m_strCardNO.c_str(), m_strCardSeq.c_str(), checkFlag);
-
-	int row, col;
-	char **result;
-	queryStatus = m_dbHelper->rawQuery(sql, &row, &col, &result);
-	if (row == 0 || queryStatus != 0) {
-		return CardSQLError;
+	
+	int status = m_dbHelper->query(sql);
+	if (status < 0) {
+		return -1;
 	}
-
-	// get query info
-	std::vector<std::string> vecColName;
-	for (int i=0; i<col; i++) {
-		vecColName.push_back(result[i]);
-	}
-
-	std::vector<std::string> vecColValue;
-	for (int j=0; j<col; j++) {
-		vecColValue.push_back(std::string(result[1 * col + j]));
-	}
-
-	// forbidden card, generate log and write flag
-	if (checkFlag == FORBIDDEN_FLAG) {
-		excepRecord record;
-		for (int i=0; i<vecColName.size(); i++) {
-			if (strcmp(vecColName[i].c_str(), "name") == 0) {
-				record.Name = std::string(vecColValue[i]);
-
-			} else if (strcmp(vecColName[i].c_str(), "idCard") == 0) {
-				record.ID = std::string(vecColValue[i]);
-
-			}else if (strcmp(vecColName[i].c_str(), "cardState") == 0) {
-				record.cardState = atoi(vecColValue[i].c_str());
-
-			}else if (strcmp(vecColName[i].c_str(), "cardNo") == 0) {
-				record.cardNO = std::string(vecColValue[i]);
-
-			}else if (strcmp(vecColName[i].c_str(), "cardSerialNo") == 0) {
-				record.cardSeq = std::string(vecColValue[i]);
-
-			}
-		}
-		geneForbiddenLog(record);
-		writeForbiddenFlag(1);
-	}
+	db_check_info &record = m_dbHelper->m_vecCheckInfo[0];
+	geneForbiddenLog(record);
+	writeForbiddenFlag(1);
 	return 0;
 
 }

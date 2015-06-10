@@ -716,13 +716,12 @@ done:
 	return queryItem;
 }
 
-
 static int iCreateScanXml(int card_type, char *xml)
 {
 	TiXmlDocument *XmlDoc;
 	TiXmlElement *RootElement;
 	TiXmlDeclaration HeadDec;
-	TiXmlElement *Segment;
+	TiXmlElement *Segment, *Segment1;
 	TiXmlPrinter Printer;
 
 	// 创建XML文档
@@ -748,6 +747,12 @@ static int iCreateScanXml(int card_type, char *xml)
 	}
 
 	RootElement->LinkEndChild(Segment);
+
+	Segment1 = new TiXmlElement("SEGMENT");
+	Segment1->SetAttribute("ID",1);
+	Segment1->SetAttribute("SOURCE", "PSAM");
+	Segment1->SetAttribute("VALUE", "");
+	RootElement->LinkEndChild(Segment1);
 	XmlDoc->LinkEndChild(RootElement);
 
 	// 把XML文档的内容传给上层
@@ -1562,7 +1567,7 @@ int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServerURL,char*
 	if (status == CardProcSuccess){
 		int flag = 2;
 		if ((CPU_8K_TEST | CPU_ONLY | CPU_8K_ONLY) == 1) {
-			flag = 2 + (1 << 7);
+			flag += 1 + (1 << 7);
 		}
 		status = iReadInfo(flag, pszXml);
 	}
@@ -1633,8 +1638,8 @@ int __stdcall iRegMsgForNH(char *pszCardServerURL, char* pszXml)
 
 	if (status == CardProcSuccess){
 		int flag = 2;
-		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY) == 1) {
-			flag = 2 + (1 << 7);
+		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY ) == 1) {
+			flag += 1 + (1 << 7);
 		}
 		status = iReadInfo(flag, pszXml);
 	}
@@ -1666,8 +1671,8 @@ static int _checkMsgForLocalWithLog(char* pszLogXml, char* pszXml, char *logname
 	}
 
 	int flag = 2;
-	if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY) == 1) {
-		flag = 2 + (1 << 7);
+	if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
+		flag += 1 + (1 << 7);
 	}
 	if (CardProcSuccess != iReadInfo(flag, pszXml)) {
 		return CardReadErr;
@@ -1752,7 +1757,7 @@ int __stdcall iReadOnlyCardMessageForNH(char* pszXml)
 {
 	int flag = 2;
 	if ((CPU_8K_TEST | CPU_ONLY | CPU_8K_ONLY) == 1) {
-		flag = 2 + (1 << 7);
+		flag += 1 + (1 << 7);
 	}
 	int status = iReadInfo(flag, pszXml);
 	if (status != CardProcSuccess) {
@@ -1807,8 +1812,8 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 
 	if (status == CardProcSuccess){
 		int flag = 2;
-		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY) == 1) {
-			flag = 2 + (1 << 7);
+		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
+			flag += 1 + (1 << 7);
 		}
 		status = iReadInfo(flag, pszXml);
 	}

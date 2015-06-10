@@ -8,6 +8,8 @@
 
 using namespace std;
 
+#define LOGPATH  "d:/config/"
+
 CLogHelper::CLogHelper(char *LogXml)
 {
 	CXmlUtil::paserLogXml(LogXml, m_MapLogConfig);
@@ -80,21 +82,28 @@ void CLogHelper::geneHISLog()
 	//insert base info column
 	char timeStr[64];
 	CTimeUtil::getCurrentTime(timeStr);
-	std::map<int, std::string> contentMap = m_MapLogConfig[2];
+	std::map<int, std::string> contentMap;
+	if (m_MapLogConfig.size() > 1) {
+		contentMap = m_MapLogConfig[2];
+	}
+	
 	std::map<std::string, std::string> mapScValue;
 	getDefaultMap(mapScValue);
 	contentMap[-1] = mapScValue["ISSUEUNIT"];
 	contentMap[0] = mapScValue["CARDCODE"];
-	contentMap[8] = mapScValue["CARDNO"];
-	contentMap[9] = mapScValue["IDNUMBER"];
-	contentMap[10] = mapScValue["NAME"];
-	contentMap[11] = timeStr;
+	// PSAM info
+	contentMap[1] = "";
+
+	contentMap[2] = mapScValue["CARDNO"];
+	contentMap[3] = mapScValue["IDNUMBER"];
+	contentMap[4] = mapScValue["NAME"];
+	contentMap[5] = timeStr;
 	if (m_rwFlag == 0)  {
-		contentMap[12] = "0";
+		contentMap[6] = "0";
 	} else {
-		contentMap[12] = "1";
+		contentMap[6] = "1";
 	}
-	contentMap[13] = m_ProcessName;
+	contentMap[7] = m_ProcessName;
 	std::map<int, std::string>::iterator mapIter = contentMap.begin();
 	for (; mapIter != contentMap.end(); mapIter++) {
 		TiXmlElement *pColumn = new TiXmlElement("COLUMN");
@@ -117,8 +126,7 @@ void CLogHelper::geneHISLog()
 	XmlDocLog->LinkEndChild(LogElement);
 	XmlDocLog->Accept(&Printer);
 
-	std::map<int, std::string> configMap = m_MapLogConfig[1];
-	std::string strFilePath(configMap[1]);
+	std::string strFilePath(string(LOGPATH) + mapScValue["CARDCODE"]);
 	strFilePath += strcat(CTimeUtil::getCurrentDay(timeStr), ".log");
 	FILE *fp = fopen(strFilePath.c_str(), "a+");
 	fwrite(Printer.CStr(), strlen(Printer.CStr()), 1, fp);
