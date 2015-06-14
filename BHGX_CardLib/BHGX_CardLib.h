@@ -171,6 +171,10 @@ extern "C" {
 		char *pszRetInfo
 		);
 
+	DLL_EXPORT int __stdcall iReadOnlybloodbank (char *xml);
+	DLL_EXPORT int __stdcall iWritebloodbank(char *xml);
+
+	DLL_EXPORT int __stdcall iReadCardSEQ(char *xml);
 
 #ifdef __cplusplus
 }

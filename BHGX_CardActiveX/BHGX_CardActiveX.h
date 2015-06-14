@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0366 */
-/* at Thu Nov 20 09:18:33 2014
+/* at Sun Jun 14 23:08:56 2015
  */
 /* Compiler settings for .\BHGX_CardActiveX.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -333,6 +333,22 @@ EXTERN_C const IID IID_ICardProcess;
             LONG counts,
             BSTR write_xml,
             /* [retval][out] */ BSTR *pszXml) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadCardMessageForBothNHLocal( 
+            BSTR pszCardCheckWSDL,
+            BSTR pszCardServerURL,
+            BSTR pszLogXml,
+            BSTR *pszXml) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadOnlybloodbank( 
+            /* [retval][out] */ BSTR *xml) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadCardSEQ( 
+            /* [retval][out] */ BSTR *xml) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLWritebloodbank( 
+            BSTR xml,
+            /* [retval][out] */ LONG *pRet) = 0;
         
     };
     
@@ -683,6 +699,26 @@ EXTERN_C const IID IID_ICardProcess;
             BSTR write_xml,
             /* [retval][out] */ BSTR *pszXml);
         
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadCardMessageForBothNHLocal )( 
+            ICardProcess * This,
+            BSTR pszCardCheckWSDL,
+            BSTR pszCardServerURL,
+            BSTR pszLogXml,
+            BSTR *pszXml);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadOnlybloodbank )( 
+            ICardProcess * This,
+            /* [retval][out] */ BSTR *xml);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadCardSEQ )( 
+            ICardProcess * This,
+            /* [retval][out] */ BSTR *xml);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLWritebloodbank )( 
+            ICardProcess * This,
+            BSTR xml,
+            /* [retval][out] */ LONG *pRet);
+        
         END_INTERFACE
     } ICardProcessVtbl;
 
@@ -886,6 +922,18 @@ EXTERN_C const IID IID_ICardProcess;
 
 #define ICardProcess_iATLRWRecycle(This,pszCardCorp,pszXinCorp,counts,write_xml,pszXml)	\
     (This)->lpVtbl -> iATLRWRecycle(This,pszCardCorp,pszXinCorp,counts,write_xml,pszXml)
+
+#define ICardProcess_iATLReadCardMessageForBothNHLocal(This,pszCardCheckWSDL,pszCardServerURL,pszLogXml,pszXml)	\
+    (This)->lpVtbl -> iATLReadCardMessageForBothNHLocal(This,pszCardCheckWSDL,pszCardServerURL,pszLogXml,pszXml)
+
+#define ICardProcess_iATLReadOnlybloodbank(This,xml)	\
+    (This)->lpVtbl -> iATLReadOnlybloodbank(This,xml)
+
+#define ICardProcess_iATLReadCardSEQ(This,xml)	\
+    (This)->lpVtbl -> iATLReadCardSEQ(This,xml)
+
+#define ICardProcess_iATLWritebloodbank(This,xml,pRet)	\
+    (This)->lpVtbl -> iATLWritebloodbank(This,xml,pRet)
 
 #endif /* COBJMACROS */
 
@@ -1637,6 +1685,58 @@ void __RPC_STUB ICardProcess_iATLReadAll_Stub(
 
 
 void __RPC_STUB ICardProcess_iATLRWRecycle_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadCardMessageForBothNHLocal_Proxy( 
+    ICardProcess * This,
+    BSTR pszCardCheckWSDL,
+    BSTR pszCardServerURL,
+    BSTR pszLogXml,
+    BSTR *pszXml);
+
+
+void __RPC_STUB ICardProcess_iATLReadCardMessageForBothNHLocal_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadOnlybloodbank_Proxy( 
+    ICardProcess * This,
+    /* [retval][out] */ BSTR *xml);
+
+
+void __RPC_STUB ICardProcess_iATLReadOnlybloodbank_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadCardSEQ_Proxy( 
+    ICardProcess * This,
+    /* [retval][out] */ BSTR *xml);
+
+
+void __RPC_STUB ICardProcess_iATLReadCardSEQ_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLWritebloodbank_Proxy( 
+    ICardProcess * This,
+    BSTR xml,
+    /* [retval][out] */ LONG *pRet);
+
+
+void __RPC_STUB ICardProcess_iATLWritebloodbank_Stub(
     IRpcStubBuffer *This,
     IRpcChannelBuffer *_pRpcChannelBuffer,
     PRPC_MESSAGE _pRpcMessage,

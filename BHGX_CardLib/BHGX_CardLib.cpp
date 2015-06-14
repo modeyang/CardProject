@@ -1566,7 +1566,7 @@ int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServerURL,char*
 	isCardAuth();
 	if (status == CardProcSuccess){
 		int flag = 2;
-		if ((CPU_8K_TEST | CPU_ONLY | CPU_8K_ONLY) == 1) {
+		if ((CPU_8K_TEST | CPU_ONLY | CPU_8K_ONLY | CPU_16K) == 1) {
 			flag += 1 + (1 << 7);
 		}
 		status = iReadInfo(flag, pszXml);
@@ -1638,7 +1638,7 @@ int __stdcall iRegMsgForNH(char *pszCardServerURL, char* pszXml)
 
 	if (status == CardProcSuccess){
 		int flag = 2;
-		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY ) == 1) {
+		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY | CPU_16K) == 1) {
 			flag += 1 + (1 << 7);
 		}
 		status = iReadInfo(flag, pszXml);
@@ -1671,7 +1671,7 @@ static int _checkMsgForLocalWithLog(char* pszLogXml, char* pszXml, char *logname
 	}
 
 	int flag = 2;
-	if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
+	if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY | CPU_16K) == 1) {
 		flag += 1 + (1 << 7);
 	}
 	if (CardProcSuccess != iReadInfo(flag, pszXml)) {
@@ -1756,7 +1756,7 @@ int __stdcall iReadOnlyCardMessageForNHLog(char *pszLogXml, char* pszXml)
 int __stdcall iReadOnlyCardMessageForNH(char* pszXml)
 {
 	int flag = 2;
-	if ((CPU_8K_TEST | CPU_ONLY | CPU_8K_ONLY) == 1) {
+	if ((CPU_8K_TEST | CPU_ONLY | CPU_8K_ONLY | CPU_16K) == 1) {
 		flag += 1 + (1 << 7);
 	}
 	int status = iReadInfo(flag, pszXml);
@@ -1812,7 +1812,7 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 
 	if (status == CardProcSuccess){
 		int flag = 2;
-		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
+		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY | CPU_16K) == 1) {
 			flag += 1 + (1 << 7);
 		}
 		status = iReadInfo(flag, pszXml);
@@ -2000,4 +2000,30 @@ int __stdcall iRWRecycle(
 	sprintf_s(timeStr, sizeof(timeStr), "成功读取%d次，成功写入%d次", rSuccess, wSuccess);
 	strcpy(pszRetInfo, timeStr);
 	return 0;
+}
+
+int __stdcall iReadOnlybloodbank (char *xml)
+{
+	int flag = 1 << 10;
+	return iReadInfo(flag, xml);
+}
+
+int __stdcall iWritebloodbank(char *xml)
+{
+	return iWriteInfo(xml);
+}
+
+int __stdcall iReadCardSEQ(char *xml)
+{
+	char szQuery[1024];
+	memset(szQuery, 0, sizeof(szQuery));
+
+	std::string strCardSEQ;
+	if (iQueryInfo("CARDSEQ", szQuery) != 0){
+		CXmlUtil::CreateResponXML(3, "获取卡序列号失败", xml);
+		return CardReadErr;
+	}
+	CXmlUtil::GetQueryInfoForOne(szQuery, strCardSEQ);
+	strcpy(xml, strCardSEQ.c_str());
+	return CardProcSuccess;
 }

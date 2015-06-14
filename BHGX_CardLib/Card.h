@@ -13,11 +13,11 @@ extern "C" {
 #pragma warning (disable : 4020)
 
 #define CPU_ONLY	0
-#define CPU_M1		1
+#define CPU_M1		0
 #define CPU_8K		0
 #define CPU_8K_ONLY	0
 
-#define CPU_8K_MERGE_16K 0
+#define CPU_16K		1
 
 // for cpu test
 #define CPU_8K_TEST 0
@@ -30,6 +30,9 @@ extern "C" {
 #define	CARDSEAT_RF		0	//0：非接用户卡 
 #define CARDSEAT_PSAM1	1	//1：SAM卡编号1
 #define CARDSEAT_M1		2	//2：M1
+
+#define LOG_STORE		1   // 0 file， 1 db 
+#define CHECK_TYPE		1	// 0 sqlite3,  1 sqlserver
 
 #define CMD_BEEP	1
 #define CMD_LED		2

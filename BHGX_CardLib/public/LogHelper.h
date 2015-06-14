@@ -1,7 +1,10 @@
 #pragma once
-#include <string>
+#include <io.h>
 #include <map>
+#include <string>
 #include "XmlUtil.h"
+#include "../sqlite3/SQLiteHelper.h"
+
 using namespace std;
 
 class CLogHelper
@@ -15,11 +18,21 @@ public:
 	void geneHISLog();
 
 private:
+	int  initDBHelper();
+	void geneLogInFile();
+	void geneLogInDB();
 	void getDefaultMap(std::map<std::string, std::string> &mapScValue);
+
+	bool fileIsExisted(char *filename) {
+		return _access(filename, 0) == 0;
+	}
 
 	std::map<int, std::map<int, std::string> > m_MapLogConfig; 
 	std::map<std::string, ColumInfo> m_MapReaderInfo;
 	int			m_rwFlag;
 	std::string m_ProcessName;
+	std::string m_dbPath;
 	char		*m_pCardInfo;
+	CDBHelper	*m_dbHelper;
+;
 };

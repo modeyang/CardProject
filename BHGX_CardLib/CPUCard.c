@@ -47,8 +47,10 @@
 //每个字段的最大记录条数
 #if (CPU_8K | CPU_8K_TEST | CPU_8K_ONLY)
 int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
-#else
+#elif (CPU_16K)
 int g_RecMap[BIN_START] = {0, 10, 5, 1, 7, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
+#else
+int g_RecMap[BIN_START] = {0, 10, 5, 1, 7, 4, 9, 3, 4, 15, 1, 6, 20, 3, 5};
 #endif
 
 extern  struct RecFolder g_recIndex[30];
@@ -540,15 +542,23 @@ int __stdcall FormatCpuCard(char c)
 			length = START_POS_2 - END_OFFSET - CPU_8K_OFFSET;
 			status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, length, 0);
 
-			if (CPU_8K_MERGE_16K == 1) {
-				strcpy((char*)send, "EE02");
-				length = START_POS_1 - END_OFFSET - CPU_8K_OFFSET;
-				status = Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
+		} else if (CPU_16K == 1) {
+			strcpy((char*)send, "EE01");
+			length = START_POS_1 - END_OFFSET - CPU_8K_OFFSET;
+			status = Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
 
-				strcpy((char*)send, "ED02");
-				length = START_POS_2 - END_OFFSET - CPU_8K_OFFSET;
-				status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, length, 0);
-			}
+			strcpy((char*)send, "ED01");
+			length = START_POS_2 - END_OFFSET - CPU_8K_OFFSET;
+			status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, length, 0);
+
+			strcpy((char*)send, "EE02");
+			length = START_POS_1 - END_OFFSET - CPU_8K_OFFSET;
+			status = Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
+
+			strcpy((char*)send, "ED02");
+			length = START_POS_2 - END_OFFSET - CPU_8K_OFFSET;
+			status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, length, 0);
+
 		} else {
 			strcpy((char*)send, "EE01");
 			length = START_POS_1 - END_OFFSET;

@@ -20,6 +20,17 @@ struct db_check_info
 	int cardState;
 };
 
+struct db_log_info {
+	std::string issueUnit;
+	std::string	cardCode;
+	std::string SAMID;
+	std::string cardNO;
+	std::string IDNumber;
+	std::string Name;
+	std::string Time;
+	std::string Log;
+};
+
 
 class CDBHelper
 {
@@ -29,6 +40,7 @@ public:
 	virtual int openDB(char *path) {return 0;};
 	virtual void closeDB() {};
 	virtual int query(char *sql) {return 0;};
+	virtual int insert_log(db_log_info & log_info){return 0;}
 
 	std::string m_dbType;
 	std::vector<db_check_info> m_vecCheckInfo;
@@ -65,6 +77,7 @@ public:
 	void closeDB();
 
 	int query(char *sql);
+	int insert_log(db_log_info & log_info);
 protected:
 	int connect(char *addr);
 

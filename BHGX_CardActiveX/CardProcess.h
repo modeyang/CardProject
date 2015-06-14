@@ -111,6 +111,10 @@ public:
 	STDMETHOD(iATLReadOnlyCardMessageForNH)(BSTR* pszXml);
 	STDMETHOD(iATLReadAll)(BSTR* xml);
 	STDMETHOD(iATLRWRecycle)(BSTR pszCardCorp, BSTR pszXinCorp, LONG counts, BSTR write_xml, BSTR* pszXml);
+	STDMETHOD(iATLReadCardMessageForBothNHLocal)(BSTR pszCardCheckWSDL, BSTR pszCardServerURL, BSTR pszLogXml, BSTR* pszXml);
+	STDMETHOD(iATLReadOnlybloodbank)(BSTR* xml);
+	STDMETHOD(iATLReadCardSEQ)(BSTR* xml);
+	STDMETHOD(iATLWritebloodbank)(BSTR xml, LONG* pRet);
 
 protected:
 	void GetErrInfo(int nProcRet, LONG &nRet);

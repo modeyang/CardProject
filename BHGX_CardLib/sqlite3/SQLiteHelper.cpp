@@ -1,5 +1,6 @@
 #include <iostream>
 #include "SQLiteHelper.h"
+#include <exception>
 
 using namespace std;
 
@@ -158,7 +159,6 @@ int CSQLServerHelper::query(char *sql)
 	_bstr_t bstrSQL(sql);
 	 m_pRecordset->Open(bstrSQL, m_pConnection.GetInterfacePtr(), adOpenDynamic, adLockOptimistic, adCmdText);
 
-	 
 	 while (!m_pRecordset->EndOfFile)
 	 {
 		 _variant_t vstr, vuint;
@@ -193,4 +193,22 @@ int CSQLServerHelper::query(char *sql)
 	 m_pRecordset->Close();
 
 	 return m_vecCheckInfo.size();
+}
+
+int CSQLServerHelper::insert_log(db_log_info & log_info)
+{
+	char insert_str[1024 * 12];
+	memset(insert_str, 0, sizeof(insert_str));
+	sprintf_s(insert_str, sizeof(insert_str), "insert into card_log(ISSUEUINT, CARDCODE, SAMID, \
+		CARDNO, IDNUMBER, NAME, Time, Log) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
+		log_info.issueUnit, log_info.cardCode, log_info.SAMID, log_info.cardNO,
+		log_info.IDNumber, log_info.Name, log_info.Time, log_info.Log);
+
+	try{
+		m_pConnection->Execute(_bstr_t(insert_str) ,NULL, adExecuteNoRecords);
+	} catch (exception& e) {
+		cout<<e.what()<<endl;
+		return -1;
+	}
+	return 0;
 }

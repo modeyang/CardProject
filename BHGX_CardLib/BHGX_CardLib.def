@@ -38,3 +38,6 @@ EXPORTS
 	iReadAll 						@34
 	iRWRecycle						@35
 	iReadCardMessageForBothNHLocal 	@36
+	iReadOnlybloodbank				@37
+	iWritebloodbank					@38
+	iReadCardSEQ					@39

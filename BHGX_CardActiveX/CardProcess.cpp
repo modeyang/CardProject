@@ -866,3 +866,51 @@ STDMETHODIMP CCardProcess::iATLRWRecycle(BSTR pszCardCorp, BSTR pszXinCorp,
 	*pszXml = bstr.Detach();
 	return S_OK;
 }
+
+STDMETHODIMP CCardProcess::iATLReadCardMessageForBothNHLocal(BSTR pszCardCheckWSDL, 
+															 BSTR pszCardServerURL,
+															 BSTR pszLogXml, 
+															 BSTR* pszXml)
+{
+	_bstr_t bstrCheckWSDL(pszCardCheckWSDL);  
+	_bstr_t bstrRewriteWSDL(pszCardServerURL);
+	_bstr_t bstrLogXml(pszLogXml);
+	int ret = iReadCardMessageForBothNHLocal((char*)bstrCheckWSDL, (char*)bstrRewriteWSDL, (char*)bstrLogXml, g_ReadBuff);
+	if (ret != 0) {
+		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	}
+	_bstr_t bstr(g_ReadBuff);
+	*pszXml = bstr.Detach();
+	return S_OK;
+}
+
+STDMETHODIMP CCardProcess::iATLReadOnlybloodbank(BSTR* xml)
+{
+	int ret = iReadOnlybloodbank(g_ReadBuff);
+	if (ret != 0) {
+		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	}
+	_bstr_t bstr(g_ReadBuff);
+	*xml = bstr.Detach();
+	return S_OK;
+}
+
+STDMETHODIMP CCardProcess::iATLReadCardSEQ(BSTR* xml)
+{
+	int ret = iReadCardSEQ(g_ReadBuff);
+	if (ret != 0) {
+		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	}
+	_bstr_t bstr(g_ReadBuff);
+	*xml = bstr.Detach();
+	return S_OK;
+}
+
+STDMETHODIMP CCardProcess::iATLWritebloodbank(BSTR xml, LONG* pRet)
+{
+	_bstr_t bstr(xml);
+	char *strInXML = (char*)bstr;
+	int ret = iWritebloodbank(strInXML);
+	GetErrInfo(ret, (*pRet));
+	return S_OK;
+}

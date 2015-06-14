@@ -254,6 +254,7 @@ CDBExceptionCheck::~CDBExceptionCheck(void)
 {
 	if (m_dbHelper != NULL) {
 		m_dbHelper->closeDB();
+		delete m_dbHelper;
 		m_dbHelper = NULL;
 	}
 }
@@ -262,9 +263,9 @@ int CDBExceptionCheck::initDBHelper()
 {
 	m_dbHelper = NULL;
 	string &path = m_dbPath;
-	if (TRUE) {
+	if (CHECK_TYPE == 1) {
 		m_dbHelper = new CSQLServerHelper();
-	} else if (fileIsExisted((char*)path.c_str())) {
+	} else if (CHECK_TYPE == 0 && fileIsExisted((char*)path.c_str())) {
 		m_dbHelper = new CSQLiteHelper();
 	}
 	m_dbHelper->openDB((char*)path.c_str());
