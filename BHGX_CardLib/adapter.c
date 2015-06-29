@@ -85,8 +85,8 @@ int __stdcall apt_ScanCard(unsigned char *card_type)
 	unsigned char resp[260];
 	int status = 0;
 	unsigned short para = 30;
-	// 探测卡，如果没有卡，自动退出
 
+	// 探测卡，如果没有卡，自动退出
 	if (!Instance) {
 		return CardInitErr;
 	}

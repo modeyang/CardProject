@@ -1028,8 +1028,9 @@ static int _iReadInfo(int flag, char *xml, int del_flag=-1)
 				} else {
 					pCur = pCur->Next;
 				}
+			} else {
+				pCur = pCur->Next;
 			}
-			pCur = pCur->Next;
 		}
 		if (pDel != NULL) {
 			pDel->Next = NULL;

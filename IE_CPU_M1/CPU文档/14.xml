@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<SEGMENTS PROGRAMID="001">
+    <SEGMENT ID="14">
+        <COLUMN ID="1" VALUE="ff" />
+        <COLUMN ID="2" VALUE="ff" />
+        <COLUMN ID="3" VALUE="00" />
+        <COLUMN ID="4" VALUE="00" />
+        <COLUMN ID="5" VALUE="00" />
+    </SEGMENT>
+</SEGMENTS>

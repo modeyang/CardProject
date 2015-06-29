@@ -63,7 +63,7 @@ static int InitCpuGlobalList()
 		res_id = IDR_XML7;
 	}
 	
-	HRSRC hResInfo = ::FindResource(hInstance, MAKEINTRESOURCE(res_id),"XML");
+	HRSRC hResInfo = ::FindResource(hInstance, MAKEINTRESOURCE(res_id), "XML");
 	HGLOBAL hgRes = ::LoadResource(hInstance, hResInfo);
 	DWORD cbRes = ::SizeofResource(hInstance, hResInfo);
 	char *pvRes = (char *)::LockResource(hgRes);

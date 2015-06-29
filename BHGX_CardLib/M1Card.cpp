@@ -53,7 +53,7 @@ static unsigned char initCtrl[0x4]=
 
 //M1卡时会将一部分在第2块的数据保存在第五块区域，当只访问第二扇区时
 bool g_OnlySecond = false;
-struct CardDevice *Instance;
+extern "C" struct CardDevice *Instance;
 
 static int GetControlBuff(unsigned char *pControl, int nSecr);
 static int GetWriteWord(const unsigned char *pControl);
