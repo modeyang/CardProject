@@ -4,21 +4,19 @@
 #include <map>
 #include <windows.h>
 #include "Markup.h"
-#include "../BHGX_CardLib/public/LogHelper.h"
-#include "../BHGX_CardLib/public/XmlUtil.h"
-#include "../BHGX_CardLib/public/TimeUtil.h"
 #include "BHGX_HospitalProcess.h"
-#include "tinyxml/headers/tinyxml.h"
 #include "../BHGX_CardLib/BHGX_CardLib.h"
 #include "../BHGX_CardLib/public/liberr.h"
+#include "../BHGX_HISReader/BHGX_HISReader.h"
 
 #pragma warning (disable : 4996)
-#pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 
 #ifdef _DEBUG
 #pragma comment(lib, "../Debug/BHGX_CardLib.lib")
+#pragma comment(lib, "../Debug/BHGX_HISReader.lib")
 #else
 #pragma comment(lib, "../Release/BHGX_CardLib.lib")
+#pragma comment(lib, "../Release/BHGX_HISReader.lib")
 #endif
 
 using namespace std;
@@ -301,9 +299,9 @@ int __stdcall iReadHealthInfo(char *xml)
 	return 0;
 }
 
-int __stdcall iReadOnlyHISLocal(char *xml, char *pszLogXml)
+int __stdcall iReadOnlyHospLocal(char *xml, char *pszLogXml)
 {
-	return 0;
+	return iReadOnlyHISLocal(pszLogXml, xml);
 }
 
 /************************************************************************/

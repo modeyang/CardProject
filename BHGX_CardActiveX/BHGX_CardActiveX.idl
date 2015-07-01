@@ -78,6 +78,7 @@ interface ICardProcess : IDispatch{
 	[id(62), helpstring("方法iATLReadOnlybloodbank")] HRESULT iATLReadOnlybloodbank([out,retval] BSTR* xml);
 	[id(63), helpstring("方法iATLReadCardSEQ")] HRESULT iATLReadCardSEQ([out,retval] BSTR* xml);
 	[id(64), helpstring("方法iATLWritebloodbank")] HRESULT iATLWritebloodbank(BSTR xml, [out,retval] LONG* pRet);
+	[id(65), helpstring("方法iATLReadOnlyHospLocal")] HRESULT iATLReadOnlyHospLocal(BSTR pszLogXml, [out,retval] BSTR* xml);
 };
 [
 	uuid(892D8909-1013-42C0-86C3-62653E0797B3),

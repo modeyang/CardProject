@@ -769,7 +769,7 @@ STDMETHODIMP CCardProcess::iATLReadMedicalInfoOnlyLog(BSTR pszCode, BSTR pszLogX
 	_bstr_t bszCode(pszCode);
 	_bstr_t bsLog(pszLogXml);
 	int ret = iReadMedicalInfoOnlyLog((char*)bszCode, g_ReadBuff, (char*)bsLog);
-	if (ret) {;
+	if (ret) {
 		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
@@ -912,5 +912,17 @@ STDMETHODIMP CCardProcess::iATLWritebloodbank(BSTR xml, LONG* pRet)
 	char *strInXML = (char*)bstr;
 	int ret = iWritebloodbank(strInXML);
 	GetErrInfo(ret, (*pRet));
+	return S_OK;
+}
+
+STDMETHODIMP CCardProcess::iATLReadOnlyHospLocal(BSTR pszLogXml, BSTR* xml)
+{
+	_bstr_t bsLog(pszLogXml);
+	int ret = iReadOnlyHospLocal(g_ReadBuff, (char*)bsLog);
+	if (ret) {
+		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	}
+	_bstr_t bstr(g_ReadBuff);
+	*xml = bstr.Detach();
 	return S_OK;
 }

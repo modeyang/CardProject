@@ -115,6 +115,7 @@ public:
 	STDMETHOD(iATLReadOnlybloodbank)(BSTR* xml);
 	STDMETHOD(iATLReadCardSEQ)(BSTR* xml);
 	STDMETHOD(iATLWritebloodbank)(BSTR xml, LONG* pRet);
+	STDMETHOD(iATLReadOnlyHospLocal)(BSTR pszLogXml, BSTR* xml);
 
 protected:
 	void GetErrInfo(int nProcRet, LONG &nRet);
@@ -125,7 +126,7 @@ protected:
 
 protected:
 	char m_strErr[1024];
-	
+
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(CardProcess), CCardProcess)

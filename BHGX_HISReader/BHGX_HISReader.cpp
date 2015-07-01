@@ -10,8 +10,6 @@
 #include "../BHGX_CardLib/public/liberr.h"
 #include "tinyxml/headers/tinyxml.h"
 
-
-
 using namespace std;
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 

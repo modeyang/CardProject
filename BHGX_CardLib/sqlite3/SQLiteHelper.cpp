@@ -139,7 +139,7 @@ int CSQLServerHelper::connect(char *addr)
 		char conn_str[200];
 		memset(conn_str, 0, sizeof(conn_str));
 		sprintf_s(conn_str, sizeof(conn_str), 
-			"Provider=SQLOLEDB.1;Password=bhgx@greatsoft.net ; Persist Security Info=True; \
+			"Provider=SQLOLEDB.1;Password=BHGX@greatsoft.net ; Persist Security Info=True; \
 			User ID=sa;Initial Catalog=bhgx_healthcard ;Data Source=%s", addr);
 
 		_bstr_t bs_conn_str(conn_str);

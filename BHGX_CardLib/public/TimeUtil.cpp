@@ -16,7 +16,7 @@ char * CTimeUtil::getCurrentTime(char *timeStr)
 {
 	time_t t = time(0); 
 	char tmp[64]; 
-	strftime( tmp, sizeof(tmp), "%Y-%m-%d %H:%M:%S",localtime(&t) ); 
+	strftime( tmp, sizeof(tmp), "%Y%m%d%H%M%S",localtime(&t) ); 
 	strcpy(timeStr, tmp);
 	return timeStr;
 }

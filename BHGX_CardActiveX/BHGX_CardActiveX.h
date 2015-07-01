@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0366 */
-/* at Tue Jun 30 22:11:31 2015
+/* at Thu Jul 02 00:14:09 2015
  */
 /* Compiler settings for .\BHGX_CardActiveX.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -349,6 +349,10 @@ EXTERN_C const IID IID_ICardProcess;
         virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLWritebloodbank( 
             BSTR xml,
             /* [retval][out] */ LONG *pRet) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE iATLReadOnlyHospLocal( 
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml) = 0;
         
     };
     
@@ -719,6 +723,11 @@ EXTERN_C const IID IID_ICardProcess;
             BSTR xml,
             /* [retval][out] */ LONG *pRet);
         
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *iATLReadOnlyHospLocal )( 
+            ICardProcess * This,
+            BSTR pszLogXml,
+            /* [retval][out] */ BSTR *xml);
+        
         END_INTERFACE
     } ICardProcessVtbl;
 
@@ -934,6 +943,9 @@ EXTERN_C const IID IID_ICardProcess;
 
 #define ICardProcess_iATLWritebloodbank(This,xml,pRet)	\
     (This)->lpVtbl -> iATLWritebloodbank(This,xml,pRet)
+
+#define ICardProcess_iATLReadOnlyHospLocal(This,pszLogXml,xml)	\
+    (This)->lpVtbl -> iATLReadOnlyHospLocal(This,pszLogXml,xml)
 
 #endif /* COBJMACROS */
 
@@ -1737,6 +1749,19 @@ void __RPC_STUB ICardProcess_iATLReadCardSEQ_Stub(
 
 
 void __RPC_STUB ICardProcess_iATLWritebloodbank_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ICardProcess_iATLReadOnlyHospLocal_Proxy( 
+    ICardProcess * This,
+    BSTR pszLogXml,
+    /* [retval][out] */ BSTR *xml);
+
+
+void __RPC_STUB ICardProcess_iATLReadOnlyHospLocal_Stub(
     IRpcStubBuffer *This,
     IRpcChannelBuffer *_pRpcChannelBuffer,
     PRPC_MESSAGE _pRpcMessage,

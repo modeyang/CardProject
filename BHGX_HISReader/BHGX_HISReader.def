@@ -3,11 +3,11 @@ LIBRARY BHGX_HISReader.dll
 DESCIPTION	'北航冠新卡驱动程序'
 EXPORTS
 	iReadHISInfo		@1
-	iReadInfoForXJ	@2  
+	iReadInfoForXJ		@2  
 	iReadOnlyHIS    	@3
-	iReadHISInfoLog	@4
+	iReadHISInfoLog		@4
 	iReadInfoForXJLog	@5
-	iReadOnlyHISLog	@6
+	iReadOnlyHISLog		@6
 	iReadHISInfoLocal	@7
 	iReadInfoForXJLocal	@8
 	iReadOnlyHISLocal	@9

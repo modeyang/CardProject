@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="gb2312" ?>
-<SEGMENTS PROGRAMID="001">
-    <SEGMENT ID="5">
-        <COLUMN ID="21" VALUE="01" />
-        <COLUMN ID="22" VALUE="海淀区" />
-        <COLUMN ID="23" VALUE="02" />
-        <COLUMN ID="24" VALUE="昌平区" />
-    </SEGMENT>
-</SEGMENTS>
