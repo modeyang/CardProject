@@ -183,10 +183,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\LogHelper.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\Markup.cpp"
 				>
 			</File>
@@ -211,10 +207,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\TimeUtil.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\xml1.bin"
 				>
 			</File>
@@ -233,10 +225,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\LogHelper.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Markup.h"
 				>
 			</File>
@@ -246,10 +234,6 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TimeUtil.h"
 				>
 			</File>
 			<File

@@ -4,13 +4,13 @@
 #include <stdlib.h>
 #include "resource.h"
 #include "Markup.h"
-#include "TimeUtil.h"
 #include "XmlUtil.h"
-#include "LogHelper.h"
 #include "BHGX_HISReader.h"
 #include "../BHGX_CardLib/BHGX_CardLib.h"
 #include "../BHGX_CardLib/public/liberr.h"
 #include "tinyxml/headers/tinyxml.h"
+
+
 
 using namespace std;
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
@@ -35,7 +35,7 @@ class HISProcess
 public:
 	HISProcess(int flag)
 	{
-		m_pLogHelper = NULL;
+		m_pszLogXml = NULL;
 		if (flag == HIS_FLAG) {
 			m_MapColumInfo["CARDNO"].strDesc = "卡号";
 			m_MapColumInfo["MEDICARECERTIFICATENO"].strDesc = "个人参合号";
@@ -63,16 +63,12 @@ public:
 	}
 
 	~HISProcess(){
-		if (m_pLogHelper != NULL) {
-			SAFE_DELETE(m_pLogHelper);
-		}
 	}
 
 	void setLogParams(int rwFlag, char *processName)
 	{
-		if (m_pLogHelper != NULL) {
-			m_pLogHelper->setLogParams(rwFlag, processName);
-		}
+		m_rwFlag = rwFlag;
+		m_funcName = processName;
 	}
 
 	char * geneQuerys(std::string &strQuerys) {
@@ -108,15 +104,9 @@ public:
 
 	int getHISInfo(const char *szReader, char *strColumInfo, bool bLog)
 	{
-		//std::map<std::string, ColumInfo> mapXmlInfo;
-		//CXmlUtil::parseHISXml(szReader, mapXmlInfo);
-
-		//fillHISMapInfo(mapXmlInfo);
-		//createColumInfoXML(strColumInfo);
 		strcpy(strColumInfo, szReader);
 		if (bLog) {
-			m_pLogHelper->setCardInfo((char*)szReader);
-			m_pLogHelper->geneHISLog();
+			iGeneLog(m_pszLogXml, m_rwFlag, (char*)m_funcName.c_str(), (char*)szReader);
 		}
 		return 0;
 	}
@@ -136,7 +126,7 @@ public:
 		}
 
 		if (pszLogXml) {
-			m_pLogHelper = new CLogHelper(pszLogXml);
+			m_pszLogXml = pszLogXml;
 		}
 
 		if (bLocal) {
@@ -211,7 +201,9 @@ public:
 	}
 
 private:
-	CLogHelper *m_pLogHelper;
+	int m_rwFlag;
+	std::string m_funcName;
+	char * m_pszLogXml;
 	std::map<std::string, ColumInfo> m_MapColumInfo;
 };
 

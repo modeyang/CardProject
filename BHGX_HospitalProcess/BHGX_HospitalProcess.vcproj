@@ -181,19 +181,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\LogHelper.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\Markup.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\TimeUtil.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\XmlUtil.cpp"
 				>
 			</File>
 		</Filter>
@@ -207,23 +195,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\LogHelper.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Markup.h"
 				>
 			</File>
 			<File
 				RelativePath=".\resource.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TimeUtil.h"
-				>
-			</File>
-			<File
-				RelativePath=".\XmlUtil.h"
 				>
 			</File>
 		</Filter>

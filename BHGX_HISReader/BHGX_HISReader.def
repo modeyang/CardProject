@@ -10,3 +10,4 @@ EXPORTS
 	iReadOnlyHISLog	@6
 	iReadHISInfoLocal	@7
 	iReadInfoForXJLocal	@8
+	iReadOnlyHISLocal	@9

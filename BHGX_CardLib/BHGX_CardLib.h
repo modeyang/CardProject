@@ -145,6 +145,13 @@ extern "C" {
 		char *timeStr
 		);  
 
+	DLL_EXPORT int __stdcall iGeneLog(
+		char* pszLogXml,
+		int rwFlag,
+		char *funcName,
+		char *pszXml
+		);
+
 #define TIMELICENSE		0
 #define OTHERLICENSE	1
 #define COUNTS			2

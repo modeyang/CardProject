@@ -1017,26 +1017,26 @@ static int _iReadInfo(int flag, char *xml, int del_flag=-1)
 	// 设备的真实读取
 	status = g_CardOps->cardAdapter->iReadCard(RequestList, g_CardOps->cardAdapter);
 
-	// delete flag
-	if (del_flag > 0) {
-		struct XmlSegmentS *pDel = NULL, *pCur=list;
-		while (pCur != NULL){
-			if (pCur->ID == del_flag) {
-				pDel = pCur;
-				if (pCur == list) {
-					list = list->Next;
-				} else {
-					pCur = pCur->Next;
-				}
-			} else {
-				pCur = pCur->Next;
-			}
-		}
-		if (pDel != NULL) {
-			pDel->Next = NULL;
-			DestroyList(pDel, 1);
-		}
-	}
+	//// delete flag
+	//if (del_flag > 0) {
+	//	struct XmlSegmentS *pDel = NULL, *pCur=list;
+	//	while (pCur != NULL){
+	//		if (pCur->ID == del_flag) {
+	//			pDel = pCur;
+	//			if (pCur == list) {
+	//				list = list->Next;
+	//			} else {
+	//				pCur = pCur->Next;
+	//			}
+	//		} else {
+	//			pCur = pCur->Next;
+	//		}
+	//	}
+	//	if (pDel != NULL) {
+	//		pDel->Next = NULL;
+	//		DestroyList(pDel, 1);
+	//	}
+	//}
 
 	// 通过链表产生XML字符串
 	g_CardOps->iConvertXmlByList(list, xml, &length);
@@ -2027,4 +2027,18 @@ int __stdcall iReadCardSEQ(char *xml)
 	CXmlUtil::GetQueryInfoForOne(szQuery, strCardSEQ);
 	strcpy(xml, strCardSEQ.c_str());
 	return CardProcSuccess;
+}
+
+int __stdcall iGeneLog(
+					   char* pszLogXml,
+					   int rwFlag,
+					   char *funcName,
+					   char *pszXml
+					   )
+{
+	CLogHelper LogHelper(pszLogXml);
+	LogHelper.setLogParams(rwFlag, funcName);
+	LogHelper.setCardInfo(pszXml);
+	LogHelper.geneHISLog();
+	return 0;
 }

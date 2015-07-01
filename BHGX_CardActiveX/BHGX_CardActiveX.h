@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0366 */
-/* at Sun Jun 14 23:08:56 2015
+/* at Tue Jun 30 22:11:31 2015
  */
 /* Compiler settings for .\BHGX_CardActiveX.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)

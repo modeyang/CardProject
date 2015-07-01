@@ -1077,7 +1077,7 @@ static int M1ConvertXmlByList(struct XmlSegmentS *listHead, char *xml, int *leng
 									pCur = pCur->Next;
 								}
 
-								if (IsAllTheSameFlag((unsigned char*)&pCur->ColumnHeader->Value,18, '0') == 0){
+								if (TRUE || IsAllTheSameFlag((unsigned char*)&pCur->ColumnHeader->Value,18, '0') == 0){
 										pSegPri->Next = pCur->Next;
 										SAFE_DELETE_C(pCur);
 								}

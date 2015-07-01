@@ -3,9 +3,10 @@
 #include <vector>
 #include <map>
 #include <windows.h>
-#include "LogHelper.h"
-#include "XmlUtil.h"
 #include "Markup.h"
+#include "../BHGX_CardLib/public/LogHelper.h"
+#include "../BHGX_CardLib/public/XmlUtil.h"
+#include "../BHGX_CardLib/public/TimeUtil.h"
 #include "BHGX_HospitalProcess.h"
 #include "tinyxml/headers/tinyxml.h"
 #include "../BHGX_CardLib/BHGX_CardLib.h"
@@ -164,10 +165,7 @@ static int __stdcall _geneLog(char *pszLogXml, int rw, char *pName)
 	if (status != CardProcSuccess){
 		return CardReadErr;
 	}
-	CLogHelper LogHelper(logInfo);
-	LogHelper.setLogParams(rw, pName);
-	LogHelper.setCardInfo(szQuery);
-	LogHelper.geneHISLog();
+	iGeneLog(logInfo, rw, pName, szQuery);
 	return CardProcSuccess;
 }
 
@@ -303,6 +301,11 @@ int __stdcall iReadHealthInfo(char *xml)
 	return 0;
 }
 
+int __stdcall iReadOnlyHISLocal(char *xml, char *pszLogXml)
+{
+	return 0;
+}
+
 /************************************************************************/
 /*	 判断节点是否存在，不存在的话，删除，
 /*   采用不同的调度方法，获取不同id的位置，
@@ -397,6 +400,7 @@ static int _ParseSegXml(const char *src,
 	strcpy(dst, xml.GetDoc().c_str());
 	return 0;
 }
+
 
 static int _HospReadInfo(int section, char *pszLogXml, char *xml, bool bLog, bool bLocal, char *pName)
 {
