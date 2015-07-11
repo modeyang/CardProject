@@ -1,5 +1,6 @@
 #include <map>
 #include <vector>
+#include <exception>
 #include "ExceptionCheck.h"
 #include "Markup.h"
 #include "TimeUtil.h"
@@ -28,14 +29,25 @@ using namespace std;
 
 CExceptionCheck::CExceptionCheck(std::map<int, std::map<int, std::string> > logConfig)
 {
+	m_bNormal = TRUE;
 	mapLogConfig = logConfig;
 	m_dbPath = mapLogConfig[1][1];
 }
 
 CExceptionCheck::CExceptionCheck(char *logXml)
 {
-	CXmlUtil::paserLogXml(logXml, mapLogConfig);
-	m_dbPath = mapLogConfig[1][1];
+	if (logXml == NULL || strlen(logXml) < 10) {
+		m_bNormal = FALSE;
+		return;
+	} 
+
+	try{
+		CXmlUtil::paserLogXml(logXml, mapLogConfig);
+		m_dbPath = mapLogConfig[1][1];
+	} catch (exception& e) {
+		m_bNormal = FALSE;
+	}
+
 }
 
 CExceptionCheck::~CExceptionCheck(void)
@@ -179,13 +191,13 @@ int CExceptionCheck::writeForbiddenFlag(int flag)
 // 0 为非黑名单  
 int CExceptionCheck::filterForbidden(char *xml) 
 {
-	if (isForbidden()) {
-		return CardForbidden;
-	}
 	std::map<int, std::string> &configMap = mapLogConfig[1];
 	std::vector<db_check_info> vecForbiddenRecord;
-	if (parseExceptionXml((char*)configMap[2].c_str(), vecForbiddenRecord) == 1) {
+	int status = parseExceptionXml((char*)configMap[2].c_str(), vecForbiddenRecord);
+	if (status == 1) {
 		return DescryFileError;
+	} else if (status == -1) {
+		return CardXmlErr;
 	}
 
 	char szQuery[1024];
@@ -203,7 +215,6 @@ int CExceptionCheck::filterForbidden(char *xml)
 	if (index != -1) {
 		db_check_info &record = vecForbiddenRecord[index];
 		geneForbiddenLog(record);
-		writeForbiddenFlag(1);
 		CXmlUtil::CreateResponXML(CardForbidden, err(CardForbidden), xml);
 		return CardForbidden;
 	}
@@ -228,8 +239,11 @@ int CExceptionCheck::filterWarnning(char *xml)
 	std::string strFilePath(configMap[3]);
 	strFilePath += strIDNumber.substr(0, 4);
 	strFilePath += "_greylist.xml";
-	if (parseExceptionXml((char*)strFilePath.c_str(), vecWarnningRecord) == 1) {
+	int status = parseExceptionXml((char*)strFilePath.c_str(), vecWarnningRecord);
+	if (status == 1) {
 		return DescryFileError;
+	} else if (status == -1) {
+		return CardXmlErr;
 	}
 
 	if (isExceptionCard(vecWarnningRecord) != -1) {
@@ -274,9 +288,6 @@ int CDBExceptionCheck::initDBHelper()
 
 int CDBExceptionCheck::filterForbidden(char *xml)
 {
-	if (isForbidden()) {
-		return CardForbidden;
-	}
 	if (m_dbHelper == NULL) {
 		CXmlUtil::CreateResponXML(CardDBFileNotFound, err(CardDBFileNotFound), xml);
 		return CardDBFileNotFound;
@@ -323,16 +334,17 @@ int CDBExceptionCheck::isExceptionCard(int checkFlag)
 	char sql[200];
 	memset(sql, 0, sizeof(sql));
 	sprintf_s(sql, sizeof(sql), "select * from card_checks where cardNo='%s' \
-				and cardSerialNo='%s' and checkState=%s", 
+				and cardSerialNo='%s' and checkState=%d", 
 				m_strCardNO.c_str(), m_strCardSeq.c_str(), checkFlag);
 	
 	int status = m_dbHelper->query(sql);
-	if (status < 0) {
+	if (status <= 0) {
 		return -1;
 	}
-	db_check_info &record = m_dbHelper->m_vecCheckInfo[0];
-	geneForbiddenLog(record);
-	writeForbiddenFlag(1);
+	if (checkFlag == FORBIDDEN_FLAG) {
+		db_check_info &record = m_dbHelper->m_vecCheckInfo[0];
+		geneForbiddenLog(record);
+		//writeForbiddenFlag(1);
+	}
 	return 0;
-
 }

@@ -17,6 +17,7 @@ public:
 
 	~CExceptionCheck(void);
 
+	BOOL isNormal() { return m_bNormal; }
 	int filterForbidden(char *xml);
 	int filterWarnning(char *xml);
 
@@ -32,6 +33,7 @@ protected:
 	}
 
 protected:
+	BOOL m_bNormal;
 	std::string m_strCardNO;
 	std::string m_strCardSeq;
 	std::string m_dbPath;

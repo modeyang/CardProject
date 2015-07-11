@@ -154,16 +154,13 @@ int __stdcall iReadFeeInfo(char *pszClinicCode, char *xml)
 
 static int __stdcall _geneLog(char *pszLogXml, int rw, char *pName)
 {
-	char logInfo[2048];
 	char szQuery[2048];
 	memset(szQuery, 0, sizeof(szQuery));
-	memset(logInfo, 0 , sizeof(logInfo));
-	strcpy(logInfo, pszLogXml);
 	int status = iReadInfo(3, szQuery);
 	if (status != CardProcSuccess){
 		return CardReadErr;
 	}
-	iGeneLog(logInfo, rw, pName, szQuery);
+	iGeneLog(pszLogXml, rw, pName, szQuery);
 	return CardProcSuccess;
 }
 
