@@ -40,17 +40,18 @@ protected:
 	std::map<int, std::map<int, std::string> > mapLogConfig;
 };
 
-class CDBExceptionCheck: CExceptionCheck
+
+class CDBExceptionCheck: public CExceptionCheck
 {
 public :
 	CDBExceptionCheck(std::map<int, std::map<int, std::string> > logConfig);
 	CDBExceptionCheck(char *logXml);
 	~CDBExceptionCheck(void);
 
+	int initDBHelper();
 	int filterForbidden(char *xml);
 	int filterWarnning(char *xml);
 protected:
-	int initDBHelper();
 	int isExceptionCard(int checkFlag);
 
 protected:

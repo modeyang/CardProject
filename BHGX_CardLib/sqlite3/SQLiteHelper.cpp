@@ -1,6 +1,8 @@
 #include <iostream>
 #include "SQLiteHelper.h"
 #include <exception>
+#include <sstream>
+#include "../public/liberr.h"
 
 using namespace std;
 
@@ -17,11 +19,12 @@ CSQLiteHelper::~CSQLiteHelper()
 
 int CSQLiteHelper::openDB(char *path)
 {
+	m_dbPath = path;
 	int last = sqlite3_open(path, &m_SqliteDB);
 	if(SQLITE_OK != last) {
-		return -1;
+		return CardDBConnectError;
 	}
-	return 0;
+	return CardProcSuccess;
 }
 
 void CSQLiteHelper::closeDB()
@@ -37,7 +40,7 @@ int CSQLiteHelper::query(char *sql)
 	char **result;
 	int queryStatus = rawQuery(sql, &row, &col, &result);
 	if (row == 0 || queryStatus != 0) {
-		return -1;
+		return CardSQLError;
 	}
 
 	// get query info
@@ -106,23 +109,23 @@ int CSQLiteHelper::queryFromCallback(char *sql, callback pfunc_callback, char  *
 CSQLServerHelper::CSQLServerHelper()
 :CDBHelper()
 {
-
+	m_pConnection = NULL;
 }
 
 CSQLServerHelper::~CSQLServerHelper()
 {
-
 }
 
 int CSQLServerHelper::openDB(char *path)
 {
+	m_dbPath = path;
 	return this->connect(path);
 }
 
 void CSQLServerHelper::closeDB()
 {
-	if(m_pRecordset != NULL){
-		m_pRecordset->Close();
+
+	if (m_pConnection != NULL && m_pConnection->GetState() == adStateOpen) {
 		m_pConnection->Close();
 	}
 
@@ -134,7 +137,6 @@ int CSQLServerHelper::connect(char *addr)
 	try {
 		::CoInitialize(NULL);
 		m_pConnection.CreateInstance(__uuidof(Connection));
-		m_pRecordset.CreateInstance(__uuidof(Recordset)); 
 		 
 		char conn_str[200];
 		memset(conn_str, 0, sizeof(conn_str));
@@ -143,72 +145,86 @@ int CSQLServerHelper::connect(char *addr)
 			User ID=sa;Initial Catalog=bhgx_healthcard ;Data Source=%s", addr);
 
 		_bstr_t bs_conn_str(conn_str);
-		HRESULT hr = m_pConnection->Open(bs_conn_str, "","", adModeUnknown);  
+		HRESULT hr = m_pConnection->Open(bs_conn_str, "","", adConnectUnspecified);  
 		if (hr != S_OK) {
 			cout<<"Can not connect to the specified database!"<<endl;
-			return -1;
+			return CardDBConnectError;
 		}
-	} catch (_com_error e) {
+	} catch (_com_error &e) {
 		cout<<e.Description()<<endl;
+		return CardDBConnectError;
 	}
-	return -1;
+	return CardProcSuccess;
 }
+
+int CSQLServerHelper::reConnect()
+{
+	if (m_pConnection != NULL && m_pConnection->GetState() == adStateOpen) {
+		return CardProcSuccess;
+	}
+	closeDB();
+	return this->connect((char*)m_dbPath.c_str());
+}
+
 
 int CSQLServerHelper::query(char *sql)
 {
 	_bstr_t bstrSQL(sql);
-	 m_pRecordset->Open(bstrSQL, m_pConnection.GetInterfacePtr(), adOpenDynamic, adLockOptimistic, adCmdText);
+	_RecordsetPtr record_set;
+	record_set.CreateInstance(__uuidof(Recordset)); 
+	record_set->Open(bstrSQL, m_pConnection.GetInterfacePtr(), adOpenDynamic, adLockOptimistic, adCmdText);
 
-	 while (!m_pRecordset->EndOfFile)
+	 while (!record_set->EndOfFile)
 	 {
 		 _variant_t vstr, vuint;
 		db_check_info info;
-		vstr = m_pRecordset->GetCollect("cardSerialNo");
+		vstr = record_set->GetCollect("cardSerialNo");
 		info.cardSerialNo = (_bstr_t)vstr.bstrVal;
 
-		vstr = m_pRecordset->GetCollect("ATR");
+		vstr = record_set->GetCollect("ATR");
 		info.ATR = (_bstr_t)vstr.bstrVal;
 
-		vstr = m_pRecordset->GetCollect("name");
+		vstr = record_set->GetCollect("name");
 		info.name = (_bstr_t)vstr.bstrVal;
 
-		vstr = m_pRecordset->GetCollect("cardNo");
+		vstr = record_set->GetCollect("cardNo");
 		info.cardNo = (_bstr_t)vstr.bstrVal;
 
-		vstr = m_pRecordset->GetCollect("Idcard");
+		vstr = record_set->GetCollect("Idcard");
 		info.Idcard = (_bstr_t)vstr.bstrVal;
 
-		vuint = m_pRecordset->GetCollect("cityCode");
+		vuint = record_set->GetCollect("cityCode");
 		info.cityCode = vuint.intVal; 
 
-		vuint = m_pRecordset->GetCollect("checkState");
+		vuint = record_set->GetCollect("checkState");
 		info.checkState = vuint.intVal;
 
-		vuint = m_pRecordset->GetCollect("cardState");
+		vuint = record_set->GetCollect("cardState");
 		info.cardState = vuint.intVal;
 
 		m_vecCheckInfo.push_back(info);
-		m_pRecordset->MoveNext();  
+		record_set->MoveNext();  
 	 }
-	 m_pRecordset->Close();
 
 	 return m_vecCheckInfo.size();
 }
 
 int CSQLServerHelper::insert_log(db_log_info & log_info)
 {
-	char insert_str[1024 * 12];
-	memset(insert_str, 0, sizeof(insert_str));
-	sprintf_s(insert_str, sizeof(insert_str), "insert into card_log(ISSUEUINT, CARDCODE, SAMID, \
-		CARDNO, IDNUMBER, NAME, Time, Log) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
-		log_info.issueUnit, log_info.cardCode, log_info.SAMID, log_info.cardNO,
-		log_info.IDNumber, log_info.Name, log_info.Time, log_info.Log);
-
+	std::ostringstream ostr;
+	ostr << "insert into card_log (ISSUEUNIT, CARDCODE, SAMID, CARDNO, IDNUMBER, NAME, Time, Log) VALUES ( '" 
+		<< log_info.issueUnit << "','" << log_info.cardCode << "','" << log_info.SAMID << "','"
+		<< log_info.cardNO << "','" << log_info.IDNumber << "','" << log_info.Name << "','" 
+		<< log_info.Time << "','" << log_info.Log << "');";
+	
+	_variant_t RecordsAffected;
+	_RecordsetPtr record_set;
+	record_set.CreateInstance(__uuidof(Recordset)); 
 	try{
-		m_pConnection->Execute(_bstr_t(insert_str) ,NULL, adExecuteNoRecords);
-	} catch (exception& e) {
-		cout<<e.what()<<endl;
-		return -1;
+		record_set = m_pConnection->Execute(_bstr_t(ostr.str().c_str()) , &RecordsAffected, adCmdText);
+	} catch (_com_error &e) {
+		cout<<e.Description()<<endl; 
+		return CardDBInsertError;
 	}
-	return 0;
+	return CardProcSuccess;
 }

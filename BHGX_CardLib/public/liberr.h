@@ -39,6 +39,8 @@ enum ErrType
 	ConnectWebServerFailed,
 	CardSQLError,
 	CardDBFileNotFound,
+	CardDBConnectError,
+	CardDBInsertError,
 };
 
 static char *errString[] =
@@ -73,6 +75,8 @@ static char *errString[] =
 	"连接webserver失败",
 	"查询数据库失败",
 	"数据库文件不存在，请确认数据库*.db存在",
+	"数据库连接失败，请确认数据库网络是否正常",
+	"数据库插入数据失败",
 };
 
 char *_err(int errcode);

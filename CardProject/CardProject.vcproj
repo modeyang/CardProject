@@ -225,30 +225,6 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 		</Filter>
-		<Filter
-			Name="sqlitedb"
-			>
-			<File
-				RelativePath=".\sqlite3\sqlite3.c"
-				>
-			</File>
-			<File
-				RelativePath=".\sqlite3\sqlite3.h"
-				>
-			</File>
-			<File
-				RelativePath=".\sqlite3\sqlite3ext.h"
-				>
-			</File>
-			<File
-				RelativePath=".\sqlite3\SQLiteHelper.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\sqlite3\SQLiteHelper.h"
-				>
-			</File>
-		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"
 			>

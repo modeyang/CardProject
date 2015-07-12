@@ -294,7 +294,7 @@ int __stdcall iReadInfoForXJLog(char *pszCardCheckWSDL, char *pszCardServerURL, 
 	return his.getHISInfo(szRead, xml, true);
 }
 
-int __stdcall iReadHISInfoLocal( char *pszLogXml, char *xml)
+int __stdcall iReadHISInfoLocal(char *pszLogXml, char *xml)
 {
 	char szRead[BUFF_SIZE];
 	memset(szRead, 0, sizeof(szRead));

@@ -266,7 +266,7 @@ int __stdcall iReadMedicalInfoOnlyLog(char *, char *xml, char *pszLogXml)
 int __stdcall iReadFeeInfoOnlyLog(char *, char *xml, char *pszLogXml)
 {
 	int status = 0;
-	status = _HospReadInfo(SEG_FEEINFO,pszLogXml, xml, true, false, "iReadFeeInfoOnlyLog");
+	status = _HospReadInfo(SEG_FEEINFO, pszLogXml, xml, true, false, "iReadFeeInfoOnlyLog");
 	return status;
 }
 
@@ -653,9 +653,9 @@ void procReadClinicInfoLog()
 	memset(szError, 0, 64);
 	memset(szRead, 0, sizeof(szRead));
 	char *buf;
-	int ret = ReadFile("日志参数格式.xml", &buf);
+	int ret = ReadFile("..\\IE_CPU_ONLY\\CPU文档\\log.xml", &buf);
 	if (ret == -1) {
-		cout << "日志参数格式.xml不存在" <<endl;
+		printf("log.xml文件不存在\n");
 		return;
 	}
 	//int nStart = GetTickCount();
@@ -676,14 +676,15 @@ void procReadClinicInfoLocal()
 	char szRead[2048*6];
 	memset(szError, 0, 64);
 	memset(szRead, 0, sizeof(szRead));
-	char *buf;
-	int ret = ReadFile("日志参数格式.xml", &buf);
+	char *buff;
+	int nStart = GetTickCount();
+	int ret = ReadFile("..\\IE_CPU_ONLY\\CPU文档\\log.xml", &buff);
 	if (ret == -1) {
-		cout << "日志参数格式.xml不存在" <<endl;
+		printf("log.xml文件不存在\n");
 		return;
 	}
 	//int nStart = GetTickCount();
-	ret = iReadClinicInfoLocal("", szRead, buf);
+	ret = iReadFeeInfoLocal("", szRead, buff);
 	//int nEnd = GetTickCount();
 	//printf("iReadClinicInfo: %d所需时间: %d \n", ret, nEnd - nStart);
 	if (ret != 0){
@@ -692,7 +693,7 @@ void procReadClinicInfoLocal()
 	}else{
 		printf("%s\n", szRead);
 	}
-	free(buf);
+	free(buff);
 }
 
 void printHelp()

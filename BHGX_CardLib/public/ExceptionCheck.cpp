@@ -1,5 +1,6 @@
 #include <map>
 #include <vector>
+#include <iostream>
 #include <exception>
 #include "ExceptionCheck.h"
 #include "Markup.h"
@@ -36,17 +37,19 @@ CExceptionCheck::CExceptionCheck(std::map<int, std::map<int, std::string> > logC
 
 CExceptionCheck::CExceptionCheck(char *logXml)
 {
+	m_bNormal = TRUE;
 	if (logXml == NULL || strlen(logXml) < 10) {
 		m_bNormal = FALSE;
 		return;
 	} 
-
+	
 	try{
 		CXmlUtil::paserLogXml(logXml, mapLogConfig);
 		m_dbPath = mapLogConfig[1][1];
 	} catch (exception& e) {
+		cout << e.what() << endl;
 		m_bNormal = FALSE;
-	}
+	} 
 
 }
 
@@ -213,8 +216,6 @@ int CExceptionCheck::filterForbidden(char *xml)
 	m_strCardSeq = mapQueryInfo[CARDSEQ];
 	int index = isExceptionCard(vecForbiddenRecord);
 	if (index != -1) {
-		db_check_info &record = vecForbiddenRecord[index];
-		geneForbiddenLog(record);
 		CXmlUtil::CreateResponXML(CardForbidden, err(CardForbidden), xml);
 		return CardForbidden;
 	}
@@ -256,12 +257,10 @@ int CExceptionCheck::filterWarnning(char *xml)
 
 CDBExceptionCheck::CDBExceptionCheck(std::map<int, std::map<int, std::string> > logConfig)
 :CExceptionCheck(logConfig){
-	initDBHelper();
 }
 
 CDBExceptionCheck::CDBExceptionCheck(char *logXml)
 :CExceptionCheck(logXml){
-	initDBHelper();
 }
 
 CDBExceptionCheck::~CDBExceptionCheck(void)
@@ -281,9 +280,10 @@ int CDBExceptionCheck::initDBHelper()
 		m_dbHelper = new CSQLServerHelper();
 	} else if (CHECK_TYPE == 0 && fileIsExisted((char*)path.c_str())) {
 		m_dbHelper = new CSQLiteHelper();
+	} else {
+		return CardDBConnectError;
 	}
-	m_dbHelper->openDB((char*)path.c_str());
-	return 0;
+	return m_dbHelper->openDB((char*)path.c_str());
 }
 
 int CDBExceptionCheck::filterForbidden(char *xml)
@@ -338,13 +338,5 @@ int CDBExceptionCheck::isExceptionCard(int checkFlag)
 				m_strCardNO.c_str(), m_strCardSeq.c_str(), checkFlag);
 	
 	int status = m_dbHelper->query(sql);
-	if (status <= 0) {
-		return -1;
-	}
-	if (checkFlag == FORBIDDEN_FLAG) {
-		db_check_info &record = m_dbHelper->m_vecCheckInfo[0];
-		geneForbiddenLog(record);
-		//writeForbiddenFlag(1);
-	}
-	return 0;
+	return status <= 0 ? 0 : status;
 }

@@ -43,6 +43,7 @@ public:
 	virtual int insert_log(db_log_info & log_info){return 0;}
 
 	std::string m_dbType;
+	std::string m_dbPath;
 	std::vector<db_check_info> m_vecCheckInfo;
 };
 
@@ -80,6 +81,7 @@ public:
 	int insert_log(db_log_info & log_info);
 protected:
 	int connect(char *addr);
+	int reConnect();
 
 	_ConnectionPtr m_pConnection;
 	_RecordsetPtr m_pRecordset;

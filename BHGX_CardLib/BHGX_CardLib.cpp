@@ -1856,7 +1856,16 @@ int __stdcall iCheckLicense(char *filename,int type)
 int __stdcall iCheckException(char *pszLogXml,char *pszXml)
 {
 	CDBExceptionCheck check(pszLogXml);
-	int status = check.filterForbidden(pszXml);
+	if (check.isNormal() == FALSE) {
+		return CardXmlErr;
+	}
+
+	int status = check.initDBHelper();
+	if (status != CardProcSuccess) {
+		return status;
+	}
+
+	status = check.filterForbidden(pszXml);
 	if (status != CardProcSuccess) {
 		return status;
 	} 
