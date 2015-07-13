@@ -102,10 +102,6 @@ public:
 	STDMETHOD(iATLWriteHospInfoLocal)(BSTR xml, BSTR pszLogXml, LONG* pRet);
 	STDMETHOD(iATLRegMsgForNHLog)(BSTR bstrServerURL, BSTR pszLogXml, BSTR* bstrReadXML);
 	STDMETHOD(iATLReadCardMessageForNHLog)(BSTR pszCardCheckWSDL, BSTR pszCardRewritePackageWSDL, BSTR pszLogXml, BSTR* pszXml);
-	STDMETHOD(iATLWriteHospInfoOnlyLog)(BSTR xml, BSTR pszLogXml, LONG* pRet);
-	STDMETHOD(iATLReadClinicInfoOnlyLog)(BSTR pszCode, BSTR pszLogXml, BSTR* xml);
-	STDMETHOD(iATLReadFeeInfoOnlyLog)(BSTR pszCode, BSTR pszLogXml, BSTR* xml);
-	STDMETHOD(iATLReadMedicalInfoOnlyLog)(BSTR pszCode, BSTR pszLogXml, BSTR* xml);
 	STDMETHOD(iATLReadCardMessageForNHLocal)(BSTR pszLogXml, BSTR* pszXml);
 	STDMETHOD(iATLCheckMsgForNHLocal)(BSTR pszLogXml, BSTR* pszXml);
 	STDMETHOD(iATLReadOnlyCardMessageForNH)(BSTR* pszXml);
@@ -116,6 +112,7 @@ public:
 	STDMETHOD(iATLReadCardSEQ)(BSTR* xml);
 	STDMETHOD(iATLWritebloodbank)(BSTR xml, LONG* pRet);
 	STDMETHOD(iATLReadOnlyHospLocal)(BSTR pszLogXml, BSTR* xml);
+	STDMETHOD(iATLScanCardXML)(BSTR* xml);
 
 protected:
 	void GetErrInfo(int nProcRet, LONG &nRet);

@@ -181,6 +181,16 @@
             }
 		}catch(e){}
 	}
+	
+    function ScanCardXML()
+	{
+		try{
+			var ret = obj.iATLScanCardXML();
+			alert(ret);
+		}catch(e){
+		    alert(e);
+		}
+	}
 		
 	function  CardIsEmpty()
 	{
@@ -1082,6 +1092,7 @@
     <input type="button" value="打开卡" onclick="CardOpen()" />
     <input type="button" value="关闭卡" onclick="CardClose()" /><hr />
     <input type="button" value="寻卡" onclick="ScanCard()" />
+    <input type="button" value="寻卡XML" onclick="ScanCardXML()" />
     <input type="button" value="判卡为空" onclick="CardIsEmpty()" />
     <input type="button" value="格式化卡" onclick="CardFormat()" />
     <input type="button" value="格式化卡医院信息" onclick="CardFormatHosp()" /><hr />

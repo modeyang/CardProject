@@ -92,7 +92,6 @@ END
 //
 
 IDR_XML2                XML                     "program.xml"
-IDR_XML4                XML                     "cpuprogram.xml"
 IDR_XML5                XML                     "cpuprogram_8k.xml"
 IDR_XML6                XML                     "cpuprogram_32k.xml"
 IDR_XML7                XML                     "cpuprogram_16k.xml"

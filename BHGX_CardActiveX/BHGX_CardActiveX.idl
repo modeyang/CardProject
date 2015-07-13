@@ -65,10 +65,6 @@ interface ICardProcess : IDispatch{
 	[id(49), helpstring("方法iATLWriteHospInfoLocal")] HRESULT iATLWriteHospInfoLocal(BSTR xml, BSTR pszLogXml, [out,retval] LONG* pRet);
 	[id(50), helpstring("方法iATLRegMsgForNHLog")] HRESULT iATLRegMsgForNHLog(BSTR bstrServerURL, BSTR pszLogXml, [out,retval] BSTR* bstrReadXML);
 	[id(51), helpstring("方法iATLReadCardMessageForNHLog")] HRESULT iATLReadCardMessageForNHLog(BSTR pszCardCheckWSDL, BSTR pszCardRewritePackageWSDL, BSTR pszLogXml, [out,retval] BSTR* pszXml);
-	[id(52), helpstring("方法iATLWriteHospInfoOnlyLog")] HRESULT iATLWriteHospInfoOnlyLog(BSTR xml, BSTR pszLogXml, [out,retval] LONG* pRet);
-	[id(53), helpstring("方法iATLReadClinicInfoOnlyLog")] HRESULT iATLReadClinicInfoOnlyLog(BSTR pszCode, BSTR pszLogXml, [out,retval] BSTR* xml);
-	[id(54), helpstring("方法iATLReadFeeInfoOnlyLog")] HRESULT iATLReadFeeInfoOnlyLog(BSTR pszCode, BSTR pszLogXml, [out,retval] BSTR* xml);
-	[id(55), helpstring("方法iATLReadMedicalInfoOnlyLog")] HRESULT iATLReadMedicalInfoOnlyLog(BSTR pszCode, BSTR pszLogXml, [out,retval] BSTR* xml);
 	[id(56), helpstring("方法iATLReadCardMessageForNHLocal")] HRESULT iATLReadCardMessageForNHLocal(BSTR pszLogXml, [out,retval] BSTR* pszXml);
 	[id(57), helpstring("方法iATLCheckMsgForNHLocal")] HRESULT iATLCheckMsgForNHLocal(BSTR pszLogXml, [out,retval] BSTR* pszXml);
 	[id(58), helpstring("方法iATLReadOnlyCardMessageForNH")] HRESULT iATLReadOnlyCardMessageForNH([out,retval] BSTR* pszXml);
@@ -79,6 +75,7 @@ interface ICardProcess : IDispatch{
 	[id(63), helpstring("方法iATLReadCardSEQ")] HRESULT iATLReadCardSEQ([out,retval] BSTR* xml);
 	[id(64), helpstring("方法iATLWritebloodbank")] HRESULT iATLWritebloodbank(BSTR xml, [out,retval] LONG* pRet);
 	[id(65), helpstring("方法iATLReadOnlyHospLocal")] HRESULT iATLReadOnlyHospLocal(BSTR pszLogXml, [out,retval] BSTR* xml);
+	[id(66), helpstring("方法iATLScanCardXML")] HRESULT iATLScanCardXML([out,retval] BSTR* xml);
 };
 [
 	uuid(892D8909-1013-42C0-86C3-62653E0797B3),

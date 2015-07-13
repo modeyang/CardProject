@@ -117,6 +117,11 @@ public:
 		bool bNet, 
 		bool bLocal)
 	{
+		if (pszCardCheckWSDL == NULL || strlen(pszCardCheckWSDL) == 0 || 
+			pszCardServerURL == NULL || strlen(pszCardServerURL) == 0) {
+			return CardInputParamError;
+		}
+
 		int nInit = iCardInit();
 		if (nInit != 0){
 			CXmlUtil::CreateResponXML(CardInitErr, err(CardInitErr), xml);

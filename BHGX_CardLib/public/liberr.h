@@ -41,6 +41,7 @@ enum ErrType
 	CardDBFileNotFound,
 	CardDBConnectError,
 	CardDBInsertError,
+	CardInputParamError,
 };
 
 static char *errString[] =
@@ -77,6 +78,7 @@ static char *errString[] =
 	"数据库文件不存在，请确认数据库*.db存在",
 	"数据库连接失败，请确认数据库网络是否正常",
 	"数据库插入数据失败",
+	"函数入参为空，请检查入参",
 };
 
 char *_err(int errcode);

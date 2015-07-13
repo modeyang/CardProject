@@ -728,54 +728,6 @@ STDMETHODIMP CCardProcess::iATLWriteHospInfoLocal(BSTR xml, BSTR pszLogXml, LONG
 	return S_OK;
 }
 
-STDMETHODIMP CCardProcess::iATLWriteHospInfoOnlyLog(BSTR xml, BSTR pszLogXml, LONG* pRet)
-{
-	_bstr_t bstr(xml);
-	_bstr_t bsLog(pszLogXml);
-	char *strInXML = (char*)bstr;
-	int ret = iWriteHospInfoOnlyLog(strInXML, (char*)bsLog);
-	GetErrInfo(ret, (*pRet));
-	return S_OK;
-}
-
-STDMETHODIMP CCardProcess::iATLReadClinicInfoOnlyLog(BSTR pszCode, BSTR pszLogXml, BSTR* xml)
-{
-	_bstr_t bszCode(pszCode);
-	_bstr_t bsLog(pszLogXml);
-	int ret = iReadClinicInfoOnlyLog((char*)bszCode, g_ReadBuff, (char*)bsLog);
-	if (ret) {
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
-	}
-	_bstr_t bstr(g_ReadBuff);
-	*xml = bstr.Detach();
-	return S_OK;
-}
-
-STDMETHODIMP CCardProcess::iATLReadFeeInfoOnlyLog(BSTR pszCode, BSTR pszLogXml, BSTR* xml)
-{
-	_bstr_t bszCode(pszCode);
-	_bstr_t bsLog(pszLogXml);
-	int ret = iReadFeeInfoOnlyLog((char*)bszCode, g_ReadBuff, (char*)bsLog);
-	if (ret) {
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
-	}
-	_bstr_t bstr(g_ReadBuff);
-	*xml = bstr.Detach();
-	return S_OK;;
-}
-
-STDMETHODIMP CCardProcess::iATLReadMedicalInfoOnlyLog(BSTR pszCode, BSTR pszLogXml, BSTR* xml)
-{
-	_bstr_t bszCode(pszCode);
-	_bstr_t bsLog(pszLogXml);
-	int ret = iReadMedicalInfoOnlyLog((char*)bszCode, g_ReadBuff, (char*)bsLog);
-	if (ret) {
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
-	}
-	_bstr_t bstr(g_ReadBuff);
-	*xml = bstr.Detach();
-	return S_OK;
-}
 
 STDMETHODIMP CCardProcess::iATLRegMsgForNHLog(BSTR bstrServerURL, BSTR pszLogXml, BSTR* bstrReadXML)
 {
@@ -921,6 +873,17 @@ STDMETHODIMP CCardProcess::iATLReadOnlyHospLocal(BSTR pszLogXml, BSTR* xml)
 	int ret = iReadOnlyHospLocal(g_ReadBuff, (char*)bsLog);
 	if (ret) {
 		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	}
+	_bstr_t bstr(g_ReadBuff);
+	*xml = bstr.Detach();
+	return S_OK;
+}
+
+STDMETHODIMP CCardProcess::iATLScanCardXML(BSTR* xml)
+{
+	int status = iScanCard(g_ReadBuff);
+	if (status) {
+		CreateResponXML(-1, GetErrInfo(status), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();

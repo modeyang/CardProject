@@ -20,8 +20,4 @@ EXPORTS
 	iReadMedicalInfoLocal	@16
 	iReadFeeInfoLocal		@17
 	iWriteHospInfoLocal		@18
-	iReadClinicInfoOnlyLog	@19
-	iReadMedicalInfoOnlyLog	@20
-	iReadFeeInfoOnlyLog		@21
-	iWriteHospInfoOnlyLog	@22
-	iReadOnlyHospLocal		@23
+	iReadOnlyHospLocal		@19

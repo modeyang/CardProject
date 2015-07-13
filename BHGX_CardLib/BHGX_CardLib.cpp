@@ -1660,7 +1660,6 @@ int __stdcall iRegMsgForNHLog(char *pszCardServerURL, char* pszLogXml, char* psz
 	LogHelper.setLogParams(0, "iRegMsgForNHLog");
 	LogHelper.setCardInfo(pszXml);
 	LogHelper.geneHISLog();
-
 	return CardProcSuccess;
 }
 
@@ -2027,9 +2026,15 @@ int __stdcall iReadCardSEQ(char *xml)
 {
 	char szQuery[1024];
 	memset(szQuery, 0, sizeof(szQuery));
+	std::string query;
+	if (g_CardOps->cardAdapter->type == eM1Card) {
+		query = "CARDNO";
+	} else {
+		query = "CARDSEQ";
+	}
 
 	std::string strCardSEQ;
-	if (iQueryInfo("CARDSEQ", szQuery) != 0){
+	if (iQueryInfo((char*)query.c_str(), szQuery) != 0){
 		CXmlUtil::CreateResponXML(3, "ªÒ»°ø®–Ú¡–∫≈ ß∞‹", xml);
 		return CardReadErr;
 	}
