@@ -830,7 +830,7 @@ int __stdcall iGetCardVersion(char *pszVersion)
 {
 	int res = 0;
 
-	memcpy(pszVersion, "1.0", sizeof("1.0"));
+	memcpy(pszVersion, "2.0.1.0", sizeof("2.0.1.0"));
 
 	return res;
 }
@@ -2032,12 +2032,12 @@ int __stdcall iReadCardSEQ(char *xml)
 	} else {
 		query = "CARDSEQ";
 	}
-
-	std::string strCardSEQ;
+	
 	if (iQueryInfo((char*)query.c_str(), szQuery) != 0){
 		CXmlUtil::CreateResponXML(3, "ªÒ»°ø®–Ú¡–∫≈ ß∞‹", xml);
 		return CardReadErr;
 	}
+	std::string strCardSEQ;
 	CXmlUtil::GetQueryInfoForOne(szQuery, strCardSEQ);
 	strcpy(xml, strCardSEQ.c_str());
 	return CardProcSuccess;
