@@ -258,8 +258,7 @@ static int InitionCpuGList(char *xmlstr)
 	return 0;
 }
 
-static int  CpuConvertXmlByList(struct XmlSegmentS *listHead, 
-								char *xml, int *length)
+static int  CpuConvertXmlByList(struct XmlSegmentS *listHead, char *xml, int *length, int del_flag)
 {
 	struct XmlSegmentS *SegmentElement = NULL;
 	struct XmlColumnS *ColumnElement = NULL;

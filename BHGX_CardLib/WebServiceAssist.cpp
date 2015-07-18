@@ -41,6 +41,10 @@ bool WebServiceUtil::IsMedicalID(const std::string &strID)
 int WebServiceUtil::NHCheckValid(std::string strCardNO, char *pszXml)
 {
 	int status = CardProcSuccess;
+	if (!isValidUrl((char*)m_strServerURL.c_str()) || !isValidUrl((char*)m_strCheckWSDL.c_str())) {
+		return CardInputParamError;
+	}
+
 	n_USCOREapiSoap soapUtil;
 	soapUtil.endpoint = m_strServerURL.c_str();
 	soap_init(soapUtil.soap);
@@ -90,6 +94,10 @@ int WebServiceUtil::NHCheckValid(std::string strCardNO, char *pszXml)
 int WebServiceUtil::NHRegCard(std::string strCardNO, char *pszXml)
 {
 	int status = CardProcSuccess;
+	if (!isValidUrl((char*)m_strServerURL.c_str())) {
+		return CardInputParamError;
+	}
+
 	n_USCOREapiSoap soapUtil;
 	soapUtil.endpoint = m_strServerURL.c_str();
 	soap_init(soapUtil.soap);

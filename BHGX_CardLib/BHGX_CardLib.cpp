@@ -657,6 +657,7 @@ done:
 	return queryItem;
 }
 
+
 static struct XmlColumnS*   M1QueryItem(const char *name, char *xml, int &nLen)
 {
 	struct RWRequestS	*RequestList = NULL;
@@ -974,8 +975,12 @@ static int _iReadQuery(int flag, std::vector<QueryColum> &vecQuery)
 		if (xmlColumn != NULL) {
 			queryItem.nID = xmlColumn->ID;
 			queryItem.nSegID = xmlColumn->parent->ID;
-			queryItem.szValue = xmlColumn->Value;
 			queryItem.szSource = xmlColumn->Source;
+			if (g_CardOps->cardAdapter->type == eM1Card) {
+				queryItem.szValue = CConvertUtil::ConvertZHName(queryItem.szSource.c_str(), xmlColumn->Value);
+			} else {
+				queryItem.szValue = xmlColumn->Value;
+			}
 		}
 	}
 
@@ -1017,29 +1022,8 @@ static int _iReadInfo(int flag, char *xml, int del_flag=-1)
 	// 设备的真实读取
 	status = g_CardOps->cardAdapter->iReadCard(RequestList, g_CardOps->cardAdapter);
 
-	//// delete flag
-	//if (del_flag > 0) {
-	//	struct XmlSegmentS *pDel = NULL, *pCur=list;
-	//	while (pCur != NULL){
-	//		if (pCur->ID == del_flag) {
-	//			pDel = pCur;
-	//			if (pCur == list) {
-	//				list = list->Next;
-	//			} else {
-	//				pCur = pCur->Next;
-	//			}
-	//		} else {
-	//			pCur = pCur->Next;
-	//		}
-	//	}
-	//	if (pDel != NULL) {
-	//		pDel->Next = NULL;
-	//		DestroyList(pDel, 1);
-	//	}
-	//}
-
 	// 通过链表产生XML字符串
-	g_CardOps->iConvertXmlByList(list, xml, &length);
+	g_CardOps->iConvertXmlByList(list, xml, &length, del_flag);
 
 	// 销毁读写请求链表
 	apt_DestroyRWRequest(RequestList, 0);
@@ -1322,20 +1306,23 @@ int __stdcall iQueryInfo(char *name, char *xml)
 
 	// need optinum in cpu item query
 	vecQuery = split(name, "|");
-	if (g_CardOps->cardAdapter->type = eCPUCard) {
-		
-		for (int i=0; i<vecQuery.size(); i++) {
-			int index = g_SegHelper->FindSegIDByColumName(g_XmlListHead->SegHeader, vecQuery[i].c_str());
-			if (index > 0) {
-				segIdColl.insert(index);
-				QueryColum query;
-				query.szSource = vecQuery[i];
-				vecResult.push_back(query);
-			}
+	for (int i=0; i<vecQuery.size(); i++) {
+		int index = g_SegHelper->FindSegIDByColumName(g_XmlListHead->SegHeader, vecQuery[i].c_str());
+		if (index > 0) {
+			segIdColl.insert(index);
+			QueryColum query;
+			query.szSource = vecQuery[i];
+			vecResult.push_back(query);
 		}
-		if (segIdColl.size() < vecQuery.size()) {
-			bReadQuery = true;
-		}
+	}
+
+	if (vecResult.size() == 0){
+		CXmlUtil::CreateResponXML(CardReadErr, err(CardReadErr), xml);
+		return CardInputParamError;
+	}
+
+	if (segIdColl.size() < vecQuery.size()) {
+		bReadQuery = true;
 	}
 
 	if (!bReadQuery) {
@@ -1355,10 +1342,6 @@ int __stdcall iQueryInfo(char *name, char *xml)
 			readFlag += 1 << (*iter - 1);
 		}
 		status = _iReadQuery(readFlag, vecResult);
-	}
-	if (vecResult.size() == 0){
-		CXmlUtil::CreateResponXML(CardReadErr, err(CardReadErr), xml);
-		return CardReadErr;
 	}
 
 	if (g_CardOps->cardAdapter->type == eCPUCard) {
@@ -1567,8 +1550,10 @@ int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServerURL,char*
 	isCardAuth();
 	if (status == CardProcSuccess){
 		int flag = 2;
-		if ((CPU_8K_TEST | CPU_ONLY | CPU_8K_ONLY | CPU_16K) == 1) {
+		if ((CPU_8K_TEST | CPU_ONLY | CPU_8K_ONLY) == 1) {
 			flag += 1 + (1 << 7);
+		} else if (CPU_16K == 1) {
+			flag += 1 + (1 << 7) + (1 << 10);
 		}
 		status = iReadInfo(flag, pszXml);
 	}
@@ -1671,9 +1656,13 @@ static int _checkMsgForLocalWithLog(char* pszLogXml, char* pszXml, char *logname
 	}
 
 	int flag = 2;
-	if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY | CPU_16K) == 1) {
+	if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
 		flag += 1 + (1 << 7);
+	} else if (CPU_16K == 1) {
+		flag += 1 + (1 << 7) + (1 << 10);
 	}
+
+
 	if (CardProcSuccess != iReadInfo(flag, pszXml)) {
 		return CardReadErr;
 	}
@@ -1713,6 +1702,7 @@ int __stdcall iReadCardMessageForBothNHLocal(
 		return iReadCardMessageForNH(pszCardCheckWSDL, pszCardServerURL, pszXml);
 	}
 }
+
 
 //卡校验 黑名单校验
 int __stdcall iCheckMsgForNHLocal(char* pszLogXml, char* pszXml)
@@ -1776,24 +1766,8 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 	
 	WebServiceUtil checkUtil(pszCardCheckWSDL, pszCardServerURL);
 
-	std::string strMedicalID;
-	int status = ParseValueQuery("MEDICARECERTIFICATENO", strMedicalID);
-	if (status != 0) {
-		CXmlUtil::CreateResponXML(3, "获取参合号失败", pszXml);
-		return CardReadErr;
-	}
-	if (strMedicalID.size() == 0) {
-		CXmlUtil::CreateResponXML(3, "参合号为空", pszXml);
-		return CardMedicalFailed;
-	}
-
-	if (!checkUtil.IsMedicalID(strMedicalID)) {
-		CXmlUtil::CreateResponXML(3, "非农合卡", pszXml);
-		return CardNotMedicalCard;
-	}
-
 	std::string strCardNO;
-	status = ParseValueQuery("CARDNO", strCardNO);
+	int status = ParseValueQuery("CARDNO", strCardNO);
 	if (status != 0 || strCardNO.size() == 0){
 		CXmlUtil::CreateResponXML(3, "获取卡号失败或者卡号为空", pszXml);
 		return CardReadErr;
@@ -1809,6 +1783,22 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 			}
 		}
 	}	
+
+	std::string strMedicalID;
+	status = ParseValueQuery("MEDICARECERTIFICATENO", strMedicalID);
+	if (status != 0) {
+		CXmlUtil::CreateResponXML(3, "获取参合号失败", pszXml);
+		return CardReadErr;
+	}
+	if (strMedicalID.size() == 0) {
+		CXmlUtil::CreateResponXML(3, "参合号为空", pszXml);
+		return CardMedicalFailed;
+	}
+
+	if (!checkUtil.IsMedicalID(strMedicalID)) {
+		CXmlUtil::CreateResponXML(3, "非农合卡", pszXml);
+		return CardNotMedicalCard;
+	}
 
 	if (status == CardProcSuccess){
 		int flag = 2;

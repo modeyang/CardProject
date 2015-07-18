@@ -47,6 +47,8 @@ public:
 			m_MapColumInfo["HEALTHSTATE"].strDesc = "½¡¿µ×´¿ö";
 			m_MapColumInfo["PHONENO"].strDesc = "µç»°ºÅÂë";
 			m_MapColumInfo["HEALTHRECORDNO"].strDesc = "½¡¿µµµ°¸ºÅ";
+			m_MapColumInfo["BLOODFLAG"].strDesc = "Ï×Ñª±ê¼Ç";
+			m_MapColumInfo["BLOODCOUNT"].strDesc = "Ï×ÑªÁ¿";
 		}
 
 		if (flag == XJ_FALG) {
@@ -156,8 +158,9 @@ public:
 			} else {
 				std::string strQuery;
 				geneQuerys(strQuery);
-				if (CardProcSuccess != iQueryInfo((char*)strQuery.c_str(), xml)) {
-					return CardReadErr;
+				status = iQueryInfo((char*)strQuery.c_str(), xml);
+				if (CardProcSuccess != status) {
+					return status;
 				}
 			}
 		}

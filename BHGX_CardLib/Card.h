@@ -16,7 +16,6 @@ extern "C" {
 #define CPU_M1		0
 #define CPU_8K		0
 #define CPU_8K_ONLY	0
-
 #define CPU_16K		0
 
 // for cpu test
@@ -185,7 +184,10 @@ typedef int					(*InitGlobalList)();
 typedef int					(*CallocForList)(struct RWRequestS*);
 
 typedef int					(*ConvertXmlByList) (struct XmlSegmentS *listHead, 
-												 char *xml, int *length);
+												 char *xml, 
+												 int *length, 
+												 int del_flag);
+
 typedef struct XmlSegmentS* (*ConvertXmltoList) (char *xml);
 
 typedef int                 (*ReadCard)(struct RWRequestS *list, void *apt);

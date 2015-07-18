@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="gb2312" ?>
 <SEGMENTS PROGRAMID="001">
     <SEGMENT ID="2">
-      <COLUMN ID="7" VALUE="123456789" />
+      <COLUMN ID="9" VALUE="测试" />
     </SEGMENT>
 </SEGMENTS>

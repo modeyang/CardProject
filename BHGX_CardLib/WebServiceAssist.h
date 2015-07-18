@@ -12,6 +12,8 @@ public:
 	~WebServiceUtil(void);
 	WebServiceUtil(char * strCheckWSDL, char* strServerURL);
 
+	bool isValidUrl(char * url) { return (url != NULL && strlen(url) > 0); }
+
 	int NHCheckValid(std::string strCardNO, char *pszXml);
 	int NHRegCard(std::string strCardNO, char *pszXml);
 	bool IsMedicalID(const std::string &strID);

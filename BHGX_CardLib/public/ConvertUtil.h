@@ -17,6 +17,8 @@ public:
 
 	static wchar_t *ConvertMutliToUnicode(char *strMutli);
 
+	static std::string ConvertZHName(const char *, const char *);
+
 protected:
 	static std::string uf_inttostr(long strAscii);
 

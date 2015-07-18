@@ -987,7 +987,26 @@ static int CombineColValue(struct XmlColumnS *ColumnElement,
 	return 0;
 }
 
-static int M1ConvertXmlByList(struct XmlSegmentS *listHead, char *xml, int *length)
+static void DestroyColumnList(struct XmlColumnS *listHead, int mode)
+{
+	struct XmlColumnS	*CurrColumnElement	= NULL;
+	struct XmlColumnS	*TempColumnElement	= NULL;
+
+	CurrColumnElement = listHead;
+	while(CurrColumnElement)
+	{
+		TempColumnElement = CurrColumnElement;
+		CurrColumnElement = CurrColumnElement->Next;
+		if (mode) {
+			SAFE_DELETE_C(TempColumnElement->Value);
+		}
+		SAFE_DELETE_C(TempColumnElement);
+	}
+
+	return;
+}
+
+static int M1ConvertXmlByList(struct XmlSegmentS *listHead, char *xml, int *length, int del_flag)
 {
 	struct XmlSegmentS *SegmentElement = NULL;
 	struct XmlColumnS *ColumnElement = NULL;
@@ -1072,14 +1091,14 @@ static int M1ConvertXmlByList(struct XmlSegmentS *listHead, char *xml, int *leng
 							case 25:
 								CombineColValue(ColumnElement, std::make_pair(25,76), '/', SegmentElement, ColmnBuf);
 								pCur = SegmentElement;
-								while (pCur->Next != NULL){
+								while (pCur->Next != NULL && del_flag > 0){
 									pSegPri = pCur;
 									pCur = pCur->Next;
-								}
-
-								if (TRUE || IsAllTheSameFlag((unsigned char*)&pCur->ColumnHeader->Value,18, '0') == 0){
-										pSegPri->Next = pCur->Next;
-										SAFE_DELETE_C(pCur);
+									if (pCur->ID == del_flag) {
+										DestroyColumnList(pCur->ColumnHeader->Next, 1);
+										pCur->ColumnHeader->Next = NULL;
+										break;
+									}
 								}
 								break; 
 							default:

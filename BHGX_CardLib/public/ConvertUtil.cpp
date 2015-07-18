@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <Windows.h>
+#include "../StringUtil.h"
 
 #pragma warning (disable : 4267)
 #pragma warning (disable : 4996)
@@ -202,4 +203,19 @@ wchar_t *CConvertUtil::ConvertMutliToUnicode(char *strMutli)
 	pwText = new wchar_t[dwNum];
 	MultiByteToWideChar (CP_ACP, 0, strMutli, dwSize, pwText, dwNum);
 	return pwText;
+}
+
+std::string CConvertUtil::ConvertZHName(const char *source, const char *name) 
+{
+	std::string szName;
+	if (strcmp(source, "NAME") == 0 || strcmp(source, "LINKMANNAME") == 0) {
+		if (Is_IntName((char*)name)){
+			szName = CConvertUtil::uf_gbk_int_covers(name, "togbk");
+		} else {
+			szName = name;
+		}
+	} else {
+		szName = name;
+	}
+	return szName;
 }
