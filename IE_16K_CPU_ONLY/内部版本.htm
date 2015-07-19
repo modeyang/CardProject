@@ -181,6 +181,16 @@
             }
 		}catch(e){}
 	}
+	
+    function ScanCardXML()
+	{
+		try{
+			var ret = obj.iATLScanCardXML();
+			alert(ret);
+		}catch(e){
+		    alert(e);
+		}
+	}
 		
 	function  CardIsEmpty()
 	{
@@ -245,26 +255,6 @@
         } catch(e) {
             alert(e);
         }
-    }
-    
-    function ReadBlood()
-    {
-    	try {
-    	    var xml = ob.iATLReadOnlybloodbank();
-    	    alert(xml);
-    	} catch (e) {
-    	    alert(e);
-    	}
-    }
-    
-    function ReadCardSEQ()
-    {
-    	try {
-    	    var xml = ob.iATLReadCardSEQ();
-    	    alert(xml);
-    	} catch (e) {
-    	    alert(e);
-    	}
     }
     
     function ReadClinicInfoLog() 
@@ -1102,13 +1092,12 @@
     <input type="button" value="打开卡" onclick="CardOpen()" />
     <input type="button" value="关闭卡" onclick="CardClose()" /><hr />
     <input type="button" value="寻卡" onclick="ScanCard()" />
+    <input type="button" value="寻卡XML" onclick="ScanCardXML()" />
     <input type="button" value="判卡为空" onclick="CardIsEmpty()" />
     <input type="button" value="格式化卡" onclick="CardFormat()" />
     <input type="button" value="格式化卡医院信息" onclick="CardFormatHosp()" /><hr />
     <input type="text" name="ReadText" />
     <input type="button" value="读卡数据" onclick="Read()" /><hr />
-    <input type="button" value="读卡序列号" onclick="ReadCardSEQ()" />
-    <input type="button" value="读血量信息" onclick="ReadBlood()" /><hr />
     请输入医院代码:<input type="text" name="CodeText" /><hr/>
     <input type="button" value="门诊摘要" onclick="ReadClinicInfo()" />  
     <input type="button" value="病案首页" onclick="ReadMedicalInfo()" />  
@@ -1129,8 +1118,7 @@
     <input type="button" value="写数据" onclick="WriteInfo()" />
     <input type="button" value="写医院数据" onclick="WriteHospInfo()" />
     <input type="button" value="写医院数据+日志" onclick="WriteHospInfoLog()" />
-    <input type="button" value="写医院数据+黑名单校验" onclick="WriteHospInfoLocal()" />
-    <input type="button" value="写血量信息" onclick="WriteInfo()" /><hr/>
+    <input type="button" value="写医院数据+黑名单校验" onclick="WriteHospInfoLocal()" /><hr/>
     服务端URL:
     <input type="text" name="URL" size="80" value="http://192.168.1.71/nh_webservice/n_api.asmx?op=nh_pipe" /><hr />
     注册WSDL路径:<input type="text" name="RegXML" size="80" value="http://192.168.1.67:8000/ccss/ws/oneCardWebService?wsdl" />

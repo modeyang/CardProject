@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<logconfig programid="001">
+  <config ID="1" DESC="config">
+     <column ID="1" DESC="address" VALUE="192.168.1.118"/ >      
+  </config>
+</logconfig>

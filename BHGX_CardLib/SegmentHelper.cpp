@@ -61,12 +61,11 @@ CSegmentHelper::CloneColmn(struct XmlColumnS *ColmnElement, int mode)
 		m_CardOps->iCallocForColmn(result);
 	}
 
-
 	return result;
 }
 
 /**
-* CloneSegment - 克隆XmlSegmentS元素数据结构
+* CloneSegment - 克隆XmlSegmentS元素数据结构 v
 * @SegmentElement 被克隆的元素
 * @mode 1->开辟value内存
 */

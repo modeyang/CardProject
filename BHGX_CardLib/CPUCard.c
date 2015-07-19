@@ -143,7 +143,7 @@ static int	CpuCallocForList(struct RWRequestS* list)
 }
 
 
-int  CpuReadCard(struct RWRequestS *list, void *apt, int del_flag)
+int  CpuReadCard(struct RWRequestS *list, void *apt)
 {
 	struct RWRequestS *AgentList = NULL;
 	int res;

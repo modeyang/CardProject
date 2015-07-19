@@ -100,7 +100,7 @@ int __stdcall apt_ScanCard(unsigned char *card_type)
 	}
 	
 	if (status) {
-		return CardScanErr;
+		return CardScanErr; 
 	}
 
 	*card_type = cardType;
