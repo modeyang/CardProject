@@ -79,12 +79,17 @@ int __stdcall apt_CloseDev(void)
  * 成功： 非零
  * 失败：0
  */
-int __stdcall apt_ScanCard(unsigned char *card_type)
+int __stdcall apt_ScanCard(char *card_info)
 {
 	unsigned char cardType = 0, psamType=0;
-	unsigned char resp[260];
 	int status = 0;
 	unsigned short para = 30;
+
+	char resp[260];
+	char attr[260];
+	memset(resp, 0, sizeof(resp));
+	memset(attr, 0, sizeof(attr));
+
 
 	// 探测卡，如果没有卡，自动退出
 	if (!Instance) {
@@ -93,7 +98,7 @@ int __stdcall apt_ScanCard(unsigned char *card_type)
 
 	//status = Instance->iIOCtl( CMD_BEEP, &para , 2);
 	//status = Instance->iIOCtl( CMD_LED, &para , 2);
-	status = Instance->ICCSet( CARDSEAT_RF, &cardType , resp);
+	status = Instance->ICCSet( CARDSEAT_RF, &cardType , attr);
 
 	if (cardType == eCPUCard) {
 		status = Instance->ICCSet(CARDSEAT_PSAM1, &psamType, resp);
@@ -103,7 +108,10 @@ int __stdcall apt_ScanCard(unsigned char *card_type)
 		return CardScanErr; 
 	}
 
-	*card_type = cardType;
+	sprintf(card_info, "%d|%s|%s", (int)cardType, attr, resp);
+	memcpy(card_info, card_info, strlen(card_info) + 1);
+	card_info[strlen(card_info)] = 0;
+	//*card_type = cardType;
 
 	//加载xml文件
 	apt_InitGList(cardType);

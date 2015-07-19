@@ -172,7 +172,7 @@ STDMETHODIMP CCardProcess::iATLReadInfo(LONG nFlag, BSTR* szReadXML)
 	ret = iReadInfo(nFlag, g_ReadBuff);
 	if (ret != 0){
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*szReadXML = bstr.Detach();
@@ -199,7 +199,7 @@ STDMETHODIMP CCardProcess::iATLQueryInfo(BSTR szQuerySource, BSTR* szResult)
 	ret = iQueryInfo(strINXML, g_ReadBuff);
 	if (ret != 0){
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	bstr = g_ReadBuff;
 	*szResult = bstr.Detach();
@@ -299,10 +299,11 @@ STDMETHODIMP CCardProcess::iATLReadCardMessageForNH(BSTR pszCardCheckWSDL, BSTR 
 	_bstr_t bstrRewriteWSDL(pszCardRewritePackageWSDL);
 	char* strCheckWSDL = (char*)bstrCheckWSDL;
 	char* strRewriteWSDL = (char*)bstrRewriteWSDL;
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int ret = iReadCardMessageForNH(strCheckWSDL, strRewriteWSDL, g_ReadBuff);
 	if (ret != 0) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr = g_ReadBuff;
 	*pszXml = bstr.Detach();
@@ -321,7 +322,7 @@ STDMETHODIMP CCardProcess::iATLReadHISInfo(BSTR pszCardCheckWSDL, BSTR pszCardRe
 	ret = iReadHISInfo(strCheckWSDL, strRewriteWSDL, g_ReadBuff);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*szXML = bstr.Detach();
@@ -335,7 +336,7 @@ STDMETHODIMP CCardProcess::iATLReadOnlyHIS(BSTR* bstrHISInfo)
 	ret = iReadOnlyHIS(g_ReadBuff);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*bstrHISInfo = bstr.Detach();
@@ -353,7 +354,7 @@ STDMETHODIMP CCardProcess::iATLReadInfoForXJ(BSTR pszCardCheckWSDL, BSTR pszCard
 	int ret = iReadInfoForXJ(strCheckWSDL, strRewriteWSDL, g_ReadBuff);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*szXML = bstr.Detach();
@@ -390,9 +391,9 @@ STDMETHODIMP CCardProcess::iATLReadConfigMsg(BSTR bstrConfigInfo, BSTR* bstrRead
 	char* strCheckWSDL = (char*)bstrCheckWSDL;
 	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int ret = iReadConfigMsg(strCheckWSDL, g_ReadBuff);
-	if (ret) {
+	if (ret != 0) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*bstrReadXML = bstr.Detach();
@@ -408,7 +409,7 @@ STDMETHODIMP CCardProcess::iATLRegMsgForNH(BSTR bstrServerURL, BSTR* bstrReadXML
 	int ret = iRegMsgForNH(strRewriteWSDL, g_ReadBuff);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*bstrReadXML = bstr.Detach();
@@ -471,7 +472,7 @@ STDMETHODIMP CCardProcess::iATLReadClinicInfo(BSTR pszCode, BSTR* readXML)
 	int ret = iReadClinicInfo((char*)bszCode, g_ReadBuff);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*readXML = bstr.Detach();
@@ -485,7 +486,7 @@ STDMETHODIMP CCardProcess::iATLReadMedicalInfo(BSTR pszCode, BSTR* readXML)
 	int ret = iReadMedicalInfo((char*)bszCode, g_ReadBuff);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*readXML = bstr.Detach();
@@ -499,7 +500,7 @@ STDMETHODIMP CCardProcess::iATLReadFeeInfo(BSTR pszCode, BSTR* readXML)
 	int ret = iReadFeeInfo((char*)bszCode, g_ReadBuff);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*readXML = bstr.Detach();
@@ -514,7 +515,7 @@ STDMETHODIMP CCardProcess::iATLReadOnlyHISLog(BSTR logConfXml, BSTR* bstrHISInfo
 	ret = iReadOnlyHISLog((char*)bszLogConfXml, g_ReadBuff);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*bstrHISInfo = bstr.Detach();
@@ -534,7 +535,7 @@ STDMETHODIMP CCardProcess::iATLReadInfoForXJLog(BSTR pszCardCheckWSDL, BSTR pszC
 	ret = iReadInfoForXJLog(strCheckWSDL, strRewriteWSDL, (char*)bsLog, g_ReadBuff);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();
@@ -554,7 +555,7 @@ STDMETHODIMP CCardProcess::iATLReadHISInfoLog(BSTR pszCardCheckWSDL, BSTR pszCar
 	ret = iReadHISInfoLog(strCheckWSDL, strRewriteWSDL,(char*)bsLog, g_ReadBuff);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();
@@ -571,7 +572,7 @@ STDMETHODIMP CCardProcess::iATLReadMedicalInfoLog(BSTR pszCode, BSTR pszLogXml, 
 	int ret = iReadMedicalInfoLog((char*)bszCode, g_ReadBuff, (char*)bsLog);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();
@@ -586,7 +587,7 @@ STDMETHODIMP CCardProcess::iATLReadFeeInfoLog(BSTR pszCode, BSTR pszLogXml, BSTR
 	int ret = iReadFeeInfoLog((char*)bszCode, g_ReadBuff, (char*)bsLog);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();
@@ -611,7 +612,7 @@ STDMETHODIMP CCardProcess::iATLReadClinicInfoLog(BSTR pszCode, BSTR pszLogXml, B
 	int ret = iReadClinicInfoLog((char*)bszCode, g_ReadBuff, (char*)bsLog);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();
@@ -626,7 +627,7 @@ STDMETHODIMP CCardProcess::iATLReadOnlyHISLocal(BSTR pszLogXml, BSTR* xml)
 	ret = iReadOnlyHISLocal((char*)bszLogConfXml, g_ReadBuff);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();
@@ -646,7 +647,7 @@ STDMETHODIMP CCardProcess::iATLReadInfoForXJLocal(BSTR pszCardCheckWSDL, BSTR ps
 	ret = iReadInfoForXJLocal((char*)bsLog, g_ReadBuff);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();
@@ -666,7 +667,7 @@ STDMETHODIMP CCardProcess::iATLReadHISInfoLocal(BSTR pszCardCheckWSDL, BSTR pszC
 	ret = iReadHISInfoLocal((char*)bsLog, g_ReadBuff);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();
@@ -681,7 +682,7 @@ STDMETHODIMP CCardProcess::iATLReadMedicalInfoLocal(BSTR pszCode, BSTR pszLogXml
 	int ret = iReadMedicalInfoLocal((char*)bszCode, g_ReadBuff, (char*)bsLog);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();
@@ -696,7 +697,7 @@ STDMETHODIMP CCardProcess::iATLReadFeeInfoLocal(BSTR pszCode, BSTR pszLogXml, BS
 	int ret = iReadFeeInfoLocal((char*)bszCode, g_ReadBuff, (char*)bsLog);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();
@@ -711,7 +712,7 @@ STDMETHODIMP CCardProcess::iATLReadClinicInfoLocal(BSTR pszCode, BSTR pszLogXml,
 	int ret = iReadClinicInfoLocal((char*)bszCode, g_ReadBuff, (char*)bsLog);
 	if (ret) {
 		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();
@@ -734,9 +735,10 @@ STDMETHODIMP CCardProcess::iATLRegMsgForNHLog(BSTR bstrServerURL, BSTR pszLogXml
 	_bstr_t bstrRewriteWSDL(bstrServerURL);
 	char* strRewriteWSDL = (char*)bstrRewriteWSDL;
 	_bstr_t bsLog(pszLogXml);
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int ret = iRegMsgForNHLog(strRewriteWSDL,(char*)bsLog, g_ReadBuff);
 	if (ret) {
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*bstrReadXML = bstr.Detach();
@@ -750,9 +752,10 @@ STDMETHODIMP CCardProcess::iATLReadCardMessageForNHLog(BSTR pszCardCheckWSDL, BS
 	_bstr_t bsLog(pszLogXml);
 	char* strCheckWSDL = (char*)bstrCheckWSDL;
 	char* strRewriteWSDL = (char*)bstrRewriteWSDL;
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int ret = iReadCardMessageForNHLog(strCheckWSDL, strRewriteWSDL, (char*)bsLog, g_ReadBuff);
 	if (ret != 0) {
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr = g_ReadBuff;
 	*pszXml = bstr.Detach();
@@ -763,9 +766,10 @@ STDMETHODIMP CCardProcess::iATLReadCardMessageForNHLog(BSTR pszCardCheckWSDL, BS
 STDMETHODIMP CCardProcess::iATLReadCardMessageForNHLocal(BSTR pszLogXml, BSTR* pszXml)
 {
 	_bstr_t bsLog(pszLogXml);
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int ret = iReadCardMessageForNHLocal( (char*)bsLog, g_ReadBuff);
 	if (ret != 0) {
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr = g_ReadBuff;
 	*pszXml = bstr.Detach();
@@ -777,7 +781,7 @@ STDMETHODIMP CCardProcess::iATLCheckMsgForNHLocal(BSTR pszLogXml, BSTR* pszXml)
 	_bstr_t bsLog(pszLogXml);
 	int ret = iCheckMsgForNHLocal((char*)bsLog, g_ReadBuff);
 	if (ret != 0) {
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*pszXml = bstr.Detach();
@@ -786,9 +790,10 @@ STDMETHODIMP CCardProcess::iATLCheckMsgForNHLocal(BSTR pszLogXml, BSTR* pszXml)
 
 STDMETHODIMP CCardProcess::iATLReadOnlyCardMessageForNH(BSTR* pszXml)
 {
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int ret = iReadOnlyCardMessageForNH(g_ReadBuff);
 	if (ret != 0) {
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*pszXml = bstr.Detach();
@@ -797,9 +802,10 @@ STDMETHODIMP CCardProcess::iATLReadOnlyCardMessageForNH(BSTR* pszXml)
 
 STDMETHODIMP CCardProcess::iATLReadAll(BSTR* xml)
 {
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int ret = iReadAll(g_ReadBuff);
 	if (ret != 0) {
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();
@@ -813,6 +819,7 @@ STDMETHODIMP CCardProcess::iATLRWRecycle(BSTR pszCardCorp, BSTR pszXinCorp,
 	_bstr_t bsCardCorp(pszCardCorp);
 	_bstr_t bsXinCorp(pszXinCorp);
 	_bstr_t bsWriteXml(write_xml);
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	iRWRecycle((char*)bsCardCorp, (char*)bsXinCorp, (int)counts, (char*)bsWriteXml, g_ReadBuff);
 	_bstr_t bstr(g_ReadBuff);
 	*pszXml = bstr.Detach();
@@ -827,9 +834,10 @@ STDMETHODIMP CCardProcess::iATLReadCardMessageForBothNHLocal(BSTR pszCardCheckWS
 	_bstr_t bstrCheckWSDL(pszCardCheckWSDL);  
 	_bstr_t bstrRewriteWSDL(pszCardServerURL);
 	_bstr_t bstrLogXml(pszLogXml);
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int ret = iReadCardMessageForBothNHLocal((char*)bstrCheckWSDL, (char*)bstrRewriteWSDL, (char*)bstrLogXml, g_ReadBuff);
 	if (ret != 0) {
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*pszXml = bstr.Detach();
@@ -838,9 +846,10 @@ STDMETHODIMP CCardProcess::iATLReadCardMessageForBothNHLocal(BSTR pszCardCheckWS
 
 STDMETHODIMP CCardProcess::iATLReadOnlybloodbank(BSTR* xml)
 {
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int ret = iReadOnlybloodbank(g_ReadBuff);
 	if (ret != 0) {
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();
@@ -849,9 +858,10 @@ STDMETHODIMP CCardProcess::iATLReadOnlybloodbank(BSTR* xml)
 
 STDMETHODIMP CCardProcess::iATLReadCardSEQ(BSTR* xml)
 {
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int ret = iReadCardSEQ(g_ReadBuff);
 	if (ret != 0) {
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();
@@ -870,9 +880,11 @@ STDMETHODIMP CCardProcess::iATLWritebloodbank(BSTR xml, LONG* pRet)
 STDMETHODIMP CCardProcess::iATLReadOnlyHospLocal(BSTR pszLogXml, BSTR* xml)
 {
 	_bstr_t bsLog(pszLogXml);
+
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int ret = iReadOnlyHospLocal(g_ReadBuff, (char*)bsLog);
 	if (ret) {
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+		CreateResponXML(ret, GetErrInfo(ret), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();
@@ -881,9 +893,10 @@ STDMETHODIMP CCardProcess::iATLReadOnlyHospLocal(BSTR pszLogXml, BSTR* xml)
 
 STDMETHODIMP CCardProcess::iATLScanCardXML(BSTR* xml)
 {
+	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int status = iScanCard(g_ReadBuff);
 	if (status) {
-		CreateResponXML(-1, GetErrInfo(status), g_ReadBuff);
+		CreateResponXML(status, GetErrInfo(status), g_ReadBuff);
 	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();

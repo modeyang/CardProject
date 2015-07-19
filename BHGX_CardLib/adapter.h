@@ -14,7 +14,7 @@ extern "C" {
 	int __stdcall apt_OpenDev(void);
 	int __stdcall apt_CloseDev(void);
 
-	int __stdcall apt_ScanCard(unsigned char *card_type);
+	int __stdcall apt_ScanCard(char *card_type);
 
 	int __stdcall apt_IOCtl(int cmd, void *data);
 

@@ -213,7 +213,7 @@ static struct XmlColumnS *
 CpuQueryItem(const char *name, char *xml, int &nLen);
 
 static int 
-iCreateScanXml(int card_type, char *xml);
+iCreateScanXml(int card_info, char *xml);
 
 static int 
 iCreateXmlByVector(const vector<QueryColum>&  v, char *xml, int *length);
@@ -717,7 +717,7 @@ done:
 	return queryItem;
 }
 
-static int iCreateScanXml(int card_type, char *xml)
+static int iCreateScanXml(char * card_info, char *xml)
 {
 	TiXmlDocument *XmlDoc;
 	TiXmlElement *RootElement;
@@ -739,6 +739,10 @@ static int iCreateScanXml(int card_type, char *xml)
 	Segment = new TiXmlElement("SEGMENT");
 	Segment->SetAttribute("ID",0);
 	Segment->SetAttribute("SOURCE", "CARDCATEGORY");
+
+	std::vector<std::string> vec_info;
+	vec_info = split(std::string(card_info), "|");
+	int card_type = atoi(vec_info[0].c_str());
 	if (card_type == eCPUCard) {
 		Segment->SetAttribute("VALUE", "CPU");
 	} else if (card_type == eM1Card) {
@@ -752,7 +756,7 @@ static int iCreateScanXml(int card_type, char *xml)
 	Segment1 = new TiXmlElement("SEGMENT");
 	Segment1->SetAttribute("ID",1);
 	Segment1->SetAttribute("SOURCE", "PSAM");
-	Segment1->SetAttribute("VALUE", "");
+	Segment1->SetAttribute("VALUE", vec_info[1].c_str());
 	RootElement->LinkEndChild(Segment1);
 	XmlDoc->LinkEndChild(RootElement);
 
@@ -907,10 +911,10 @@ int __stdcall iCardClose()
 int __stdcall iScanCard(char *xml)
 {
 	ASSERT_OPEN(g_bCardOpen);
-	unsigned char card_type = -1;
-	int status = apt_ScanCard(&card_type);
+	char card_info[512];
+	int status = apt_ScanCard(card_info);
 	if (xml != NULL) {
-		iCreateScanXml(card_type, xml);
+		iCreateScanXml(card_info, xml);
 	}
 	return status;
 }
@@ -934,9 +938,18 @@ int __stdcall iCardIsEmpty()
 	char strCardNo[20];
 	memset(strCardNo, 0, sizeof(strCardNo));
 	int nLen = 0;
-	QueryItem(g_CardOps->cardAdapter->type, "CARDNO", strCardNo, nLen);
+	int status = 0;
+	if (g_CardOps->cardAdapter->type == eM1Card) {
+		status = QueryItem(g_CardOps->cardAdapter->type, "CARDNO", strCardNo, nLen);
+	} else {
+		status = QueryItem(g_CardOps->cardAdapter->type, "CARDSEQ", strCardNo, nLen);
+	}
 
-	int status = IsAllTheSameFlag((unsigned char*)strCardNo, nLen, '0');
+	if (status != CardProcSuccess) {
+		return status;
+	}
+
+	status = IsAllTheSameFlag((unsigned char*)strCardNo, nLen, '0');
 	strlwr(strCardNo);
 	int stat = IsAllTheSameFlag((unsigned char*)strCardNo, nLen, 'f');
 	return (status & stat) == 0 ? 0 : CardIsNotEmpty;
@@ -2014,6 +2027,12 @@ int __stdcall iWritebloodbank(char *xml)
 
 int __stdcall iReadCardSEQ(char *xml)
 {
+	ASSERT_OPEN(g_bCardOpen);
+	if (xml == NULL) {
+		return CardReadErr;
+	}
+
+	ISSCANCARD;
 	char szQuery[1024];
 	memset(szQuery, 0, sizeof(szQuery));
 	std::string query;

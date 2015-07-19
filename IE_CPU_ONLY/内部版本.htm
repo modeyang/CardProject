@@ -224,6 +224,31 @@
         }
     }
     
+    function ReadSEQ() {
+    	try {
+            var OutXML=obj.iATLReadCardSEQ();
+            alert(OutXML);
+			var filesave = fso.createtextfile(SavePath, true, false);
+			filesave.Write(OutXML);
+			filesave.close();
+        } catch(e){
+            alert(e);
+        }
+    }
+        
+    function ReadBlood() {
+        try {
+            var OutXML=obj.iATLReadOnlybloodbank();
+            alert(OutXML);
+			var filesave = fso.createtextfile(SavePath, true, false);
+			filesave.Write(OutXML);
+			filesave.close();
+        } catch(e){
+            alert(e);
+        }
+    }
+    
+    
     function ReadClinicInfo() 
     {
         try{
@@ -601,6 +626,28 @@
 			
 			var TestXML = GetFileContent(CardPath);
             var ret = obj.iATLWriteInfo(TestXML);
+            var info = "WriteInfo = [" + TestXML + "]";
+           if (ret != 0){
+		   		var strErr = obj.iATLerr();
+				alert(strErr);
+		   }else{
+		   		alert("写卡数据成功");
+        	}
+        }catch (e) {
+            alert(e);
+        }
+    }
+    
+  function WriteBlood() {
+     try {
+			var CardPath=document.getElementsByName("WriteXML")[0].value;
+			if (CardPath == "" || typeof(CardPath) == "undefined"){
+				alert("请选择写卡的XML文件");
+				return;
+			}
+			
+			var TestXML = GetFileContent(CardPath);
+            var ret = obj.iATLWritebloodbank(TestXML);
             var info = "WriteInfo = [" + TestXML + "]";
            if (ret != 0){
 		   		var strErr = obj.iATLerr();
@@ -1095,13 +1142,15 @@
     <input type="button" value="寻卡XML" onclick="ScanCardXML()" />
     <input type="button" value="判卡为空" onclick="CardIsEmpty()" />
     <input type="button" value="格式化卡" onclick="CardFormat()" />
-    <input type="button" value="格式化卡医院信息" onclick="CardFormatHosp()" /><hr />
+    <input type="button" value="格式化卡医院信息(CPU)" onclick="CardFormatHosp()" /><hr />
     <input type="text" name="ReadText" />
-    <input type="button" value="读卡数据" onclick="Read()" /><hr />
+    <input type="button" value="读卡数据" onclick="Read()" />
+    <input type="button" value="读卡序列号" onclick="ReadSEQ()" />
+    <input type="button" value="读卡血量标记数据(16K)" onclick="ReadBlood()" /><hr />
     请输入医院代码:<input type="text" name="CodeText" /><hr/>
-    <input type="button" value="门诊摘要" onclick="ReadClinicInfo()" />  
-    <input type="button" value="病案首页" onclick="ReadMedicalInfo()" />  
-    <input type="button" value="费用结算" onclick="ReadFeeInfo()" /><hr />
+    <input type="button" value="门诊摘要(CPU)" onclick="ReadClinicInfo()" />  
+    <input type="button" value="病案首页(CPU)" onclick="ReadMedicalInfo()" />  
+    <input type="button" value="费用结算(CPU)" onclick="ReadFeeInfo()" /><hr />
     日志配置文件选择:<input type="file" name="LogXML" /><hr />
     <input type="button" value="门诊摘要+日志" onclick="ReadClinicInfoLog()" />  
     <input type="button" value="病案首页+日志" onclick="ReadMedicalInfoLog()" />  
@@ -1116,7 +1165,8 @@
     <input type="button" value="查询字段数据" onclick="QueryInfo()" /><hr />
     写卡文件选择:<input type="file" name="WriteXML" />
     <input type="button" value="写数据" onclick="WriteInfo()" />
-    <input type="button" value="写医院数据" onclick="WriteHospInfo()" />
+    <input type="button" value="写血量标记(16K)" onclick="WriteBlood()" />
+    <input type="button" value="写医院数据(CPU)" onclick="WriteHospInfo()" />
     <input type="button" value="写医院数据+日志" onclick="WriteHospInfoLog()" />
     <input type="button" value="写医院数据+黑名单校验" onclick="WriteHospInfoLocal()" /><hr/>
     服务端URL:
