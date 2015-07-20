@@ -1364,8 +1364,9 @@ CardOps * __stdcall InitM1CardOps()
 	g_CardOps.programXmlList = g_XmlListHead;
 	
 	if (g_SegHelper == NULL) {
-		g_SegHelper = new CSegmentHelper(g_XmlListHead, &g_CardOps); 
+		g_SegHelper = new CSegmentHelper(&g_CardOps); 
 	}
+	g_CardOps.SegmentHelper = (void*)g_SegHelper;
 	return &g_CardOps;
 }
 

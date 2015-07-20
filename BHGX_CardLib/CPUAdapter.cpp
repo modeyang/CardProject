@@ -495,6 +495,7 @@ CardOps * __stdcall InitCpuCardOps()
 	if (g_SegHelper == NULL) {
 		g_SegHelper = new CSegmentHelper(&g_CpuCardOps);
 	}
+	g_CpuCardOps.SegmentHelper = (void*)g_SegHelper;
 	return &g_CpuCardOps;
 }
 

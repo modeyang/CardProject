@@ -753,11 +753,13 @@ static int iCreateScanXml(char * card_info, char *xml)
 
 	RootElement->LinkEndChild(Segment);
 
-	Segment1 = new TiXmlElement("SEGMENT");
-	Segment1->SetAttribute("ID",1);
-	Segment1->SetAttribute("SOURCE", "PSAM");
-	Segment1->SetAttribute("VALUE", vec_info[1].c_str());
-	RootElement->LinkEndChild(Segment1);
+	if (card_type == eCPUCard) {
+		Segment1 = new TiXmlElement("SEGMENT");
+		Segment1->SetAttribute("ID",1);
+		Segment1->SetAttribute("SOURCE", "PSAM");
+		Segment1->SetAttribute("VALUE", vec_info[1].c_str());
+		RootElement->LinkEndChild(Segment1);
+	}
 	XmlDoc->LinkEndChild(RootElement);
 
 	// 把XML文档的内容传给上层
@@ -850,10 +852,6 @@ int __stdcall iCardCompany(char *szCompanyXml)
  */
 int __stdcall iCardInit(char *xml)
 {
-	//char szSystem[NAME_MAX_LEN];
-	//ZeroMemory(szSystem, sizeof(szSystem));
-	//ReadConfigFromReg(szSystem);
-
 	char path[MAX_PATH] = {};
 	GetSystemDirectory(path, MAX_PATH);
 
@@ -869,13 +867,15 @@ int __stdcall iCardDeinit()
 	if (g_CpuCardOps) {
 		DestroyList(g_CpuCardOps->programXmlList->SegHeader, 0);
 		CPUClear();
+		g_CpuCardOps = NULL;
 	}
 
 	if (g_M1CardOps) {
 		DestroyList(g_M1CardOps->programXmlList->SegHeader, 0);
 		M1clear();
+		g_M1CardOps = NULL;
 	}
-	SAFE_DELETE(g_SegHelper);
+	//SAFE_DELETE(g_SegHelper);
 
 	g_XmlListHead = NULL;
 	g_bPreLoad = FALSE;
@@ -1895,9 +1895,7 @@ int __stdcall apt_InitGList(CardType eType)
 		g_CardOps = g_M1CardOps;		
 	}
 	g_XmlListHead = g_CardOps->programXmlList;
-	if (g_SegHelper == NULL) {
-		g_SegHelper = new CSegmentHelper(g_XmlListHead, g_CardOps); 
-	}
+	g_SegHelper = (CSegmentHelper*)g_CardOps->SegmentHelper;
 	return 0;
 }
 
