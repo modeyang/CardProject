@@ -45,7 +45,7 @@ using namespace std;
 
 #define SCANCARD_XML(xml)								\
 	if (iScanCard() != 0) {								\
-		CXmlUtil::CreateResponXML(3, "寻卡失败", xml);	\
+		CXmlUtil::CreateResponXML(CardReadErr, "寻卡失败", xml);	\
 		return CardScanErr;								\
 	}	
 
@@ -1551,7 +1551,7 @@ int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServerURL,char*
 
 	std::string strCardNO;
 	if (iQueryInfo("CARDNO", szQuery) != 0){
-		CXmlUtil::CreateResponXML(3, "获取卡号失败", pszXml);
+		CXmlUtil::CreateResponXML(CardReadErr, "获取卡号失败", pszXml);
 		return CardReadErr;
 	}
 	CXmlUtil::GetQueryInfoForOne(szQuery, strCardNO);
@@ -1621,7 +1621,7 @@ int __stdcall iRegMsgForNH(char *pszCardServerURL, char* pszXml)
 	std::string strCardNO;
 	int status = iQueryInfo("CARDNO", szQuery);
 	if (status != 0){
-		CXmlUtil::CreateResponXML(3, "获取卡号失败", pszXml);
+		CXmlUtil::CreateResponXML(CardReadErr, "获取卡号失败", pszXml);
 		return CardReadErr;
 	}
 	CXmlUtil::GetQueryInfoForOne(szQuery, strCardNO);
@@ -1631,7 +1631,7 @@ int __stdcall iRegMsgForNH(char *pszCardServerURL, char* pszXml)
 	if (status == CardProcSuccess) {
 		status = iWriteInfo(pszXml);
 		if (status != CardProcSuccess) {
-			CXmlUtil::CreateResponXML(2, "卡回写失败", pszXml);
+			CXmlUtil::CreateResponXML(CardWriteErr, "卡回写失败", pszXml);
 		}
 	}
 
@@ -1782,7 +1782,7 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 	std::string strCardNO;
 	int status = ParseValueQuery("CARDNO", strCardNO);
 	if (status != 0 || strCardNO.size() == 0){
-		CXmlUtil::CreateResponXML(3, "获取卡号失败或者卡号为空", pszXml);
+		CXmlUtil::CreateResponXML(CardReadErr, "获取卡号失败或者卡号为空", pszXml);
 		return CardReadErr;
 	}
 
@@ -1792,7 +1792,7 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 		if (status == CardProcSuccess) {
 			status = iWriteInfo(pszXml);
 			if (status != CardProcSuccess) {
-				CXmlUtil::CreateResponXML(2, "卡回写失败", pszXml);
+				CXmlUtil::CreateResponXML(CardWriteErr, "卡回写失败", pszXml);
 			}
 		}
 	}	
@@ -1800,16 +1800,16 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 	std::string strMedicalID;
 	status = ParseValueQuery("MEDICARECERTIFICATENO", strMedicalID);
 	if (status != 0) {
-		CXmlUtil::CreateResponXML(3, "获取参合号失败", pszXml);
+		CXmlUtil::CreateResponXML(CardReadErr, "获取参合号失败", pszXml);
 		return CardReadErr;
 	}
 	if (strMedicalID.size() == 0) {
-		CXmlUtil::CreateResponXML(3, "参合号为空", pszXml);
+		CXmlUtil::CreateResponXML(CardMedicalFailed, "参合号为空", pszXml);
 		return CardMedicalFailed;
 	}
 
 	if (!checkUtil.IsMedicalID(strMedicalID)) {
-		CXmlUtil::CreateResponXML(3, "非农合卡", pszXml);
+		CXmlUtil::CreateResponXML(CardNotMedicalCard, "非农合卡", pszXml);
 		return CardNotMedicalCard;
 	}
 
@@ -2043,7 +2043,7 @@ int __stdcall iReadCardSEQ(char *xml)
 	}
 	
 	if (iQueryInfo((char*)query.c_str(), szQuery) != 0){
-		CXmlUtil::CreateResponXML(3, "获取卡序列号失败", xml);
+		CXmlUtil::CreateResponXML(CardReadErr, "获取卡序列号失败", xml);
 		return CardReadErr;
 	}
 	std::string strCardSEQ;

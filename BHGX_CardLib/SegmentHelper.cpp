@@ -1,5 +1,8 @@
 #include "SegmentHelper.h"
 #include "public/Markup.h"
+#include <vector>
+
+using namespace std;
 
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 
@@ -109,14 +112,16 @@ CSegmentHelper::CloneSegment(struct XmlSegmentS *SegmentElement, int mode)
 
 struct XmlSegmentS * CSegmentHelper::FindSegmentByID(struct XmlSegmentS *listHead, int ID)
 {
-	struct XmlSegmentS *result = NULL;
+	struct XmlSegmentS *result = NULL, *tmp = NULL;
 
-	result = listHead;
-	while(result){
-		if(result->ID == ID)
+	tmp = listHead;
+	while(tmp){
+		if(tmp->ID == ID) {
+			result = tmp;
 			break;
+		}
 
-		result = result->Next;
+		tmp = tmp->Next;
 	}
 
 	return result;
@@ -266,23 +271,33 @@ struct XmlSegmentS * CSegmentHelper::GetXmlSegmentByFlag(int flag)
 	struct XmlSegmentS *result = NULL;
 	struct XmlSegmentS *XmlListHead = m_XmlListHead->SegHeader;
 
-	for(SegmentElement=XmlListHead; SegmentElement; SegmentElement = SegmentElement->Next){
-		// 表明这个位置被设置
-		int nReadFlag = flag & 0x1;
-
-		if(nReadFlag > 0) {
-			TempSegmentElement = CloneSegment(SegmentElement, 1);
-
-			// 将新生成的链表加入
-			if(result){
-				CurrSegmentElement->Next = TempSegmentElement;
-				CurrSegmentElement = TempSegmentElement;
-			} else {
-				CurrSegmentElement = TempSegmentElement;
-				result = CurrSegmentElement;
-			}
-		}
+	std::vector<int> vecFlags;
+	int read_flag = 0;
+	while (flag > 0) {
+		read_flag ++ ;
+		if (flag & 0x1 > 0) {
+			vecFlags.push_back(read_flag);
+		}	
 		flag = flag >> 1;
+	}
+
+	for (int i=0; i<vecFlags.size(); i++)
+	{
+		SegmentElement = FindSegmentByID(XmlListHead, vecFlags[i]);
+		if (SegmentElement == NULL)  {
+			continue;
+		}
+
+		TempSegmentElement = CloneSegment(SegmentElement, 1);
+
+		// 将新生成的链表加入
+		if(result){
+			CurrSegmentElement->Next = TempSegmentElement;
+			CurrSegmentElement = TempSegmentElement;
+		} else {
+			CurrSegmentElement = TempSegmentElement;
+			result = CurrSegmentElement;
+		}
 	}
 
 	return result;

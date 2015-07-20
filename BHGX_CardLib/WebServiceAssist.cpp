@@ -131,7 +131,7 @@ int WebServiceUtil::NHRegCard(std::string strCardNO, char *pszXml)
 			FormatWriteInfo(strStatus.c_str(), pszXml);
 			status = iWriteInfo(pszXml);
 			if (status != CardProcSuccess) {
-				CXmlUtil::CreateResponXML(2, "¿¨»ØÐ´Ê§°Ü", pszXml);
+				CXmlUtil::CreateResponXML(CardWriteErr, "¿¨»ØÐ´Ê§°Ü", pszXml);
 			}
 		}
 	}
