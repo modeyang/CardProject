@@ -148,6 +148,7 @@ struct dataItem
 //source 与 value的默认对应值
 std::map<string, QueryColum> g_sourceValueMap;
 std::map<string, int> g_segMap;
+std::string g_SamID = "";
 
 
 CBHGX_Printer *m_pBHPrinter = NULL;
@@ -759,6 +760,9 @@ static int iCreateScanXml(char * card_info, char *xml)
 		Segment1->SetAttribute("SOURCE", "PSAM");
 		Segment1->SetAttribute("VALUE", vec_info[1].c_str());
 		RootElement->LinkEndChild(Segment1);
+
+		// get sam ID
+		g_SamID = vec_info[1];
 	}
 	XmlDoc->LinkEndChild(RootElement);
 
@@ -1637,8 +1641,10 @@ int __stdcall iRegMsgForNH(char *pszCardServerURL, char* pszXml)
 
 	if (status == CardProcSuccess){
 		int flag = 2;
-		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY | CPU_16K) == 1) {
+		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
 			flag += 1 + (1 << 7);
+		} else if (CPU_16K == 1) {
+			flag += 1 + (1 << 7) + (1 << 10);
 		}
 		status = iReadInfo(flag, pszXml);
 	}
@@ -1739,6 +1745,7 @@ int __stdcall iReadCardMessageForNHLog(char *pszCardCheckWSDL,
 	CLogHelper LogHelper(pszLogXml);
 	LogHelper.setLogParams(0, "iReadCardMessageForNHLog");
 	LogHelper.setCardInfo(pszXml);
+	LogHelper.setSamID(g_SamID);
 	LogHelper.geneHISLog();
 	return CardProcSuccess;
 }
@@ -1752,6 +1759,7 @@ int __stdcall iReadOnlyCardMessageForNHLog(char *pszLogXml, char* pszXml)
 	CLogHelper LogHelper(pszLogXml);
 	LogHelper.setLogParams(0, "iReadOnlyCardMessageForNHLog");
 	LogHelper.setCardInfo(pszXml);
+	LogHelper.setSamID(g_SamID);
 	LogHelper.geneHISLog();
 	return CardProcSuccess;
 }
@@ -1759,8 +1767,10 @@ int __stdcall iReadOnlyCardMessageForNHLog(char *pszLogXml, char* pszXml)
 int __stdcall iReadOnlyCardMessageForNH(char* pszXml)
 {
 	int flag = 2;
-	if ((CPU_8K_TEST | CPU_ONLY | CPU_8K_ONLY | CPU_16K) == 1) {
+	if ((CPU_8K_TEST | CPU_ONLY | CPU_8K_ONLY) == 1) {
 		flag += 1 + (1 << 7);
+	} else if (CPU_16K == 1) {
+		flag += 1 + (1 << 7) + (1 << 10);
 	}
 	int status = iReadInfo(flag, pszXml);
 	if (status != CardProcSuccess) {
@@ -1815,8 +1825,10 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 
 	if (status == CardProcSuccess){
 		int flag = 2;
-		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY | CPU_16K) == 1) {
+		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY ) == 1) {
 			flag += 1 + (1 << 7);
+		} else if (CPU_16K == 1) {
+			flag += 1 + (1 << 7) + (1 << 10);
 		}
 		status = iReadInfo(flag, pszXml);
 	}
@@ -2054,12 +2066,14 @@ int __stdcall iGeneLog(
 					   char* pszLogXml,
 					   int rwFlag,
 					   char *funcName,
-					   char *pszXml
+					   char *pszXml,
+					   char *hospInfo
 					   )
 {
 	CLogHelper LogHelper(pszLogXml);
 	LogHelper.setLogParams(rwFlag, funcName);
 	LogHelper.setCardInfo(pszXml);
+	LogHelper.setSamID(g_SamID);
 	LogHelper.geneHISLog();
 	return 0;
 }

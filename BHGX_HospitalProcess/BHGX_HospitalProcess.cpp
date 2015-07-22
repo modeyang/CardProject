@@ -114,7 +114,7 @@ int		g_HospEnd[HOSP_END];			//×¡Ôº½áÊø
 
 static int _HospReadInfo(int section, char *pszLogXml, char *xml, bool bLog, bool bLocal, char *pName);
 
-static int __stdcall _geneLog(char *pszLogXml, int rw, char *pName);
+static int __stdcall _geneLog(char *pszLogXml, int rw, char *pName, char *hospInfo=NULL);
 
 int __stdcall iFormatHospInfo()
 {
@@ -152,7 +152,7 @@ int __stdcall iReadFeeInfo(char *pszClinicCode, char *xml)
 	return status;
 }
 
-static int __stdcall _geneLog(char *pszLogXml, int rw, char *pName)
+static int __stdcall _geneLog(char *pszLogXml, int rw, char *pName, char *hospInfo)
 {
 	char szQuery[2048];
 	memset(szQuery, 0, sizeof(szQuery));
@@ -160,7 +160,7 @@ static int __stdcall _geneLog(char *pszLogXml, int rw, char *pName)
 	if (status != CardProcSuccess){
 		return CardReadErr;
 	}
-	iGeneLog(pszLogXml, rw, pName, szQuery);
+	iGeneLog(pszLogXml, rw, pName, szQuery, hospInfo);
 	return CardProcSuccess;
 }
 
@@ -169,7 +169,7 @@ int __stdcall iWriteHospInfoLog(char *xml, char *pszLogXml)
 	int status = 0;
 	status = iWriteInfo(xml);
 	if (status != CardProcSuccess) {
-		return _geneLog(pszLogXml, 1, "iWriteHospInfoLog");
+		return _geneLog(pszLogXml, 1, "iWriteHospInfoLog", xml);
 	}
 	return CardProcSuccess;
 }
@@ -208,7 +208,7 @@ int __stdcall iWriteHospInfoLocal(char *xml, char *pszLogXml)
 	}
 	status = iWriteInfo(xml);
 	if (status != CardProcSuccess) {
-		return _geneLog(pszLogXml, 1, "iWriteHospInfoLocal");
+		return _geneLog(pszLogXml, 1, "iWriteHospInfoLocal", xml);
 	}
 	return CardProcSuccess;
 }

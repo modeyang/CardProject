@@ -15,6 +15,8 @@ public:
 
 	void setLogParams(int rwFlag, char * processName);
 	void setCardInfo(char *cardXml);
+	void setSamID(std::string SamID) { m_SamID = SamID; }
+	void setHospInfo(char *hospInfo) { m_pHospInfo = hospInfo; }
 	void geneHISLog();
 
 private:
@@ -31,8 +33,10 @@ private:
 	std::map<std::string, ColumInfo> m_MapReaderInfo;
 	int			m_rwFlag;
 	std::string m_ProcessName;
+	std::string m_SamID;
 	std::string m_dbPath;
 	char		*m_pCardInfo;
+	char		*m_pHospInfo;
 	CDBHelper	*m_dbHelper;
 ;
 };

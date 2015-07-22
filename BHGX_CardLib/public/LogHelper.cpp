@@ -168,8 +168,13 @@ void CLogHelper::geneLogInDB()
 	log_info.cardNO = mapScValue["CARDNO"];
 	log_info.IDNumber = mapScValue["IDNUMBER"];
 	log_info.Name = mapScValue["NAME"];
-	log_info.Log = m_pCardInfo;
-	log_info.SAMID = "";
+	if (m_pHospInfo != NULL && strlen(m_pHospInfo) > 0) {
+		log_info.Log = m_pHospInfo;
+	} else {
+		log_info.Log = m_pCardInfo;
+	}
+	
+	log_info.SAMID = (char*)m_SamID.c_str();
 
 	//insert base info column
 	char timeStr[64];

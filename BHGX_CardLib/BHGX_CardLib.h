@@ -149,7 +149,8 @@ extern "C" {
 		char* pszLogXml,
 		int rwFlag,
 		char *funcName,
-		char *pszXml
+		char *pszXml,
+		char *hospInfo=NULL
 		);
 
 #define TIMELICENSE		0
