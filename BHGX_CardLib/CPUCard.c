@@ -262,7 +262,7 @@ static int _iReadCard(struct RWRequestS *list)
 			}
 
 			if (strlen((char*)(g_recIndex[pReq->nID-1].subSection)) > 0) {
-				status |= Instance->iSelectFile(CARDSEAT_RF, g_recIndex[pReq->nID-1].subSection);
+				status = Instance->iSelectFile(CARDSEAT_RF, g_recIndex[pReq->nID-1].subSection);
 				UCardFlag = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].subSection);
 				status |= Instance->iUCardAuthSys(UCardFlag);
 			}

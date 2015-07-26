@@ -294,7 +294,7 @@
             content = GetFileContent(logConf);
             
             var starttime = new Date();
-            var OutXML=obj.iATLReadClinicInfoOnlyLog(ID, content);
+            var OutXML=obj.iATLReadClinicInfoLog(ID, content);
             alert('用时: ' + GetDateDiffBySeconds(starttime, new Date()) + 's\n' + OutXML)
         }catch(e){
             alert(e);
@@ -313,7 +313,7 @@
             content = GetFileContent(logConf);
             
             var starttime = new Date();
-            var OutXML=obj.iATLReadMedicalInfoOnlyLog(ID, content);
+            var OutXML=obj.iATLReadMedicalInfoLog(ID, content);
             alert('用时: ' + GetDateDiffBySeconds(starttime, new Date()) + 's\n' + OutXML);
         } catch(e) {
             alert(e);
@@ -332,7 +332,7 @@
             content = GetFileContent(logConf);
             
             var starttime = new Date();
-            var OutXML=obj.iATLReadFeeInfoOnlyLog(ID, content);
+            var OutXML=obj.iATLReadFeeInfoLog(ID, content);
             alert('用时: ' + GetDateDiffBySeconds(starttime, new Date()) + 's\n' + OutXML);
         } catch(e) {
             alert(e);
