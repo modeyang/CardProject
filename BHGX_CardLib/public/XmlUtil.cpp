@@ -35,7 +35,7 @@ int CXmlUtil::GetQueryInfoForOne(char *QueryXML, std::string &szCardNO)
 	return -1;;
 }
 
-int CXmlUtil::GetQueryInfos(char *QueryXML, std::map<int, std::string> &mapQueryInfo)
+int CXmlUtil::GetQueryInfos(char *QueryXML, std::map<std::string, std::string> &mapQueryInfo)
 {
 	TiXmlDocument XmlDoc;
 
@@ -48,9 +48,9 @@ int CXmlUtil::GetQueryInfos(char *QueryXML, std::map<int, std::string> &mapQuery
 	while(Segment){
 		Colum = Segment->FirstChildElement();
 		while (Colum){
-			int id;
-			Colum->Attribute("ID", &id);
-			mapQueryInfo[id] = Colum->Attribute("VALUE");
+			std::string szSource = Colum->Attribute("SOURCE");
+			//Colum->Attribute("ID", &id);
+			mapQueryInfo[szSource] = Colum->Attribute("VALUE");
 			Colum = Colum->NextSiblingElement();
 		}
 		Segment = Segment->NextSiblingElement();

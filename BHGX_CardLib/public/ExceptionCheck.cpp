@@ -15,13 +15,6 @@
 using namespace std;
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 
-#if (CPU_M1 || CPU_8K)
-	#define CARDNO			1
-	#define CARDSEQ			10
-#else
-	#define CARDNO			8
-	#define CARDSEQ			10
-#endif
 
 #define FORBIDDEN_FLAG		0
 #define WARINNING_FLAG		1
@@ -210,10 +203,10 @@ int CExceptionCheck::filterForbidden(char *xml)
 		CXmlUtil::CreateResponXML(CardReadErr, err(CardReadErr), xml);
 		return CardReadErr;
 	}
-	std::map<int, std::string> mapQueryInfo;
+	std::map<std::string, std::string> mapQueryInfo;
 	CXmlUtil::GetQueryInfos(szQuery, mapQueryInfo);
-	m_strCardNO = mapQueryInfo[CARDNO];
-	m_strCardSeq = mapQueryInfo[CARDSEQ];
+	m_strCardNO = mapQueryInfo["CARDNO"];
+	m_strCardSeq = mapQueryInfo["CARDSEQ"];
 	int index = isExceptionCard(vecForbiddenRecord);
 	if (index != -1) {
 		CXmlUtil::CreateResponXML(CardForbidden, err(CardForbidden), xml);
@@ -302,10 +295,10 @@ int CDBExceptionCheck::filterForbidden(char *xml)
 		CXmlUtil::CreateResponXML(CardReadErr, err(CardReadErr), xml);
 		return CardReadErr;
 	}
-	std::map<int, std::string> mapQueryInfo;
+	std::map<std::string, std::string> mapQueryInfo;
 	CXmlUtil::GetQueryInfos(szQuery, mapQueryInfo);
-	m_strCardNO = mapQueryInfo[CARDNO];
-	m_strCardSeq = mapQueryInfo[CARDSEQ];
+	m_strCardNO = mapQueryInfo["CARDNO"];
+	m_strCardSeq = mapQueryInfo["CARDSEQ"];
 	int status = isExceptionCard(FORBIDDEN_FLAG);
 	if (status != 0) {
 		CXmlUtil::CreateResponXML(CardForbidden, err(CardForbidden), xml);

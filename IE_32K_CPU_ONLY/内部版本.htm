@@ -294,7 +294,7 @@
             content = GetFileContent(logConf);
             
             var starttime = new Date();
-            var OutXML=obj.iATLReadClinicInfoOnlyLog(ID, content);
+            var OutXML=obj.iATLReadClinicInfoLog(ID, content);
             alert('用时: ' + GetDateDiffBySeconds(starttime, new Date()) + 's\n' + OutXML)
         }catch(e){
             alert(e);
@@ -313,7 +313,7 @@
             content = GetFileContent(logConf);
             
             var starttime = new Date();
-            var OutXML=obj.iATLReadMedicalInfoOnlyLog(ID, content);
+            var OutXML=obj.iATLReadMedicalInfoLog(ID, content);
             alert('用时: ' + GetDateDiffBySeconds(starttime, new Date()) + 's\n' + OutXML);
         } catch(e) {
             alert(e);
@@ -332,7 +332,7 @@
             content = GetFileContent(logConf);
             
             var starttime = new Date();
-            var OutXML=obj.iATLReadFeeInfoOnlyLog(ID, content);
+            var OutXML=obj.iATLReadFeeInfoLog(ID, content);
             alert('用时: ' + GetDateDiffBySeconds(starttime, new Date()) + 's\n' + OutXML);
         } catch(e) {
             alert(e);
@@ -697,7 +697,7 @@
             content = GetFileContent(logConf);
             
             var starttime = new Date();
-            var ret = obj.iATLWriteHospInfoOnlyLog(TestXML, content);
+            var ret = obj.iATLWriteHospInfoLog(TestXML, content);
             var info = "WriteHospInfoLog = [" + TestXML + "]";
             if (ret != 0){
 		   		var strErr = obj.iATLerr();
@@ -952,6 +952,7 @@
 		}
 	}
 	
+	
     function NHRead()
 	{
 		try{
@@ -1164,7 +1165,7 @@
     <input type="text" name="Source" />
     <input type="button" value="查询字段数据" onclick="QueryInfo()" /><hr />
     写卡文件选择:<input type="file" name="WriteXML" />
-    <input type="button" value="写数据" onclick="WriteInfo()" />
+    <input type="button" value="写数据" onclick="WriteInfo()" /><hr/>
     <input type="button" value="写血量标记(16K)" onclick="WriteBlood()" />
     <input type="button" value="写医院数据(CPU)" onclick="WriteHospInfo()" />
     <input type="button" value="写医院数据+日志" onclick="WriteHospInfoLog()" />
@@ -1174,9 +1175,9 @@
     注册WSDL路径:<input type="text" name="RegXML" size="80" value="http://192.168.1.67:8000/ccss/ws/oneCardWebService?wsdl" />
     <input type="button" value="卡校验" onclick="CardCheck()" />
     <input type="button" value="卡黑名单校验" onclick="CardForbiddenCheck()" /><hr />
-	<input type="button" value="农合只读卡" onclick="NHReadOnly()" />
-    <input type="button" value="农合读卡" onclick="NHRead()" />
-    <input type="button" value="农合读卡+日志" onclick="NHReadLog()" />
+    <input type="button" value="农合读卡(webservice)" onclick="NHRead()" />
+    <input type="button" value="农合读卡+日志(webservice)" onclick="NHReadLog()" /><hr />
+    <input type="button" value="农合只读卡" onclick="NHReadOnly()" />
     <input type="button" value="农合读卡+校验" onclick="NHReadLocal()" /><hr />
     <input type="button" value="HIS只读" onclick="ReadOnlyHIS()" />
     <input type="button" value="HIS读接口" onclick="ReadHIS()" />

@@ -16,6 +16,7 @@ using namespace std;
 
 CLogHelper::CLogHelper(char *LogXml)
 {
+	m_pHospInfo = NULL;
 	CXmlUtil::paserLogXml(LogXml, m_MapLogConfig);
 	m_dbPath = m_MapLogConfig[1][1];
 	initDBHelper();

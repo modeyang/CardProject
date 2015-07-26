@@ -43,10 +43,11 @@ using namespace std;
 											
 #define ISGWCARD(a) ((a[0]) == '1')
 
-#define SCANCARD_XML(xml)								\
-	if (iScanCard() != 0) {								\
+#define SCANCARD_XML(xml)											\
+	if (xml == NULL) return CardInputParamError;					\
+	if (iScanCard() != 0) {											\
 		CXmlUtil::CreateResponXML(CardReadErr, "寻卡失败", xml);	\
-		return CardScanErr;								\
+		return CardScanErr;											\
 	}	
 
 #if (CPU_8K || CPU_8K_TEST || CPU_8K_ONLY)
@@ -919,6 +920,14 @@ int __stdcall iScanCard(char *xml)
 	int status = apt_ScanCard(card_info);
 	if (xml != NULL) {
 		iCreateScanXml(card_info, xml);
+	} else {
+		std::vector<std::string> vec_info;
+		vec_info = split(std::string(card_info), "|");
+		int card_type = atoi(vec_info[0].c_str());
+		if (card_type == eCPUCard) {
+			// get sam ID
+			g_SamID = vec_info[1];
+		}
 	}
 	return status;
 }
@@ -1052,12 +1061,9 @@ done:
 
 int __stdcall iReadInfo(int flag, char *xml)
 {
-	ASSERT_OPEN(g_bCardOpen);
-	if (xml == NULL) {
-		return CardReadErr;
-	}
-	
-	ISSCANCARD;
+	ASSERT_OPEN(g_bCardOpen)
+	SCANCARD_XML(xml)
+
 	int del_flag    = -1;
 	int bNHInfoRead = 0;
 	if (g_CardOps->cardAdapter->type == eM1Card ) {
@@ -1228,7 +1234,7 @@ int __stdcall iWriteInfo(char *xml)
 		return CardXmlErr;
 	}
 	
-	ISSCANCARD;
+	ISSCANCARD
 	isCardAuth(7);
 	if (g_CardOps->cardAdapter->type == eM1Card) {
 		status =  _iWriteInfo((char*)xmlStr.c_str());
@@ -1547,8 +1553,8 @@ int __stdcall iCardCtlCard(int cmd, void *data)
 
 int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServerURL,char* pszXml)
 {
-	ASSERT_OPEN(g_bCardOpen);
-	SCANCARD_XML(pszXml);
+	ASSERT_OPEN(g_bCardOpen)
+	//SCANCARD_XML(pszXml)
 
 	char szQuery[1024];
 	memset(szQuery, 0, sizeof(szQuery));
@@ -1567,10 +1573,12 @@ int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServerURL,char*
 	isCardAuth();
 	if (status == CardProcSuccess){
 		int flag = 2;
-		if ((CPU_8K_TEST | CPU_ONLY | CPU_8K_ONLY) == 1) {
-			flag += 1 + (1 << 7);
-		} else if (CPU_16K == 1) {
-			flag += 1 + (1 << 7) + (1 << 10);
+		if (g_CardOps->cardAdapter->type == eCPUCard) {
+			if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
+				flag += 1 + (1 << 7);
+			} else if (CPU_16K == 1) {
+				flag += 1 + (1 << 7) + (1 << 10);
+			}
 		}
 		status = iReadInfo(flag, pszXml);
 	}
@@ -1614,11 +1622,11 @@ int __stdcall iReadConfigMsg(char *pszConfigXML,char *pszReadXML)
 
 int __stdcall iRegMsgForNH(char *pszCardServerURL, char* pszXml)
 {
-	ASSERT_OPEN(g_bCardOpen);
+	ASSERT_OPEN(g_bCardOpen)
 	if (g_CardOps->cardAdapter->type != eM1Card) {
 		return CardNoSupport;
 	}
-	SCANCARD_XML(pszXml);
+	SCANCARD_XML(pszXml)
 
 	char szQuery[1024];
 	memset(szQuery, 0, sizeof(szQuery));
@@ -1641,10 +1649,12 @@ int __stdcall iRegMsgForNH(char *pszCardServerURL, char* pszXml)
 
 	if (status == CardProcSuccess){
 		int flag = 2;
-		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
-			flag += 1 + (1 << 7);
-		} else if (CPU_16K == 1) {
-			flag += 1 + (1 << 7) + (1 << 10);
+		if (g_CardOps->cardAdapter->type == eCPUCard) {
+			if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
+				flag += 1 + (1 << 7);
+			} else if (CPU_16K == 1) {
+				flag += 1 + (1 << 7) + (1 << 10);
+			}
 		}
 		status = iReadInfo(flag, pszXml);
 	}
@@ -1675,12 +1685,13 @@ static int _checkMsgForLocalWithLog(char* pszLogXml, char* pszXml, char *logname
 	}
 
 	int flag = 2;
-	if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
-		flag += 1 + (1 << 7);
-	} else if (CPU_16K == 1) {
-		flag += 1 + (1 << 7) + (1 << 10);
+	if (g_CardOps->cardAdapter->type == eCPUCard) {
+		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
+			flag += 1 + (1 << 7);
+		} else if (CPU_16K == 1) {
+			flag += 1 + (1 << 7) + (1 << 10);
+		}
 	}
-
 
 	if (CardProcSuccess != iReadInfo(flag, pszXml)) {
 		return CardReadErr;
@@ -1694,6 +1705,9 @@ static int _checkMsgForLocalWithLog(char* pszLogXml, char* pszXml, char *logname
 
 int __stdcall iReadCardMessageForNHLocal(char* pszLogXml, char* pszXml)
 {
+	ASSERT_OPEN(g_bCardOpen)
+	//SCANCARD_XML(pszXml)
+
 	int status =  _checkMsgForLocalWithLog(pszLogXml, pszXml, "iReadCardMessageForNHLocal");
 	if (status != CardProcSuccess) {
 		return CardCheckError;
@@ -1726,6 +1740,9 @@ int __stdcall iReadCardMessageForBothNHLocal(
 //卡校验 黑名单校验
 int __stdcall iCheckMsgForNHLocal(char* pszLogXml, char* pszXml)
 {
+	ASSERT_OPEN(g_bCardOpen)
+	//SCANCARD_XML(pszXml)
+
 	int status =  _checkMsgForLocalWithLog(pszLogXml, pszXml, "iCheckMsgForNHLocal");
 	if (status != CardProcSuccess) {
 		return CardCheckError;
@@ -1766,11 +1783,16 @@ int __stdcall iReadOnlyCardMessageForNHLog(char *pszLogXml, char* pszXml)
 
 int __stdcall iReadOnlyCardMessageForNH(char* pszXml)
 {
+	ASSERT_OPEN(g_bCardOpen)
+	//SCANCARD_XML(pszXml)
+
 	int flag = 2;
-	if ((CPU_8K_TEST | CPU_ONLY | CPU_8K_ONLY) == 1) {
-		flag += 1 + (1 << 7);
-	} else if (CPU_16K == 1) {
-		flag += 1 + (1 << 7) + (1 << 10);
+	if (g_CardOps->cardAdapter->type == eCPUCard) {
+		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
+			flag += 1 + (1 << 7);
+		} else if (CPU_16K == 1) {
+			flag += 1 + (1 << 7) + (1 << 10);
+		}
 	}
 	int status = iReadInfo(flag, pszXml);
 	if (status != CardProcSuccess) {
@@ -1782,11 +1804,12 @@ int __stdcall iReadOnlyCardMessageForNH(char* pszXml)
 
 int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerURL, char* pszXml)
 {
+	ASSERT_OPEN(g_bCardOpen)
+	//SCANCARD_XML(pszXml)
+
 	char szQuery[1024];
 	memset(szQuery, 0, sizeof(szQuery));
 
-	SCANCARD_XML(pszXml);
-	
 	WebServiceUtil checkUtil(pszCardCheckWSDL, pszCardServerURL);
 
 	std::string strCardNO;
@@ -1825,10 +1848,12 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 
 	if (status == CardProcSuccess){
 		int flag = 2;
-		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY ) == 1) {
-			flag += 1 + (1 << 7);
-		} else if (CPU_16K == 1) {
-			flag += 1 + (1 << 7) + (1 << 10);
+		if (g_CardOps->cardAdapter->type == eCPUCard) {
+			if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
+				flag += 1 + (1 << 7);
+			} else if (CPU_16K == 1) {
+				flag += 1 + (1 << 7) + (1 << 10);
+			}
 		}
 		status = iReadInfo(flag, pszXml);
 	}
@@ -2037,12 +2062,9 @@ int __stdcall iWritebloodbank(char *xml)
 
 int __stdcall iReadCardSEQ(char *xml)
 {
-	ASSERT_OPEN(g_bCardOpen);
-	if (xml == NULL) {
-		return CardReadErr;
-	}
+	ASSERT_OPEN(g_bCardOpen)
+	//SCANCARD_XML(xml)
 
-	ISSCANCARD;
 	char szQuery[1024];
 	memset(szQuery, 0, sizeof(szQuery));
 	std::string query;
@@ -2074,6 +2096,7 @@ int __stdcall iGeneLog(
 	LogHelper.setLogParams(rwFlag, funcName);
 	LogHelper.setCardInfo(pszXml);
 	LogHelper.setSamID(g_SamID);
+	LogHelper.setHospInfo(hospInfo);
 	LogHelper.geneHISLog();
 	return 0;
 }

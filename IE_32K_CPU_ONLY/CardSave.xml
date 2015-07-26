@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="gb2312" ?>
+<SEGMENTS PROGRAMID="001">
+    <SEGMENT ID="2">
+      <COLUMN ID="9" VALUE="你好" />
+    </SEGMENT>
+</SEGMENTS>

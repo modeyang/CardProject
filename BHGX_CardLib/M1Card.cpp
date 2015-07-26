@@ -1305,6 +1305,9 @@ static struct XmlSegmentS* M1ConvertXmltoList(char *xml)
 		Segment = Segment->NextSiblingElement();
 	}
 
+	if (mapSplite.size() == 0) 
+		return result;
+
 	SegmentElement = g_SegHelper->FindSegmentByID(XmlListHead, 5);
 	if (NULL != SegmentElement) {
 		struct XmlSegmentS *pTel = result;

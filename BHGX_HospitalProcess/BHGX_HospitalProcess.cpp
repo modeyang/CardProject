@@ -74,6 +74,8 @@ LocationInfo	g_ClinicLocaltion[8] = {
 };
 
 
+static int _ParseXml(const char *src, std::map<std::string, std::string> &mapValue);
+
 /************************************************************************/
 /*     门诊信息                                                         */
 /************************************************************************/
@@ -114,7 +116,7 @@ int		g_HospEnd[HOSP_END];			//住院结束
 
 static int _HospReadInfo(int section, char *pszLogXml, char *xml, bool bLog, bool bLocal, char *pName);
 
-static int __stdcall _geneLog(char *pszLogXml, int rw, char *pName, char *hospInfo=NULL);
+static int _geneLog(char *pszLogXml, int rw, char *pName, char *hospInfo=NULL);
 
 int __stdcall iFormatHospInfo()
 {
@@ -152,9 +154,9 @@ int __stdcall iReadFeeInfo(char *pszClinicCode, char *xml)
 	return status;
 }
 
-static int __stdcall _geneLog(char *pszLogXml, int rw, char *pName, char *hospInfo)
+static int _geneLog(char *pszLogXml, int rw, char *pName, char *hospInfo)
 {
-	char szQuery[2048];
+	char szQuery[1024 * 4];
 	memset(szQuery, 0, sizeof(szQuery));
 	int status = iReadInfo(3, szQuery);
 	if (status != CardProcSuccess){
@@ -168,10 +170,20 @@ int __stdcall iWriteHospInfoLog(char *xml, char *pszLogXml)
 {
 	int status = 0;
 	status = iWriteInfo(xml);
-	if (status != CardProcSuccess) {
-		return _geneLog(pszLogXml, 1, "iWriteHospInfoLog", xml);
+
+	char scan_xml[1024];
+	memset(scan_xml, 0, sizeof(scan_xml));
+	status = iScanCard(scan_xml);
+	if (status == CardProcSuccess) {
+		std::map<std::string, std::string> mapValue;
+		_ParseXml(scan_xml, mapValue);
+
+		if (mapValue["CARDCATEGORY"] == std::string("CPU")) {
+			status = iWriteInfo(xml);
+		}
+		_geneLog(pszLogXml, 1, "iWriteHospInfoLocal", xml);
 	}
-	return CardProcSuccess;
+	return status;
 }
 
 //门诊摘要
@@ -206,11 +218,20 @@ int __stdcall iWriteHospInfoLocal(char *xml, char *pszLogXml)
 	if (status != CardProcSuccess) {
 		return status;
 	}
-	status = iWriteInfo(xml);
-	if (status != CardProcSuccess) {
-		return _geneLog(pszLogXml, 1, "iWriteHospInfoLocal", xml);
+	char scan_xml[1024];
+	memset(scan_xml, 0, sizeof(scan_xml));
+	status = iScanCard(scan_xml);
+	if (status == CardProcSuccess) {
+		std::map<std::string, std::string> mapValue;
+		_ParseXml(scan_xml, mapValue);
+
+		if (mapValue["CARDCATEGORY"] == std::string("CPU")) {
+			status = iWriteInfo(xml);
+		}
+		_geneLog(pszLogXml, 1, "iWriteHospInfoLocal", xml);
 	}
-	return CardProcSuccess;
+
+	return status;
 }
 
 //门诊摘要日志
@@ -328,6 +349,23 @@ static bool _isExtra(int id, const int *extraLoaction, int extraLen)
 	return false;
 }
 
+
+static int _ParseXml(const char *src, std::map<std::string, std::string> &mapValue)
+{
+	CMarkup xml;
+	xml.SetDoc(src);						
+	if (!xml.FindElem("SEGMENTS")){		
+		return -1;								
+	}
+	xml.IntoElem();
+	while (xml.FindElem("SEGMENT")){
+		std::string szSource = xml.GetAttrib("SOURCE");
+		mapValue[szSource] = xml.GetAttrib("VALUE");
+	}
+	xml.OutOfElem();
+	return 0;
+	
+}
 
 static int _ParseSegXml(const char *src, 
 						const LocationInfo *location, 

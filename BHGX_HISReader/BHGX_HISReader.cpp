@@ -122,7 +122,7 @@ public:
 		if (bNet) {
 			if (pszCardCheckWSDL == NULL || strlen(pszCardCheckWSDL) == 0 || 
 				pszCardServerURL == NULL || strlen(pszCardServerURL) == 0) {
-					return CardInputParamError;
+				return CardInputParamError;
 			}
 		}
 	
