@@ -1820,15 +1820,27 @@ int __stdcall iReadCardMessageForNH(char *pszCardCheckWSDL, char *pszCardServerU
 	}
 
 	status = checkUtil.NHCheckValid(strCardNO, pszXml);
-	if (status == CardProcSuccess && g_CardOps->cardAdapter->type == eM1Card){
-		status = checkUtil.NHRegCard(strCardNO, pszXml);
-		if (status == CardProcSuccess) {
-			status = iWriteInfo(pszXml);
-			if (status != CardProcSuccess) {
-				CXmlUtil::CreateResponXML(CardWriteErr, "¿¨»ØÐ´Ê§°Ü", pszXml);
+	if (status == CardProcSuccess){
+		if (g_CardOps->cardAdapter->type == eM1Card) {
+			status = checkUtil.NHRegCard(strCardNO, pszXml);
+			if (status == CardProcSuccess) {
+				status = iWriteInfo(pszXml);
+				if (status != CardProcSuccess) {
+					CXmlUtil::CreateResponXML(CardWriteErr, "¿¨»ØÐ´Ê§°Ü", pszXml);
+					goto done;
+				}
+			} else {
+				goto done;
 			}
 		}
-	}	
+	} else {
+		goto done;
+	}
+
+done:
+	if (status != CardProcSuccess) {
+		return status;
+	}
 
 	std::string strMedicalID;
 	status = ParseValueQuery("MEDICARECERTIFICATENO", strMedicalID);

@@ -902,10 +902,6 @@ STDMETHODIMP CCardProcess::iATLScanCardXML(BSTR* xml)
 {
 	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
 	int status = iScanCard(g_ReadBuff);
-	if (status) {
-		memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
-		CreateResponXML(status, GetErrInfo(status), g_ReadBuff);
-	}
 	_bstr_t bstr(g_ReadBuff);
 	*xml = bstr.Detach();
 	return S_OK;
