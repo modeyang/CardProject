@@ -1677,11 +1677,21 @@ int __stdcall iRegMsgForNHLog(char *pszCardServerURL, char* pszLogXml, char* psz
 	return CardProcSuccess;
 }
 
-static int _checkMsgForLocalWithLog(char* pszLogXml, char* pszXml, char *logname)
+
+int __stdcall iReadCardMessageForNHLocal(char* pszLogXml, char* pszXml)
 {
+	ASSERT_OPEN(g_bCardOpen)
+
 	int status = iCheckException(pszLogXml, pszXml);
 	if (status != CardProcSuccess) {
 		return status;
+	}
+
+	std::string strMedicalID;
+	status = ParseValueQuery("MEDICARECERTIFICATENO", strMedicalID);
+	if (status != 0) {
+		CXmlUtil::CreateResponXML(CardReadErr, "获取参合号失败", pszXml);
+		return CardReadErr;
 	}
 
 	int flag = 2;
@@ -1697,28 +1707,9 @@ static int _checkMsgForLocalWithLog(char* pszLogXml, char* pszXml, char *logname
 		return CardReadErr;
 	}
 	CLogHelper LogHelper(pszLogXml);
-	LogHelper.setLogParams(0, logname);
+	LogHelper.setLogParams(0, "iReadCardMessageForNHLocal");
 	LogHelper.setCardInfo(pszXml);
 	LogHelper.geneHISLog();
-	return CardProcSuccess;
-}
-
-int __stdcall iReadCardMessageForNHLocal(char* pszLogXml, char* pszXml)
-{
-	ASSERT_OPEN(g_bCardOpen)
-	//SCANCARD_XML(pszXml)
-
-	int status =  _checkMsgForLocalWithLog(pszLogXml, pszXml, "iReadCardMessageForNHLocal");
-	if (status != CardProcSuccess) {
-		return CardCheckError;
-	}
-
-	std::string strMedicalID;
-	status = ParseValueQuery("MEDICARECERTIFICATENO", strMedicalID);
-	if (status != 0) {
-		CXmlUtil::CreateResponXML(CardReadErr, "获取参合号失败", pszXml);
-		return CardReadErr;
-	}
 	return CardProcSuccess;
 }
 
@@ -1743,10 +1734,12 @@ int __stdcall iCheckMsgForNHLocal(char* pszLogXml, char* pszXml)
 	ASSERT_OPEN(g_bCardOpen)
 	//SCANCARD_XML(pszXml)
 
-	int status =  _checkMsgForLocalWithLog(pszLogXml, pszXml, "iCheckMsgForNHLocal");
+	int status = iCheckException(pszLogXml, pszXml);
 	if (status != CardProcSuccess) {
-		return CardCheckError;
+		return status;
 	}
+	
+	CXmlUtil::CreateResponXML(CardProcSuccess, "卡验证成功，正常卡", pszXml);
 	return CardProcSuccess;
 }
 

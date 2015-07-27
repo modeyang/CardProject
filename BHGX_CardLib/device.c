@@ -110,18 +110,15 @@ struct CardDevice *getCardDevice(const char *System)
 	HANDLE hFind;
 	//char Pattern[MAX_PATH];
 	char CurPath[MAX_PATH];
-	char SysPath[MAX_PATH];
+	char SysPath[MAX_PATH] = "D://card_drivers";
 
 	int nProbe = 0;
 
 	// ¿ªÊ¼²éÕÒ
 	GetCurrentDirectory(MAX_PATH, CurPath);
-	GetSystemDirectory(SysPath, MAX_PATH);
+	//GetSystemDirectory(SysPath, MAX_PATH);
 	SetCurrentDirectory(SysPath);
 	hFind = FindFirstFile("BHGX_CARD_*", &FindFileData);
-	//strcpy(Pattern, System);
-	//strcat(Pattern, "\\BHGX_CARD_*");
-	//hFind = FindFirstFile(Pattern, &FindFileData);
 	while (hFind != INVALID_HANDLE_VALUE)
 	{
 		HINSTANCE hInstLibrary;
