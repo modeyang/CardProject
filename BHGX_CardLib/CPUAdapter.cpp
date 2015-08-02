@@ -83,6 +83,10 @@ static int InitCpuGlobalList()
 
 static int InitionCpuGList(char *xmlstr)
 {
+	int cpu_rec_end = 11;
+	if (CPU_16K == 1) {
+		cpu_rec_end = 12;
+	}
 	if (g_CpuXmlListHead == NULL){
 		g_CpuXmlListHead = (struct XmlProgramS*)malloc(sizeof(struct XmlProgramS));
 		g_CpuXmlListHead->SegHeader = g_CpuXmlListHead->SegTailer = NULL;
@@ -137,7 +141,7 @@ static int InitionCpuGList(char *xmlstr)
 			pColumnS->Next = NULL;
 			pColumnS->parent = pSeg;
 			strcpy(pColumnS->Source, xml.GetAttrib("SOURCE").c_str());
-			if (nSegID < 11) 
+			if (nSegID < cpu_rec_end) 
 				pColumnS->ID = atoi(xml.GetAttrib("ID").c_str());
 			else
 				pColumnS->ID = nIDCounts;
