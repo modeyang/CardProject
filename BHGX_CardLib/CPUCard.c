@@ -101,11 +101,15 @@ static int GetFloderKeyID(char *folder)
 //mode为擦写标志 0为擦除
 static int GetUpdateKeyID(int SegID,int mode)
 {
+	int update_id_16K = 10;
+	if (CPU_16K == 1) {
+		update_id_16K = 11;
+	}
 	if (SegID > 2 && SegID < 5)
 		return KEY_UK_DDF1;
 	else if (SegID < 9) 
 		return KEY_UK_DF01;
-	else if (SegID < 10)
+	else if (SegID < update_id_16K)
 		return KEY_UK_DF02_1;
 	else if (SegID < 11)
 		return KEY_UK_DF02_2;
@@ -243,9 +247,9 @@ static struct RWRequestS  *_CreateReadList(struct RWRequestS *ReqList, int mode)
 	return ReadList;
 }
 
-#define		END_OFFSET	0
-#define     START_POS_1 1893
-#define		START_POS_2 3267
+#define		END_OFFSET		0
+#define     START_POS_1		1893
+#define		START_POS_2		3267
 #define		CPU_8K_OFFSET	254
 static int _iReadCard(struct RWRequestS *list)
 {
@@ -404,7 +408,7 @@ static int _iWriteCard(struct RWRequestS *list)
 	int UKey = 0;
 	int mode = 0;
 	char write_flag = 0xff;
-	if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY) == 1) {
+	if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_16K) == 1) {
 		write_flag = 1;
 	} 
 
@@ -530,6 +534,9 @@ int __stdcall FormatCpuCard(char c)
 		status |= Instance->iSelectFile(CARDSEAT_RF , send);
 
 		status |= Instance->iUCardAuthSys(KEY_UK_DF03_1);
+		if (status) {
+			return status;
+		}
 
 		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY) == 1) {
 			strcpy((char*)send, "EE01");
@@ -545,13 +552,13 @@ int __stdcall FormatCpuCard(char c)
 			length = START_POS_1 - END_OFFSET - CPU_8K_OFFSET;
 			status = Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
 
-			strcpy((char*)send, "ED01");
-			length = START_POS_2 - END_OFFSET - CPU_8K_OFFSET;
-			status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, length, 0);
-
 			strcpy((char*)send, "EE02");
 			length = START_POS_1 - END_OFFSET - CPU_8K_OFFSET;
 			status = Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
+
+			strcpy((char*)send, "ED01");
+			length = START_POS_2 - END_OFFSET - CPU_8K_OFFSET;
+			status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, length, 0);
 
 			strcpy((char*)send, "ED02");
 			length = START_POS_2 - END_OFFSET - CPU_8K_OFFSET;
