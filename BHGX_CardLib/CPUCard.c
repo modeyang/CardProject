@@ -377,8 +377,10 @@ static void ParseWriteContent(struct RWRequestS *list)
 
 		//fix 8k时，如果首文件记录为空，则会出现bcd值偏移，出现错误
 		if ((CurrRequest->offset - Agent->offset) == 0){
-			if (prevRequest == NULL || prevRequest->nID != CurrRequest->nID
-				|| CurrRequest->nID >= BIN_START) {
+			if (prevRequest == NULL ||
+				prevRequest->nID != CurrRequest->nID ||
+				CurrRequest->nID >= BIN_START ||
+				CurrRequest->datatype == eSureType) {
 				bcd = Agent->value;
 			}
 		}
@@ -476,20 +478,19 @@ static void* SpliteSegments(struct RWRequestS *list)
 	struct RWRequestS *cur = list;
 	int span = 1;
 	int pos = 0;
-	if (cur->datatype == eSureType 
-		|| cur->datatype == eCycType) {
-			if (cur->datatype == eCycType)
-				span = g_RecMap[list->nID];
+	if (cur->datatype == eSureType ||
+		cur->datatype == eCycType) {
+		if (cur->datatype == eCycType)
+			span = g_RecMap[list->nID];
 
-			while (cur)
-			{
-				if (pos == span){
-					pos = 0;
-					cur->offset = 0;
-				}
-				pos++;
-				cur = cur->Next;
+		while (cur) {
+			if (pos == span){
+				pos = 0;
+				cur->offset = 0;
 			}
+			pos++;
+			cur = cur->Next;
+		}
 	}
 	return list;
 }
