@@ -1,0 +1,6 @@
+        <?xml version="1.0" encoding="gb2312" ?>
+<SEGMENTS PROGRAMID="001">
+    <SEGMENT ID="1">
+        <COLUMN ID="10" VALUE="20160804" />
+    </SEGMENT>
+</SEGMENTS>

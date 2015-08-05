@@ -45,10 +45,10 @@
 #define BIN_END		22
 
 //每个字段的最大记录条数
-#if (CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_16K)
-int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
+#if (CPU_16K)
+int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 2, 2, 2, 2};
 #else
-int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 6, 20, 3, 5};
+int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
 #endif
 
 extern  struct RecFolder g_recIndex[30];
@@ -104,6 +104,9 @@ static int GetUpdateKeyID(int SegID,int mode)
 	int update_id_16K = 10;
 	if (CPU_16K == 1) {
 		update_id_16K = 11;
+		if (SegID <= 2) {
+			return KEY_UK_DDF1;
+		}
 	}
 	if (SegID > 2 && SegID < 5)
 		return KEY_UK_DDF1;
@@ -253,9 +256,12 @@ static struct RWRequestS  *_CreateReadList(struct RWRequestS *ReqList, int mode)
 #define		CPU_8K_OFFSET	254
 static int _iReadCard(struct RWRequestS *list)
 {
+	char buf[1024];
+
 	struct RWRequestS *pReq = list;
 	int status = 0;
 	int UCardFlag = 0;
+	memset(buf, 0, sizeof(buf));
 	if (Instance){
 		while (pReq){
 			status = 0;
@@ -409,10 +415,7 @@ static int _iWriteCard(struct RWRequestS *list)
 	int status = 1;
 	int UKey = 0;
 	int mode = 0;
-	char write_flag = 0xff;
-	if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_16K) == 1) {
-		write_flag = 1;
-	} 
+	char write_flag = 1;
 
 	if (Instance)
 	{
