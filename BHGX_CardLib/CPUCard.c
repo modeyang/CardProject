@@ -48,7 +48,7 @@
 #if (CPU_16K)
 int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 2, 2, 2, 2};
 #else
-int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 2, 2, 3, 5};
+int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 3, 10, 3, 5};
 #endif
 
 extern  struct RecFolder g_recIndex[30];

@@ -226,5 +226,6 @@ int CSQLServerHelper::insert_log(db_log_info & log_info)
 		cout<<e.Description()<<endl; 
 		return CardDBInsertError;
 	}
+	cout<< "影响的行数" << RecordsAffected.lVal << endl;
 	return CardProcSuccess;
 }
