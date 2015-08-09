@@ -123,12 +123,12 @@ struct CardDevice *getCardDevice(const char *System)
 	{
 		HINSTANCE hInstLibrary;
 		hInstLibrary = LoadLibrary(FindFileData.cFileName);
+		LOG_INFO("load library: %s", FindFileData.cFileName);
 		if (hInstLibrary != NULL)
 		{
 			FunProbe = (DllProbe)GetProcAddress(hInstLibrary, "bProbe");
-			printf("%s:Probe函数地址:%ll\n", FindFileData.cFileName, &FunProbe);
 			nProbe = FunProbe();
-			printf("bProbe:%d\n",nProbe);
+			LOG_INFO("%s:Probe函数地址:%d, status:%d\n", FindFileData.cFileName, &FunProbe, nProbe);
 			if((FunProbe != NULL) && nProbe)
 			{
 				result = _InitDevice(hInstLibrary);

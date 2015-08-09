@@ -1,8 +1,9 @@
-#include <iostream>
+
 #include "SQLiteHelper.h"
 #include <exception>
 #include <sstream>
 #include "../public/liberr.h"
+#include "../public/debug.h"
 
 using namespace std;
 
@@ -144,14 +145,15 @@ int CSQLServerHelper::connect(char *addr)
 			"Provider=SQLOLEDB.1;Password=BHGX@greatsoft.net; Persist Security Info=True; \
 			User ID=sa;Initial Catalog=bhgx_healthcard ;Data Source=%s", addr);
 
+		LOG_DEBUG(conn_str);
 		_bstr_t bs_conn_str(conn_str);
 		HRESULT hr = m_pConnection->Open(bs_conn_str, "","", adConnectUnspecified);  
 		if (hr != S_OK) {
-			cout<<"Can not connect to the specified database!"<<endl;
+			LOG_ERROR("Can not connect to the specified database <%s>!", addr);
 			return CardDBConnectError;
 		}
 	} catch (_com_error &e) {
-		cout<<e.Description()<<endl;
+		LOG_ERROR(e.Description());
 		return CardDBConnectError;
 	}
 	return CardProcSuccess;
@@ -171,6 +173,7 @@ int CSQLServerHelper::query(char *sql)
 {
 	_bstr_t bstrSQL(sql);
 	_RecordsetPtr record_set;
+	LOG_INFO(sql);
 	record_set.CreateInstance(__uuidof(Recordset)); 
 	record_set->Open(bstrSQL, m_pConnection.GetInterfacePtr(), adOpenDynamic, adLockOptimistic, adCmdText);
 
@@ -205,7 +208,8 @@ int CSQLServerHelper::query(char *sql)
 		m_vecCheckInfo.push_back(info);
 		record_set->MoveNext();  
 	 }
-
+	
+	 LOG_INFO("数据查询结果行数:%d", int(m_vecCheckInfo.size()));
 	 return m_vecCheckInfo.size();
 }
 
@@ -221,11 +225,13 @@ int CSQLServerHelper::insert_log(db_log_info & log_info)
 	_RecordsetPtr record_set;
 	record_set.CreateInstance(__uuidof(Recordset)); 
 	try{
+		LOG_DEBUG((char*)ostr.str().c_str());
 		record_set = m_pConnection->Execute(_bstr_t(ostr.str().c_str()) , &RecordsAffected, adCmdText);
 	} catch (_com_error &e) {
-		cout<<e.Description()<<endl; 
+		LOG_ERROR(e.Description());
 		return CardDBInsertError;
 	}
-	cout<< "影响的行数" << RecordsAffected.lVal << endl;
+	int lines = (int)RecordsAffected.lVal;
+	LOG_INFO("影响的行数: %d", 1);
 	return CardProcSuccess;
 }

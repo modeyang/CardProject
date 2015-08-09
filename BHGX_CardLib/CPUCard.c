@@ -5,6 +5,7 @@
 #include "adapter.h"
 #include "public/liberr.h"
 #include "public/algorithm.h"
+#include "public/debug.h"
 
 
 #define ISAPTSCANCARD {if (apt_ScanCard() != 0) return CardScanErr;}
@@ -44,7 +45,6 @@
 #define BIN_START   15
 #define BIN_END		22
 
-//每个字段的最大记录条数
 #if (CPU_16K)
 int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 2, 2, 2, 2};
 #else
@@ -204,6 +204,7 @@ static struct RWRequestS  *_CreateReadList(struct RWRequestS *ReqList, int mode)
 	struct RWRequestS *NCurrent;
 	struct RWRequestS *ReadList = NULL;
 
+	LOG_INFO("create agent for card read/write request");
 	current = ReqList;
 	while(current)
 	{
@@ -239,7 +240,7 @@ static struct RWRequestS  *_CreateReadList(struct RWRequestS *ReqList, int mode)
 	while(current)
 	{
 		if (current->datatype == eRecType) {
-			current->length += g_RecMap[current->nID] * 2;
+			current->length += get_sec_counts(current->nID) * 2;
 			current->value = (BYTE*)malloc(current->length + 1);
 		} else {
 			current->value = (BYTE*)malloc(current->length + 1);
@@ -269,16 +270,20 @@ static int _iReadCard(struct RWRequestS *list)
 				status = Instance->iSelectFile(CARDSEAT_RF, g_recIndex[pReq->nID-1].section);
 				UCardFlag = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].section);
 				status |= Instance->iUCardAuthSys(UCardFlag);
+				LOG_INFO("文件名:%s, KeyID:%d, iUCardAuthSys:%d", g_recIndex[pReq->nID-1].section, UCardFlag, status);
 			}
 
 			if (strlen((char*)(g_recIndex[pReq->nID-1].subSection)) > 0) {
 				status = Instance->iSelectFile(CARDSEAT_RF, g_recIndex[pReq->nID-1].subSection);
 				UCardFlag = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].subSection);
 				status |= Instance->iUCardAuthSys(UCardFlag);
+				LOG_INFO("文件名:%s, KeyID:%d, iUCardAuthSys:%d", g_recIndex[pReq->nID-1].subSection, UCardFlag, status);
 			}
 
-			if (status)
+			if (status) {
+				LOG_ERROR("读验证失败");
 				goto done;
+			}
 			
 			switch (pReq->datatype)
 			{
@@ -286,13 +291,16 @@ static int _iReadCard(struct RWRequestS *list)
 			case eCycType:
 			case eRecType:
 				status |= Instance->iReadRec(CARDSEAT_RF, g_recIndex[pReq->nID-1].fileName,
-					pReq->value, pReq->length, 0xff, g_RecMap[pReq->nID]);
+					pReq->value, pReq->length, 0xff, get_sec_counts(pReq->nID));
+				LOG_INFO("文件名:%s, iReadRec:%d", g_recIndex[pReq->nID-1].fileName, status);
 				break;
 			case eBinType:
 				status |= Instance->iReadBin(CARDSEAT_RF, g_recIndex[pReq->nID-1].fileName,
 					pReq->value, pReq->length - END_OFFSET, pReq->offset);
+				LOG_INFO("文件名:%s, iReadBin:%d", g_recIndex[pReq->nID-1].fileName, status);
 				break;
 			}
+			
 			pReq = pReq->Next;
 		}
 	}
@@ -426,22 +434,22 @@ static int _iWriteCard(struct RWRequestS *list)
 				status = Instance->iSelectFile(CARDSEAT_RF, g_recIndex[pReq->nID-1].section);
 				UKey = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].section);
 				status |= Instance->iUCardAuthSys(UKey);
+				LOG_INFO("文件名:%s, KeyID:%d, iUCardAuthSys:%d", g_recIndex[pReq->nID-1].section, UKey, status);
+
 			}
 
 			if (strlen((char*)(g_recIndex[pReq->nID-1].subSection)) > 0) {
 				status |= Instance->iSelectFile(CARDSEAT_RF, g_recIndex[pReq->nID-1].subSection);
 				UKey = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].subSection);
 				status |= Instance->iUCardAuthSys(UKey);
-			}
+				LOG_INFO("文件名:%s, KeyID:%d, iUCardAuthSys:%d", g_recIndex[pReq->nID-1].subSection, UKey, status);
 
-			if (pReq->datatype == eSureType) {
-				mode = *(BYTE*)(pReq->value);
-				mode = (mode==0 ? 1 : 0);
 			}
 
 			UKey = GetUpdateKeyID(pReq->nID, mode);
 			status |= Instance->iUCardAuthSys(UKey);
 			if (status) {
+				LOG_ERROR("写验证失败, Update KeyID:%d, iUCardAuthSys:%d", UKey, status);
 				goto done;
 			}
 
@@ -452,17 +460,25 @@ static int _iWriteCard(struct RWRequestS *list)
 				{
 				case eRecType:
 					status |= Instance->iWriteRec(CARDSEAT_RF, g_recIndex[pReq->nID-1].fileName, pReq->value,
-						pReq->length , write_flag, g_RecMap[pReq->nID]);
+						pReq->length , write_flag, get_sec_counts(pReq->nID));
+					LOG_INFO("记录文件名:%s，内容长度:%d, iWriteRec:%d", g_recIndex[pReq->nID-1].fileName, pReq->length, status);
 					break;
 				case eBinType:
 					status |= Instance->iWriteBin(CARDSEAT_RF, g_recIndex[pReq->nID-1].fileName , pReq->value, 0, 
 						pReq->length, pReq->offset);
+					LOG_INFO("Bin文件名:%s，内容长度:%d, iWriteBin:%d", g_recIndex[pReq->nID-1].fileName, pReq->length, status);
+
 					break;
 				case eCycType:
 					status |= Instance->iAppendRec(g_recIndex[pReq->nID-1].fileName, pReq->value, pReq->length);
+					LOG_INFO("循环文件名:%s，内容长度:%d, iAppendRec:%d", g_recIndex[pReq->nID-1].fileName, pReq->length, status);
+
 					break;
 				case eSureType:
+					mode = *(BYTE*)(pReq->value);
+					mode = (mode==1 ? 1 : 0);
 					status |= Instance->iSignRec(g_recIndex[pReq->nID-1].fileName, pReq->nColumID, mode);
+					LOG_INFO("标记文件名:%s，内容:%d, iSignRec:%d", g_recIndex[pReq->nID-1].fileName, mode, status);
 					break;
 
 				}
@@ -484,7 +500,7 @@ static void* SpliteSegments(struct RWRequestS *list)
 	if (cur->datatype == eSureType ||
 		cur->datatype == eCycType) {
 		if (cur->datatype == eCycType)
-			span = g_RecMap[list->nID];
+			span = get_sec_counts(list->nID);
 
 		while (cur) {
 			if (pos == span){
@@ -539,6 +555,7 @@ int __stdcall FormatCpuCard(char c)
 
 		status |= Instance->iUCardAuthSys(KEY_UK_DF03_1);
 		if (status) {
+			LOG_ERROR("格式化验证失败, Update KeyID:%d, iUCardAuthSys:%d", KEY_UK_DF03_1, status);
 			return status;
 		}
 
@@ -601,6 +618,7 @@ int __stdcall FormatCpuCard(char c)
 }
 
 int __stdcall get_sec_counts(int sec) {
+
 	if (sec < 0 || sec >= BIN_START) {
 		return -1;
 	}

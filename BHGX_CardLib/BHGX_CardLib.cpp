@@ -34,8 +34,6 @@ using namespace std;
 
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 
-#define DBGCore(format, ...) LogWithTime(0, format)
-
 #define ISSCANCARD {							\
 	if (iScanCard() != 0)						\
 		return CardScanErr;						\
@@ -50,13 +48,13 @@ using namespace std;
 		return CardScanErr;											\
 	}	
 
-#if (CPU_8K || CPU_8K_TEST || CPU_8K_ONLY)
-#define CPU_CAN_WRITE_SECTION	3
+#if (CPU_16K)
+#define CPU_CAN_WRITE_SECTION	0
+#define CPU_BIN_SECTION			12
 #else 
 #define CPU_CAN_WRITE_SECTION	3
-#endif
-
 #define CPU_BIN_SECTION			11
+#endif
 
 
 #define TIMEOUT		15000
@@ -921,8 +919,11 @@ int __stdcall iScanCard(char *xml)
 	int status = apt_ScanCard(card_info);
 	if (status != CardProcSuccess) {
 		if (xml != NULL) CXmlUtil::CreateResponXML(status, err(status), xml);
+		LOG_ERROR(err(status));
 		return status;
 	}
+
+	LOG_DEBUG(card_info);
 
 	// scancard success
 	if (xml != NULL) {
@@ -1049,6 +1050,7 @@ static int _iReadInfo(int flag, char *xml, int del_flag=-1)
 	if (RequestList == NULL) {
 		status = CardMallocFailed;
 		CXmlUtil::CreateResponXML(status, err(status), xml);
+		LOG_ERROR(err(status));
 		goto done;
 	}
 
@@ -1143,6 +1145,7 @@ static int _iWriteInfo(char *xml)
 	XmlList = g_CardOps->iConvertXmltoList(xml);
 
 	if (XmlList == NULL){
+		LOG_ERROR(err(CardXmlErr));
 		return CardXmlErr;
 	}
 
@@ -1150,6 +1153,7 @@ static int _iWriteInfo(char *xml)
 	RequestList = apt_CreateRWRequest(XmlList, 0, eCPUCard);
 	if (RequestList == NULL) {
 		status = CardMallocFailed;
+		LOG_ERROR(err(CardMallocFailed));
 		goto done;
 	}
 
@@ -1237,7 +1241,7 @@ int __stdcall iWriteInfo(char *xml)
 	
 	std::string xmlStr(xml);
 	if (len == 1 || CXmlUtil::CheckCardXMLValid(xmlStr) < 0){
-		LogPrinter("CardXML:Check Error\n");
+		LOG_DEBUG("CardXML:Check Error\n");
 		return CardXmlErr;
 	}
 	
@@ -1504,12 +1508,12 @@ int __stdcall iCreateCard(char *pszCardDataXml)
 
 	std::string xmlStr(pszCardDataXml);
 	if (CXmlUtil::CheckCardXMLValid(xmlStr) < 0){
-		LogPrinter("CardXML:Check Error\n");
+		LOG_DEBUG("CardXML:Check Error");
 		return CardXmlErr;
 	}
 
 	if (g_CardOps->cardAdapter->type == eCPUCard) {
-		LogPrinter("CPU暂不支持\n");
+		LOG_DEBUG("CPU暂不支持");
 		return CardNoSupport;
 	}
 
@@ -1526,10 +1530,10 @@ int __stdcall iCreateCard(char *pszCardDataXml)
 		iGetKeyBySeed((unsigned char *)stColumn->Value, KeyB);
 
 		nRet = iWriteInfo((char*)xmlStr.c_str());
-		LogPrinter("回写数据：%d\n", nRet);
+		LOG_DEBUG("回写数据：%d", nRet);
 
 		nRet = InitPwd(KeyB);
-		LogPrinter( "重置密码结果%d\n", nRet);
+		LOG_DEBUG( "重置密码结果%d", nRet);
 
 	} else {
 		return CardCreateErr;

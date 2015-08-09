@@ -5,30 +5,20 @@
 extern "C" {
 #endif	// __cplusplus
 
-	void LogWithTime(int level, char *format, ...);
+	void LogWithTime(int level, char *func, int line, char *format, ...);
 
-	void LogMessage(char *formate, ...);
+	void LogMessage(char *prelog, char *formate, ...);
 
-	void LogPrinter(char *formate, ...);
+	void LogPrinter(char *prelog, char *formate, ...);
 
 	int  SetDbgLevel(int level);
 
 	int	 GetDbgLevel(void);
 
-	int pTime(void);
-
-	//   
-	#define DBG(level, format, ...)					\
-		do {										\
-			if(level < GetDbgLevel())			\
-			{										\
-			LogMessage(format,##__VA_ARGS__);		\
-			}\
-			else \
-			{\
-			LogPrinter(format,##__VA_ARGS__);\
-			}\
-		}while(0)\
+	   
+	# define LOG_DEBUG(format, ...)		LogWithTime(0, __FUNCTION__,__LINE__, format, ##__VA_ARGS__)
+	# define LOG_INFO(format, ...)		LogWithTime(1, __FUNCTION__,__LINE__, format, ##__VA_ARGS__)
+	# define LOG_ERROR(format, ...)		LogWithTime(2, __FUNCTION__,__LINE__, format, ##__VA_ARGS__)
 
 #ifdef __cplusplus 
 };

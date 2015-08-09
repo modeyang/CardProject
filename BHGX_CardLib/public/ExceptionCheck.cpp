@@ -8,6 +8,7 @@
 #include "XmlUtil.h"
 #include "../Card.h"
 #include "../BHGX_CardLib.h"
+#include "../public/debug.h"
 #include "../public/liberr.h"
 #include "../tinyxml/headers/tinyxml.h"
 #include "../Encry/DESEncry.h"
@@ -283,6 +284,7 @@ int CDBExceptionCheck::filterForbidden(char *xml)
 {
 	if (m_dbHelper == NULL) {
 		CXmlUtil::CreateResponXML(CardDBFileNotFound, err(CardDBFileNotFound), xml);
+		LOG_ERROR(err(CardDBFileNotFound));
 		return CardDBFileNotFound;
 	}
 
@@ -299,9 +301,11 @@ int CDBExceptionCheck::filterForbidden(char *xml)
 	CXmlUtil::GetQueryInfos(szQuery, mapQueryInfo);
 	m_strCardNO = mapQueryInfo["CARDNO"];
 	m_strCardSeq = mapQueryInfo["CARDSEQ"];
+	LOG_INFO("cardno:%s, cardseq:%s", m_strCardNO.c_str(), m_strCardSeq.c_str());
 	int status = isExceptionCard(FORBIDDEN_FLAG);
 	if (status != 0) {
 		CXmlUtil::CreateResponXML(CardForbidden, err(CardForbidden), xml);
+		LOG_ERROR(err(CardForbidden));
 		return CardForbidden;
 	}
 	return CardProcSuccess;
@@ -311,12 +315,14 @@ int CDBExceptionCheck::filterWarnning(char *xml)
 {
 	if (m_dbHelper == NULL) {
 		CXmlUtil::CreateResponXML(CardDBFileNotFound, err(CardDBFileNotFound), xml);
+		LOG_ERROR(err(CardDBFileNotFound));
 		return CardDBFileNotFound;
 	}
 
 	int status = isExceptionCard(WARINNING_FLAG);
 	if (status != 0) {
 		CXmlUtil::CreateResponXML(CardWarnning, err(CardWarnning), xml);
+		LOG_ERROR(err(CardWarnning));
 		return CardWarnning;
 	}
 	return CardProcSuccess;

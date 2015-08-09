@@ -14,6 +14,8 @@ extern "C" {
 
 #define CPU_ONLY		1
 #define CPU_16K			0
+#define CPU_MERGE		1
+
 #define CPU_M1			0
 #define CPU_8K			0
 #define CPU_8K_ONLY		0
@@ -33,8 +35,8 @@ extern "C" {
 #define LOG_STORE		1   // 0 file£¬ 1 db 
 #define CHECK_TYPE		1	// 0 sqlite3,  1 sqlserver
 
-#define CMD_BEEP	1
-#define CMD_LED		2
+#define CMD_BEEP		1
+#define CMD_LED			2
 
 typedef unsigned char BYTE;
 

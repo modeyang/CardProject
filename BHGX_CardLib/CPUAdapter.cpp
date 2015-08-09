@@ -68,7 +68,7 @@ static int InitCpuGlobalList()
 	DWORD cbRes = ::SizeofResource(hInstance, hResInfo);
 	char *pvRes = (char *)::LockResource(hgRes);
 	if(!pvRes){	
-		LogPrinter("加载xml文件错误\n");
+		LOG_DEBUG("加载xml文件错误");
 		return CardInitErr;
 	}
 

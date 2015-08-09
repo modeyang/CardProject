@@ -96,12 +96,11 @@ int __stdcall apt_ScanCard(char *card_info)
 		return CardInitErr;
 	}
 
-	//status = Instance->iIOCtl( CMD_BEEP, &para , 2);
-	//status = Instance->iIOCtl( CMD_LED, &para , 2);
 	status = Instance->ICCSet( CARDSEAT_RF, &cardType , attr);
-
+	LOG_INFO("”√ªßø®—∞’“, status:%d, type:%d, attr:%s", status, cardType, attr);
 	if (cardType == eCPUCard) {
 		status = Instance->ICCSet(CARDSEAT_PSAM1, &psamType, resp);
+		LOG_INFO("SAMø®—∞’“, status:%d, type:%d, sam info:%s", status, psamType, resp);
 	}
 	
 	if (status) {

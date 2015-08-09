@@ -103,7 +103,7 @@ static int InitM1GlobalList()
 	DWORD cbRes = ::SizeofResource(hInstance, hResInfo);
 	char *pvRes = (char *)::LockResource(hgRes);
 	if(!pvRes){	
-		LogPrinter("加载xml文件错误\n");
+		LOG_DEBUG("加载xml文件错误");
 		return CardInitErr;
 	}
 
@@ -294,7 +294,7 @@ int __stdcall aFormatCard(unsigned char cFlag)
 		iGetKeyBySeed(seed, keyB);
 	}
 
-	LogPrinter("开始格式化数据:");
+	LOG_DEBUG("开始格式化数据:");
 	GetControlBuff(ctrlWork, 0);
 	memset(szFormat, cFlag, KEY_LEN);
 	while (faile_retry < FAILE_RETRY)
@@ -307,7 +307,7 @@ int __stdcall aFormatCard(unsigned char cFlag)
 			nRet = _FormatCard(ctrlWork, szFormat, i, keyB);
 			if (nRet){
 				faile_retry++;
-				LogPrinter( "格式化失败，需要修补密码\n");
+				LOG_DEBUG( "格式化失败，需要修补密码");
 				break;
 			}
 		}
@@ -321,8 +321,7 @@ int __stdcall aFormatCard(unsigned char cFlag)
 			if (!nRet)
 			{
 				faile_retry = FAILE_RETRY-1;
-				DBGADAP( "修补密码成功，重新格式化数据\n");
-				LogPrinter("\n重新格式化数据:");
+				LOG_DEBUG("重新格式化数据:");
 			}
 		}else{
 			break;
@@ -333,7 +332,6 @@ int __stdcall aFormatCard(unsigned char cFlag)
 		goto done;
 	}
 
-	LogPrinter("格式化密码:");
 	for (i=0; i<BLK_LEN; ++i)
 	{
 		nRet = ChangePwdEx(newKeyA, ctrlWork, newKeyB, keyB, i, 0, changeflag);
@@ -341,8 +339,8 @@ int __stdcall aFormatCard(unsigned char cFlag)
 			break;
 		}
 	}
-	DBGADAP( "格式化密码结果:%d\n", nRet);
-	LogPrinter("%d\n", nRet);
+	LOG_DEBUG( "格式化密码结果:%d", nRet);
+
 
 done:
 	return nRet==0?CardProcSuccess:CardFormatErr;
@@ -364,7 +362,7 @@ static int _FormatCard(unsigned char *pControl, unsigned char* szFormat,
 	}else{
 		bool_test = Instance->iWriteBin(CARDSEAT_M1, defKeyA, szFormat,  KEYA_CONTROL ,128, nOffset);
 	}
-	LogPrinter("%d", bool_test);
+	LOG_DEBUG("写卡操作: %d", bool_test);
 	return  bool_test==0 ? 0:-1;
 }
 
@@ -454,7 +452,7 @@ static int repairKeyForFault(unsigned char *ctrlword)
 
 	//如果是农合卡，直接失败
 	if (!ISGWCARD(type)) {
-		LogPrinter("此卡为农合卡，直接失败\n");
+		LOG_DEBUG("此卡为农合卡，直接失败");
 		return -1;
 	}
 
@@ -464,7 +462,6 @@ static int repairKeyForFault(unsigned char *ctrlword)
 	iGetKeySeed(NHCARD, seed);
 	iGetKeyBySeed(seed, NHKyeB);
 
-	LogPrinter("[6-4新疆错误修补密码]:");
 	for (i=0; i<BLK_LEN; ++i)
 	{
 		nRet = ChangePwdEx(defKeyA, ctrlword, oldKeyB, curKeyB, i, 0, changeflag);
@@ -472,11 +469,10 @@ static int repairKeyForFault(unsigned char *ctrlword)
 			ISAPTSCANCARD;
 			nRet = ChangePwdEx(defKeyA, ctrlword, oldKeyB, NHKyeB, i, 0, changeflag);
 		}
-		LogPrinter(" %d", nRet);
 		if (nRet)
 			break;
 	}
-	LogPrinter("\n");
+	LOG_DEBUG("修改密码结果:%d", nRet);
 	return nRet;
 
 }
@@ -510,15 +506,13 @@ static int repairKeyBAllF(unsigned char *ctrlword)
 		iGetKeyBySeed(seed, newKeyB);
 	}
 
-	LogPrinter("修补密码:");
+	
 	for (i=0; i<BLK_LEN; ++i){
 		nRet = ChangePwdEx(defKeyA, ctrlword, newKeyB, oldKeyB, i, 0, changeflag);
-		LogPrinter("%d", nRet);
 		if (nRet)
 			break;
 	}
-	DBGADAP("修补密码:%d\n", nRet);
-
+	LOG_DEBUG("修补密码: %d", nRet);
 	return nRet;
 }
 
@@ -542,7 +536,7 @@ static int repairKeyB(unsigned char *ctrlword)
 	iGetKeyBySeed(seed, oldKeyB);
 
 	if (ISGWCARD(type)) {
-		LogPrinter("如果是公卫卡，直接失败\n");
+		LOG_DEBUG("如果是公卫卡，直接失败\n");
 		return -1;
 	}
 
@@ -552,15 +546,13 @@ static int repairKeyB(unsigned char *ctrlword)
 	iGetKeySeed(NHCARD, seed);
 	iGetKeyBySeed(seed, newKeyB);
 
-	LogPrinter("修补密码:");
 	for (i=0; i<BLK_LEN; ++i)
 	{
 		nRet = ChangePwdEx(defKeyA, ctrlword, newKeyB, oldKeyB, i, 0, changeflag);
-		LogPrinter("%d", nRet);
 		if (nRet)
 			break;
 	}
-	DBGADAP("修补密码:%d\n", nRet);
+	LOG_DEBUG("修补密码结果:%d", nRet);
 
 	return nRet;
 }
@@ -772,7 +764,7 @@ int _iWriteCard(struct RWRequestS *list)
 				CurrRequest->length, CurrRequest->offset);
 			CurrRequest = CurrRequest->Next;
 			if (bool_test) {
-				LogPrinter("写卡失败，需要修补密码\n");
+				LOG_DEBUG("写卡失败，需要修补密码\n");
 				faile_retry++;
 				break;
 			}
@@ -790,8 +782,8 @@ int _iWriteCard(struct RWRequestS *list)
 				bool_test = repairKeyForFault(pControl);
 			}
 			if (!bool_test) {
-				DBGADAP( "修补密码成功，重新写卡\n");
-				LogPrinter("修补密码成功，重新写卡\n");
+				//DBGADAP( "修补密码成功，重新写卡\n");
+				LOG_DEBUG("修补密码成功，重新写卡\n");
 				faile_retry = FAILE_RETRY-1;
 			}
 		} else{
@@ -808,17 +800,15 @@ int __stdcall InitPwd(unsigned char *newKeyB)
 	memset(oldKeyB, 0xff, 6);
 	memset(ctrlWord, 0, 6);
 
-	LogPrinter("重置密码:");
+	
 	GetControlBuff(ctrlWord, 0);
 	for (i=0; i<BLK_LEN; ++i)
 	{
 		nRet = ChangePwdEx(defKeyA, ctrlWord, newKeyB, oldKeyB, i, 0, changeflag);
-
-		LogPrinter("%d", nRet); 
 		if (nRet != 0)
 			break;
 	}
-	LogPrinter("\n");
+	LOG_DEBUG("重置密码:%d", nRet);
 	return nRet;
 }
 

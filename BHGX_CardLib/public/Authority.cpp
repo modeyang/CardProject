@@ -66,7 +66,7 @@ int  __stdcall CheckCounts(int maxtrys)
 	nCounts = atoi(szDst);
 	nCounts++;
 	if (nCounts > maxtrys) {
-		LogPrinter("%d超过尝试最大数量%d,请联系供应商\n", nCounts, maxtrys);
+		LOG_DEBUG("%d超过尝试最大数量%d,请联系供应商\n", nCounts, maxtrys);
 		fclose(fp);
 		return 0;
 	}

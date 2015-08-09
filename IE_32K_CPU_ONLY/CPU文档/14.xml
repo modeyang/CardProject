@@ -5,6 +5,6 @@
         <COLUMN ID="2" VALUE="ff" />
         <COLUMN ID="3" VALUE="00" />
         <COLUMN ID="4" VALUE="00" />
-        <COLUMN ID="5" VALUE="00" />
+        <COLUMN ID="5" VALUE="01" />
     </SEGMENT>
 </SEGMENTS>
