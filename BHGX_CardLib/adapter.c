@@ -109,9 +109,6 @@ int __stdcall apt_ScanCard(char *card_info)
 	}
 
 	sprintf(card_info, "%d|%s|%s", (int)cardType, resp, attr);
-	memcpy(card_info, card_info, strlen(card_info) + 1);
-	card_info[strlen(card_info)] = 0;
-	//*card_type = cardType;
 
 	//╪стьxmlнд╪Ч
 	apt_InitGList(cardType);

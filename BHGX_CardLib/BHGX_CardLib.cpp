@@ -917,7 +917,14 @@ int __stdcall iScanCard(char *xml)
 {
 	ASSERT_OPEN(g_bCardOpen);
 	char card_info[512];
+	memset(card_info, 0, sizeof(card_info));
 	int status = apt_ScanCard(card_info);
+	if (status != CardProcSuccess) {
+		if (xml != NULL) CXmlUtil::CreateResponXML(status, err(status), xml);
+		return status;
+	}
+
+	// scancard success
 	if (xml != NULL) {
 		iCreateScanXml(card_info, xml);
 	} else {
@@ -929,7 +936,7 @@ int __stdcall iScanCard(char *xml)
 			g_SamID = vec_info[1];
 		}
 	}
-	return status;
+	return CardProcSuccess;
 }
 /**
 *
