@@ -87,12 +87,12 @@ static int InitionM1GList(char *xml);
 
 adapter M1Adapter;
 CardOps g_CardOps;
-static struct XmlProgramS *g_XmlListHead = NULL;
 static CSegmentHelper *g_SegHelper = NULL;
 
 static int InitM1GlobalList() 
 {
-	if (g_XmlListHead) {
+	struct XmlProgramS *XmlListHeader = get_card_xmlList(get_card_type());
+	if (XmlListHeader != NULL){
 		return 0;
 	}
 
@@ -107,10 +107,6 @@ static int InitM1GlobalList()
 		return CardInitErr;
 	}
 
-	// 如果已经分配了链表
-	if(g_XmlListHead)
-		return -2;
-
 	// 初始化全局列表
 	InitionM1GList(pvRes);
 	return 0;
@@ -118,9 +114,10 @@ static int InitM1GlobalList()
 
 static int InitionM1GList(char *xml)
 {
-	if (g_XmlListHead == NULL){
-		g_XmlListHead = (struct XmlProgramS*)malloc(sizeof(struct XmlProgramS));
-		g_XmlListHead->SegHeader = g_XmlListHead->SegTailer = NULL;
+	struct XmlProgramS *XmlListHeader = get_card_xmlList(get_card_type());
+	if (XmlListHeader == NULL){
+		XmlListHeader = (struct XmlProgramS*)malloc(sizeof(struct XmlProgramS));
+		XmlListHeader->SegHeader = XmlListHeader->SegTailer = NULL;
 	}
 
 	TiXmlDocument *XmlDoc;
@@ -142,11 +139,11 @@ static int InitionM1GList(char *xml)
 		pSeg->ColumnHeader = pSeg->ColumnTailer = NULL;
 
 		// 插入链表
-		if(g_XmlListHead->SegHeader) {
-			g_XmlListHead->SegTailer->Next = pSeg;
-			g_XmlListHead->SegTailer = pSeg;
+		if(XmlListHeader->SegHeader) {
+			XmlListHeader->SegTailer->Next = pSeg;
+			XmlListHeader->SegTailer = pSeg;
 		}  else {
-			g_XmlListHead->SegHeader = g_XmlListHead->SegTailer = pSeg;
+			XmlListHeader->SegHeader = XmlListHeader->SegTailer = pSeg;
 		}
 
 		// 对元素进行赋值
@@ -184,7 +181,7 @@ static int InitionM1GList(char *xml)
 		// 迭代下一个元素
 		Segment = Segment->NextSiblingElement();
 	}
-
+	set_card_xmlList(get_card_type(), XmlListHeader);
 	return 0;
 }
 /**
@@ -1170,7 +1167,8 @@ static struct XmlSegmentS* M1ConvertXmltoList(char *xml)
 	struct XmlColumnS  *TempColumnElement = NULL;
 	struct XmlColumnS  *pAddtionElement = NULL;
 	struct XmlColumnS  *pAddtionElement2 = NULL;
-	struct XmlSegmentS *XmlListHead = g_XmlListHead->SegHeader;
+	struct XmlProgramS *XmlListHeader = get_card_xmlList(get_card_type());
+	struct XmlSegmentS *XmlListHead = XmlListHeader->SegHeader;
 
 	TiXmlDocument *XmlDoc;
 	TiXmlElement  *RootElement;
@@ -1354,11 +1352,12 @@ CardOps * __stdcall InitM1CardOps()
 	g_CardOps.cardAdapter = &M1Adapter;
 
 	g_CardOps.iInitGList();
-	g_CardOps.programXmlList = g_XmlListHead;
+	g_CardOps.programXmlList = get_card_xmlList(get_card_type());
 	
 	if (g_SegHelper == NULL) {
-		g_SegHelper = new CSegmentHelper(&g_CardOps); 
+		g_SegHelper = new CSegmentHelper(); 
 	}
+	g_SegHelper->setCardOps(&g_CardOps);
 	g_CardOps.SegmentHelper = (void*)g_SegHelper;
 	return &g_CardOps;
 }
@@ -1366,5 +1365,4 @@ CardOps * __stdcall InitM1CardOps()
 void __stdcall M1clear()
 {
 	SAFE_DELETE(g_SegHelper);
-	SAFE_DELETE_C(g_XmlListHead);
 }

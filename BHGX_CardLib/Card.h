@@ -12,25 +12,27 @@ extern "C" {
 #pragma warning (disable : 4267)
 #pragma warning (disable : 4020)
 
-#define CPU_ONLY		1
+#define CPU_ONLY		0
 #define CPU_16K			0
-#define CPU_MERGE		1
-
 #define CPU_M1			0
-#define CPU_8K			0
-#define CPU_8K_ONLY		0
-
-// for cpu test
-#define CPU_8K_TEST		0
-
-// for cpu test all, combination with CPU_8K_ONLY flag
-#define CPU_8K_TEST_ALL 0
+#define CPU_MERGE		1
 
 #define ENCRYPT			0
 
 #define	CARDSEAT_RF		0	//0：非接用户卡 
 #define CARDSEAT_PSAM1	1	//1：SAM卡编号1
 #define CARDSEAT_M1		2	//2：M1
+
+
+#define	CARDSEAT_RF		0	//：非接用户卡 
+#define CARDSEAT_PSAM1	1	//1：SAM卡编号1
+#define CARDSEAT_PSAM2	2	//2：SAM卡编号2
+
+#define CARDTYPE_CPU16	5
+#define CARDTYPE_SAM16	6
+#define CARDTYPE_CPU32	9
+#define CARDTYPE_SAM32	10
+
 
 #define LOG_STORE		1   // 0 file， 1 db 
 #define CHECK_TYPE		1	// 0 sqlite3,  1 sqlserver
@@ -202,9 +204,32 @@ typedef enum CardType
 	eM1Card = 0,
 	eCPUCard,
 	eCARDSEAT_PSAM1,
+
+	eCPU16Card = 5,
+	eCPUSAM16,
+
+	eCPU32Card = 9,
+	eCPUSAM32,
+
 }CardType;
 
-#define ARRAY_MAX 10
+struct CardType2SAMSeat 
+{
+	int		 sam_seat_id;
+	CardType card_type;
+};
+
+struct CardXmlListHeaders
+{
+	CardType eType;
+	struct XmlProgramS *xmlListHeader;
+};
+
+#define ARRAY_MAX	10
+#define SEAT_NUMS	3
+
+#define BIN_START   15
+#define BIN_END		22
 
 typedef struct adapter{
 	CardType			type;
@@ -230,13 +255,36 @@ typedef struct CardOps
 	void * SegmentHelper;
 }CardOps;
 
+
 void      CardUnregisterOps(int type);
 
 void      CardRegisterOps(int type, CardOps *ops);
 
 CardOps*  GetCardOps(int type);
 
-int       IsAllTheSameFlag(const unsigned char *szBuf, int nLen, unsigned char cflag);
+int	IsAllTheSameFlag(const unsigned char *szBuf, int nLen, unsigned char cflag);
+
+int	get_seg_counts(int sec);
+
+int	get_can_write_seg();
+
+int get_bin_start_seg();
+
+void set_card_type(CardType type);
+
+CardType get_card_type();
+
+void set_card_sam(int sam_seat, CardType eType);
+
+int get_samSeat();
+
+int get_read_flag();
+
+void set_card_xmlList(CardType eType, struct XmlProgramS *xmlListHeader);
+
+struct XmlProgramS *get_card_xmlList(CardType eType);
+
+void clean_up();
 
 #ifdef  __cplusplus
 };

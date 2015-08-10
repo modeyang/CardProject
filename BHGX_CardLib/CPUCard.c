@@ -3,6 +3,7 @@
 #include "CPUCard.h"
 #include "device.h"
 #include "adapter.h"
+#include "Card.h"
 #include "public/liberr.h"
 #include "public/algorithm.h"
 #include "public/debug.h"
@@ -42,14 +43,7 @@
 #define KEY_UK_DF03_2		10
 
 #define PADDING     2
-#define BIN_START   15
-#define BIN_END		22
 
-#if (CPU_16K)
-int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 2, 2, 2, 2};
-#else
-int g_RecMap[BIN_START] = {0, 10, 5, 1, 6, 4, 9, 3, 4, 15, 1, 3, 10, 3, 5};
-#endif
 
 extern  struct RecFolder g_recIndex[30];
 extern  struct CardDevice *Instance;
@@ -102,7 +96,7 @@ static int GetFloderKeyID(char *folder)
 static int GetUpdateKeyID(int SegID,int mode)
 {
 	int update_id_16K = 10;
-	if (CPU_16K == 1) {
+	if (get_card_type() == eCPU16Card) {
 		update_id_16K = 11;
 		if (SegID <= 2) {
 			return KEY_UK_DDF1;
@@ -240,7 +234,7 @@ static struct RWRequestS  *_CreateReadList(struct RWRequestS *ReqList, int mode)
 	while(current)
 	{
 		if (current->datatype == eRecType) {
-			current->length += get_sec_counts(current->nID) * 2;
+			current->length += get_seg_counts(current->nID) * 2;
 			current->value = (BYTE*)malloc(current->length + 1);
 		} else {
 			current->value = (BYTE*)malloc(current->length + 1);
@@ -291,7 +285,7 @@ static int _iReadCard(struct RWRequestS *list)
 			case eCycType:
 			case eRecType:
 				status |= Instance->iReadRec(CARDSEAT_RF, g_recIndex[pReq->nID-1].fileName,
-					pReq->value, pReq->length, 0xff, get_sec_counts(pReq->nID));
+					pReq->value, pReq->length, 0xff, get_seg_counts(pReq->nID));
 				LOG_INFO("文件名:%s, iReadRec:%d", g_recIndex[pReq->nID-1].fileName, status);
 				break;
 			case eBinType:
@@ -460,7 +454,7 @@ static int _iWriteCard(struct RWRequestS *list)
 				{
 				case eRecType:
 					status |= Instance->iWriteRec(CARDSEAT_RF, g_recIndex[pReq->nID-1].fileName, pReq->value,
-						pReq->length , write_flag, get_sec_counts(pReq->nID));
+						pReq->length , write_flag, get_seg_counts(pReq->nID));
 					LOG_INFO("记录文件名:%s，内容长度:%d, iWriteRec:%d", g_recIndex[pReq->nID-1].fileName, pReq->length, status);
 					break;
 				case eBinType:
@@ -500,7 +494,7 @@ static void* SpliteSegments(struct RWRequestS *list)
 	if (cur->datatype == eSureType ||
 		cur->datatype == eCycType) {
 		if (cur->datatype == eCycType)
-			span = get_sec_counts(list->nID);
+			span = get_seg_counts(list->nID);
 
 		while (cur) {
 			if (pos == span){
@@ -559,16 +553,7 @@ int __stdcall FormatCpuCard(char c)
 			return status;
 		}
 
-		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY) == 1) {
-			strcpy((char*)send, "EE01");
-			length = START_POS_1 - END_OFFSET - CPU_8K_OFFSET;
-			status = Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
-
-			strcpy((char*)send, "ED01");
-			length = START_POS_2 - END_OFFSET - CPU_8K_OFFSET;
-			status |= Instance->iWriteBin(CARDSEAT_RF, send , buff, 0, length, 0);
-
-		} else if (CPU_16K == 1) {
+		if (get_card_type() == eCPU16Card) {
 			strcpy((char*)send, "EE01");
 			length = START_POS_1 - END_OFFSET - CPU_8K_OFFSET;
 			status = Instance->iWriteBin(CARDSEAT_RF, send, buff, 0, length, 0);
@@ -615,12 +600,4 @@ int __stdcall FormatCpuCard(char c)
 		}
 	}
 	return status;
-}
-
-int __stdcall get_sec_counts(int sec) {
-
-	if (sec < 0 || sec >= BIN_START) {
-		return -1;
-	}
-	return g_RecMap[sec];
 }

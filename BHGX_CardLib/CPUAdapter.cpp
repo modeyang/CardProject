@@ -35,8 +35,6 @@ extern "C" {
 	list->SegTailer->Next = seg;													\
 	list->SegTailer = seg;															\
 
-struct XmlProgramS *g_CpuXmlListHead = NULL;
-
 
 typedef  std::map<std::string, struct XmlColumnS *> XmlColumnMapT;
 XmlColumnMapT XmlColumnMap; 
@@ -48,18 +46,17 @@ static int InitionCpuGList(char *xmlstr);
 */
 static int InitCpuGlobalList() 
 {
-	if (g_CpuXmlListHead) {
+	struct XmlProgramS *XmlListHeader = get_card_xmlList(get_card_type());
+	if (XmlListHeader != NULL){
 		return 0;
 	}
 
 	// 在资源文件里边提取XML文件并且初始化他
 	HINSTANCE hInstance = ::LoadLibrary("BHGX_CardLib.dll");
 	int res_id = IDR_XML4;
-	if ((CPU_M1 | CPU_ONLY) == 1) {
+	if ( CPU_M1 == 1 || get_card_type() == eCPU32Card) {
 		res_id = IDR_XML6;
-	} else if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY) == 1) {
-		res_id = IDR_XML5;
-	} else if ( CPU_16K == 1) {
+	}  else if ( get_card_type() == eCPU16Card) {
 		res_id = IDR_XML7;
 	}
 	
@@ -72,10 +69,6 @@ static int InitCpuGlobalList()
 		return CardInitErr;
 	}
 
-	// 如果已经分配了链表
-	if(g_CpuXmlListHead)
-		return -2;
-
 	// 初始化全局列表
 	InitionCpuGList(pvRes);
 	return 0;
@@ -83,13 +76,11 @@ static int InitCpuGlobalList()
 
 static int InitionCpuGList(char *xmlstr)
 {
-	int cpu_rec_end = 11;
-	if (CPU_16K == 1) {
-		cpu_rec_end = 12;
-	}
-	if (g_CpuXmlListHead == NULL){
-		g_CpuXmlListHead = (struct XmlProgramS*)malloc(sizeof(struct XmlProgramS));
-		g_CpuXmlListHead->SegHeader = g_CpuXmlListHead->SegTailer = NULL;
+	int cpu_rec_end = get_bin_start_seg();
+	struct XmlProgramS *XmlListHeader = get_card_xmlList(get_card_type());
+	if (XmlListHeader == NULL){
+		XmlListHeader = (struct XmlProgramS*)malloc(sizeof(struct XmlProgramS));
+		XmlListHeader->SegHeader = XmlListHeader->SegTailer = NULL;
 	}
 
 	struct ColCell 
@@ -218,47 +209,47 @@ static int InitionCpuGList(char *xmlstr)
 		}
 		xml.OutOfElem();
 
-		if (g_CpuXmlListHead->SegHeader == NULL) {
-			g_CpuXmlListHead->SegHeader = pSeg;
-			g_CpuXmlListHead->SegTailer = pSeg;
+		if (XmlListHeader->SegHeader == NULL) {
+			XmlListHeader->SegHeader = pSeg;
+			XmlListHeader->SegTailer = pSeg;
 			memcpy(g_recIndex[nSegID-1].fileName, cFileType.c_str(), cFileType.size());
 		} else {
 
 			if (cFileType == std::string("EE01--03")) {
-				INSERT_SEGS(g_CpuXmlListHead, pSeg, nSegID, "EE01");
+				INSERT_SEGS(XmlListHeader, pSeg, nSegID, "EE01");
 				pTmp = g_SegHelper->CloneSegment(pSeg, 0);
 				nSegID++;
-				INSERT_SEGS(g_CpuXmlListHead, pTmp, nSegID, "EE02")
+				INSERT_SEGS(XmlListHeader, pTmp, nSegID, "EE02")
 					nSegID++;
 				pTmp = g_SegHelper->CloneSegment(pSeg, 0);
-				INSERT_SEGS(g_CpuXmlListHead, pTmp, nSegID, "EE03")
+				INSERT_SEGS(XmlListHeader, pTmp, nSegID, "EE03")
 			} else if (cFileType == std::string("ED01--05")) {
 
-				INSERT_SEGS(g_CpuXmlListHead, pSeg, nSegID, "ED01")
+				INSERT_SEGS(XmlListHeader, pSeg, nSegID, "ED01")
 					pTmp = g_SegHelper->CloneSegment(pSeg, 0);
 				nSegID++;
-				INSERT_SEGS(g_CpuXmlListHead, pTmp, nSegID, "ED02")
+				INSERT_SEGS(XmlListHeader, pTmp, nSegID, "ED02")
 					nSegID++;
 				pTmp = g_SegHelper->CloneSegment(pSeg, 0);
-				INSERT_SEGS(g_CpuXmlListHead, pTmp, nSegID, "ED03")
+				INSERT_SEGS(XmlListHeader, pTmp, nSegID, "ED03")
 					nSegID++;
 				pTmp = g_SegHelper->CloneSegment(pSeg, 0);
-				INSERT_SEGS(g_CpuXmlListHead, pTmp, nSegID, "ED04")
+				INSERT_SEGS(XmlListHeader, pTmp, nSegID, "ED04")
 					nSegID++;
 				pTmp = g_SegHelper->CloneSegment(pSeg, 0);
-				INSERT_SEGS(g_CpuXmlListHead, pTmp, nSegID, "ED05")
+				INSERT_SEGS(XmlListHeader, pTmp, nSegID, "ED05")
 			} else {
 
 				memcpy(g_recIndex[nSegID-1].fileName, cFileType.c_str(), cFileType.size());
-				g_CpuXmlListHead->SegTailer->Next = pSeg;
-				g_CpuXmlListHead->SegTailer = pSeg;
+				XmlListHeader->SegTailer->Next = pSeg;
+				XmlListHeader->SegTailer = pSeg;
 			}
 		}
 
 	}
 	xml.OutOfElem();
 	xml.OutOfElem();
-
+	set_card_xmlList(get_card_type(), XmlListHeader);
 	return 0;
 }
 
@@ -368,7 +359,8 @@ static struct XmlSegmentS*  CpuConvertXmltoList(char *xml)
 	int ElemLen = 0, padding = 0;
 	int realLen = 0;
 
-	struct XmlSegmentS *XmlListHead = g_CpuXmlListHead->SegHeader;
+	struct XmlProgramS *XmlListHeader = get_card_xmlList(get_card_type());
+	struct XmlSegmentS *XmlListHead = XmlListHeader->SegHeader;
 
 	// 解析XML语句
 	XmlDoc.Parse(xml);
@@ -494,11 +486,12 @@ CardOps * __stdcall InitCpuCardOps()
 	g_CpuCardOps.iInitGList = InitCpuGlobalList;
 
 	g_CpuCardOps.iInitGList();
-	g_CpuCardOps.programXmlList = g_CpuXmlListHead;
+	g_CpuCardOps.programXmlList = get_card_xmlList(get_card_type());
 
 	if (g_SegHelper == NULL) {
-		g_SegHelper = new CSegmentHelper(&g_CpuCardOps);
+		g_SegHelper = new CSegmentHelper();
 	}
+	g_SegHelper->setCardOps(&g_CpuCardOps);
 	g_CpuCardOps.SegmentHelper = (void*)g_SegHelper;
 	return &g_CpuCardOps;
 }
@@ -506,5 +499,4 @@ CardOps * __stdcall InitCpuCardOps()
 void __stdcall CPUClear()
 {
 	SAFE_DELETE(g_SegHelper);
-	SAFE_DELETE_C(g_CpuXmlListHead);
 }

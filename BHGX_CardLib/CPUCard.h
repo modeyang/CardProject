@@ -17,7 +17,6 @@ adapter* __stdcall InitCpuAdapter();
 
 int __stdcall FormatCpuCard(char c);
 
-int __stdcall get_sec_counts(int sec);
 
 #ifdef  __cplusplus
 }

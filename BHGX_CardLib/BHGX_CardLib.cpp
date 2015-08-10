@@ -48,13 +48,7 @@ using namespace std;
 		return CardScanErr;											\
 	}	
 
-#if (CPU_16K)
-#define CPU_CAN_WRITE_SECTION	0
-#define CPU_BIN_SECTION			12
-#else 
-#define CPU_CAN_WRITE_SECTION	3
-#define CPU_BIN_SECTION			11
-#endif
+
 
 
 #define TIMEOUT		15000
@@ -1083,7 +1077,7 @@ int __stdcall iReadInfo(int flag, char *xml)
 			del_flag = 5;
 		}
 	} 
-#if (CPU_M1 || CPU_8K)
+#if (CPU_M1)
 	else {
 		if ((flag & 0x2) == 0x2) {
 			bNHInfoRead = 1;
@@ -1100,6 +1094,7 @@ int __stdcall iReadInfo(int flag, char *xml)
 	//convert cpu xml to m1 xml;
 	if(status != 0) {
 		strcpy(xml, readxml);
+		LOG_ERROR(readxml);
 		return CardReadErr;
 	}
 
@@ -1184,9 +1179,9 @@ static int checkCpuWriteXml(char *xmlStr,
 	xml.IntoElem();
 	while (xml.FindElem("SEGMENT")){
 		int id = atoi(xml.GetAttrib("ID").c_str());
-		if (id <= CPU_CAN_WRITE_SECTION) {
+		if (id <= get_can_write_seg()) {
 			return 0;
-		} else if (id < CPU_BIN_SECTION) {
+		} else if (id < get_bin_start_seg()) {
 			vecFlag.push_back(id);
 		} else {
 			vecBin.push_back(id);
@@ -1211,7 +1206,7 @@ static int is_can_write(char *xmlStr,
 		std::map<int, int> sec_counts;
 
 		int id = atoi(xml.GetAttrib("ID").c_str());
-		if (id <= CPU_CAN_WRITE_SECTION) {
+		if (id <= get_can_write_seg()) {
 			return 0;
 		} 
 		xml.IntoElem();
@@ -1219,7 +1214,7 @@ static int is_can_write(char *xmlStr,
 		while (xml.FindElem("COLUMN")){
 			col_counts ++;
 		};
-		if (id < CPU_BIN_SECTION) {
+		if (id < get_bin_start_seg()) {
 			mapRec.insert(std::make_pair(id, col_counts));
 		} else {
 			mapBin.insert(std::make_pair(id, col_counts));
@@ -1246,7 +1241,6 @@ int __stdcall iWriteInfo(char *xml)
 	}
 	
 	ISSCANCARD
-	isCardAuth(7);
 	if (g_CardOps->cardAdapter->type == eM1Card) {
 		status =  _iWriteInfo((char*)xmlStr.c_str());
 		goto done;
@@ -1268,11 +1262,11 @@ int __stdcall iWriteInfo(char *xml)
 			if (isRec) {   //记录文件，记录要回写的块
 				std::map<int, int>::const_iterator iter = mapRecFlag.begin();
 				for (; iter != mapRecFlag.end(); iter++) {
-					if (iter->first > CPU_CAN_WRITE_SECTION) {
+					if (iter->first > get_can_write_seg()) {
 						SETBIT(flag, (iter->first - 1));
 					}
 
-					if (iter->second != get_sec_counts(iter->first)) {
+					if (iter->second != get_seg_counts(iter->first)) {
 						isNeedRead = 1;
 					}
 				}
@@ -1581,16 +1575,8 @@ int __stdcall iCheckMsgForNH(char *pszCardCheckWSDL,char *pszCardServerURL,char*
 	WebServiceUtil checkUtil(pszCardCheckWSDL, pszCardServerURL);
 	status = checkUtil.NHCheckValid(strCardNO, pszXml);
 	
-	isCardAuth();
 	if (status == CardProcSuccess){
-		int flag = 2;
-		if (g_CardOps->cardAdapter->type == eCPUCard) {
-			if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
-				flag += 1 + (1 << 7);
-			} else if (CPU_16K == 1) {
-				flag += 1 + (1 << 7) + (1 << 10);
-			}
-		}
+		int flag = get_read_flag();
 		status = iReadInfo(flag, pszXml);
 	}
 	return status;
@@ -1659,14 +1645,7 @@ int __stdcall iRegMsgForNH(char *pszCardServerURL, char* pszXml)
 	}
 
 	if (status == CardProcSuccess){
-		int flag = 2;
-		if (g_CardOps->cardAdapter->type == eCPUCard) {
-			if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
-				flag += 1 + (1 << 7);
-			} else if (CPU_16K == 1) {
-				flag += 1 + (1 << 7) + (1 << 10);
-			}
-		}
+		int flag = get_read_flag();
 		status = iReadInfo(flag, pszXml);
 	}
 	return status;
@@ -1705,14 +1684,7 @@ int __stdcall iReadCardMessageForNHLocal(char* pszLogXml, char* pszXml)
 		return CardReadErr;
 	}
 
-	int flag = 2;
-	if (g_CardOps->cardAdapter->type == eCPUCard) {
-		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
-			flag += 1 + (1 << 7);
-		} else if (CPU_16K == 1) {
-			flag += 1 + (1 << 7) + (1 << 10);
-		}
-	}
+	int flag = get_read_flag();
 
 	if (CardProcSuccess != iReadInfo(flag, pszXml)) {
 		return CardReadErr;
@@ -1790,19 +1762,11 @@ int __stdcall iReadOnlyCardMessageForNH(char* pszXml)
 	ASSERT_OPEN(g_bCardOpen)
 	//SCANCARD_XML(pszXml)
 
-	int flag = 2;
-	if (g_CardOps->cardAdapter->type == eCPUCard) {
-		if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
-			flag += 1 + (1 << 7);
-		} else if (CPU_16K == 1) {
-			flag += 1 + (1 << 7) + (1 << 10);
-		}
-	}
+	int flag = get_read_flag();
 	int status = iReadInfo(flag, pszXml);
 	if (status != CardProcSuccess) {
 		return CardReadErr;
 	}
-	isCardAuth();
 	return CardProcSuccess;
 }
 
@@ -1863,14 +1827,7 @@ done:
 	}
 
 	if (status == CardProcSuccess){
-		int flag = 2;
-		if (g_CardOps->cardAdapter->type == eCPUCard) {
-			if ((CPU_8K | CPU_8K_TEST | CPU_8K_ONLY | CPU_ONLY) == 1) {
-				flag += 1 + (1 << 7);
-			} else if (CPU_16K == 1) {
-				flag += 1 + (1 << 7) + (1 << 10);
-			}
-		}
+		int flag = get_read_flag();
 		status = iReadInfo(flag, pszXml);
 	}
 	return status;
@@ -1933,11 +1890,11 @@ int __stdcall iCheckException(char *pszLogXml,char *pszXml)
 
 int __stdcall apt_InitGList(CardType eType)
 {
-	if (eType == eCPUCard) {
+	if (eType == eCPU16Card || eType == eCPU32Card) {
 		g_CpuCardOps = InitCpuCardOps();
 		g_CardOps = g_CpuCardOps;
 
-#if (CPU_M1 || CPU_8K)
+#if (CPU_M1)
 		g_sourceValueMap.insert(std::make_pair("STAGENO", QueryColum(2, 4, "STAGENO", "000000")));
 		g_segMap["CARDNO"] = 201;
 		g_segMap["MEDICARECERTIFICATENO"] = 207;
@@ -1955,9 +1912,7 @@ int __stdcall apt_InitGList(CardType eType)
 
 bool __stdcall isCardAuth(int timeout)
 {
-	if ((CPU_8K_TEST | CPU_8K_TEST_ALL) == 0) {
-		return true;
-	}
+
 	bool bAuthed = false;
 	char readInfo[1024];
 	memset(readInfo, 0, sizeof(readInfo));
@@ -1994,14 +1949,7 @@ int __stdcall iReadAll(char *xml)
 {
 	ASSERT_OPEN(g_bCardOpen);
 	ISSCANCARD;
-	int flag = 0;
-
-	isCardAuth(5);
-	if (CPU_8K_TEST == 1) {
-		flag = 1 + 2 + (1 << 3) + (1 << 4) + (1 << 7);
-	} else {
-		flag = 1 + 2 + (1 << 3) + (1 << 4) + (1 << 5) + (1 << 6) + (1 << 7) + (1 << 8) + (1 << 9) + (1 << 14) + (1 << 17);
-	}
+	int flag = get_read_flag();
 	return iReadInfo(flag, xml);
 }
 
@@ -2021,7 +1969,6 @@ int __stdcall iRWRecycle(
 	char read_buff[1024];
 	char filename[256];
 	char timeStr[64];
-	bool bAuthed = isCardAuth(40);
 
 	memset(filename, 0, sizeof(filename));
 	CTimeUtil::getCurrentDay(timeStr);
@@ -2037,11 +1984,6 @@ int __stdcall iRWRecycle(
 	out << xml << endl;
 
 	int chose_one = -1;
-	if (!bAuthed) {
-		srand(unsigned(time(0)));
-		chose_one = rand() % counts;
-	}
-	
 	int rflag, wflag;
 	int rSuccess=0, wSuccess=0;
 	for (int i=0; i< counts; i++) {
