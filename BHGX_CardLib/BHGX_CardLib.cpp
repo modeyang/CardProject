@@ -1851,6 +1851,12 @@ int __stdcall iCheckException(char *pszLogXml,char *pszXml)
 int __stdcall apt_InitGList(CardType eType)
 {
 	CardOps *ops;
+	std::map<CardType, CardOps*>::iterator &iter = g_mapCardOps.find(eType);
+	if (iter != g_mapCardOps.end()) {
+		g_CardOps = iter->second;
+		return 0;
+	}
+
 	if (eType == eCPU16Card || eType == eCPU32Card) {
 		ops = InitCpuCardOps();
 		g_mapCardOps[eType] = ops;
