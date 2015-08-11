@@ -1332,13 +1332,13 @@ static void M1CallocForColmn(struct XmlColumnS *result)
 
 adapter * __stdcall InitM1Adapter()
 {
-	adapter M1Adapter;
-	M1Adapter.type = eM1Card;
-	M1Adapter.iLastInit = M1LastInit;
-	M1Adapter.iCallocForList = M1CallocForList;
-	M1Adapter.iReadCard = M1ReadCard;
-	M1Adapter.iWriteCard = M1WriteCard;
-	return &M1Adapter;
+	adapter *M1Adapter = (adapter*)malloc(sizeof(adapter));
+	M1Adapter->type = eM1Card;
+	M1Adapter->iLastInit = M1LastInit;
+	M1Adapter->iCallocForList = M1CallocForList;
+	M1Adapter->iReadCard = M1ReadCard;
+	M1Adapter->iWriteCard = M1WriteCard;
+	return M1Adapter;
 }
 
 CardOps * __stdcall InitM1CardOps()
