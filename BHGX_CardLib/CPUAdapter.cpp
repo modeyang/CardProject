@@ -19,7 +19,6 @@
 
 using namespace std;
 
-CardOps g_CpuCardOps;
 static CSegmentHelper *g_SegHelper = NULL;
 
 extern "C" {
@@ -479,24 +478,20 @@ static struct XmlSegmentS*  CpuConvertXmltoList(char *xml)
 
 CardOps * __stdcall InitCpuCardOps()
 {
-	g_CpuCardOps.cardAdapter = InitCpuAdapter();
-	g_CpuCardOps.iCallocForColmn = CpuCallocForColmn;
-	g_CpuCardOps.iConvertXmlByList = CpuConvertXmlByList;
-	g_CpuCardOps.iConvertXmltoList = CpuConvertXmltoList;
-	g_CpuCardOps.iInitGList = InitCpuGlobalList;
+	CardOps *mCardOps = (CardOps*)malloc(sizeof(CardOps));
+	mCardOps->cardAdapter = InitCpuAdapter();
+	mCardOps->iCallocForColmn = CpuCallocForColmn;
+	mCardOps->iConvertXmlByList = CpuConvertXmlByList;
+	mCardOps->iConvertXmltoList = CpuConvertXmltoList;
+	mCardOps->iInitGList = InitCpuGlobalList;
 
-	g_CpuCardOps.iInitGList();
-	g_CpuCardOps.programXmlList = get_card_xmlList(get_card_type());
+	mCardOps->iInitGList();
+	mCardOps->programXmlList = get_card_xmlList(get_card_type());
 
 	if (g_SegHelper == NULL) {
 		g_SegHelper = new CSegmentHelper();
 	}
-	g_SegHelper->setCardOps(&g_CpuCardOps);
-	g_CpuCardOps.SegmentHelper = (void*)g_SegHelper;
-	return &g_CpuCardOps;
-}
-
-void __stdcall CPUClear()
-{
-	SAFE_DELETE(g_SegHelper);
+	g_SegHelper->setCardOps(mCardOps);
+	mCardOps->SegmentHelper = (void*)g_SegHelper;
+	return mCardOps;
 }

@@ -2,6 +2,7 @@
 #define _CARD_H
 #include <assert.h>
 #include <stdio.h>
+#include <malloc.h>
 
 
 #ifdef  __cplusplus
@@ -283,6 +284,8 @@ int get_read_flag();
 void set_card_xmlList(CardType eType, struct XmlProgramS *xmlListHeader);
 
 struct XmlProgramS *get_card_xmlList(CardType eType);
+
+void DestroyList(struct XmlSegmentS *listHead, int mode);
 
 void clean_up();
 

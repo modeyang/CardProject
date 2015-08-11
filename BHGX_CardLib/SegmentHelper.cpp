@@ -275,7 +275,7 @@ struct XmlSegmentS * CSegmentHelper::GetXmlSegmentByFlag(int flag)
 	int read_flag = 0;
 	while (flag > 0) {
 		read_flag ++ ;
-		if (flag & 0x1 > 0) {
+		if ((flag & 0x1) > 0) {
 			vecFlags.push_back(read_flag);
 		}	
 		flag = flag >> 1;

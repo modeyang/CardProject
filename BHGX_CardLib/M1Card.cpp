@@ -85,8 +85,6 @@ static int	M1CallocForList(struct RWRequestS*);
 static int InitionM1GList(char *xml);
 
 
-adapter M1Adapter;
-CardOps g_CardOps;
 static CSegmentHelper *g_SegHelper = NULL;
 
 static int InitM1GlobalList() 
@@ -1332,37 +1330,35 @@ static void M1CallocForColmn(struct XmlColumnS *result)
 	memset(result->Value, 0, len + 1);
 }
 
-static int __stdcall InitM1Adapter()
+adapter * __stdcall InitM1Adapter()
 {
+	adapter M1Adapter;
 	M1Adapter.type = eM1Card;
 	M1Adapter.iLastInit = M1LastInit;
 	M1Adapter.iCallocForList = M1CallocForList;
 	M1Adapter.iReadCard = M1ReadCard;
 	M1Adapter.iWriteCard = M1WriteCard;
-	return 0;
+	return &M1Adapter;
 }
 
 CardOps * __stdcall InitM1CardOps()
 {
-	InitM1Adapter();
-	g_CardOps.iInitGList = InitM1GlobalList;
-	g_CardOps.iConvertXmlByList = M1ConvertXmlByList;
-	g_CardOps.iConvertXmltoList = M1ConvertXmltoList;
-	g_CardOps.iCallocForColmn =  M1CallocForColmn;
-	g_CardOps.cardAdapter = &M1Adapter;
+	CardOps *mCardOps = (CardOps *)malloc(sizeof(CardOps));
+	
+	mCardOps->iInitGList = InitM1GlobalList;
+	mCardOps->iConvertXmlByList = M1ConvertXmlByList;
+	mCardOps->iConvertXmltoList = M1ConvertXmltoList;
+	mCardOps->iCallocForColmn =  M1CallocForColmn;
+	mCardOps->cardAdapter = InitM1Adapter();
 
-	g_CardOps.iInitGList();
-	g_CardOps.programXmlList = get_card_xmlList(get_card_type());
+	mCardOps->iInitGList();
+	mCardOps->programXmlList = get_card_xmlList(get_card_type());
 	
 	if (g_SegHelper == NULL) {
 		g_SegHelper = new CSegmentHelper(); 
 	}
-	g_SegHelper->setCardOps(&g_CardOps);
-	g_CardOps.SegmentHelper = (void*)g_SegHelper;
-	return &g_CardOps;
+	g_SegHelper->setCardOps(mCardOps);
+	mCardOps->SegmentHelper = (void*)g_SegHelper;
+	return mCardOps;
 }
 
-void __stdcall M1clear()
-{
-	SAFE_DELETE(g_SegHelper);
-}

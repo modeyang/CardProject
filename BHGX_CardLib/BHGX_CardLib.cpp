@@ -150,9 +150,9 @@ BOOL g_bCardOpen = FALSE;
 BOOL g_bAuthed   = TRUE;
 
 static CardOps *g_CardOps = NULL;
-static CardOps *g_CpuCardOps = NULL;
-static CardOps *g_M1CardOps = NULL;
 static CSegmentHelper *g_SegHelper = NULL;
+
+static std::map<CardType, CardOps*> g_mapCardOps;
 
 /**
  * 全局的数据结构
@@ -184,8 +184,6 @@ char *M1SourceReserver[29] = {
 	"LINKMANNAME","LINKMANPHONENO","CHRONICCODE1","CHRONICCODE2","RESERVE5",
 };
 
-static void 
-DestroyList(struct XmlSegmentS *listHead, int mode);
 
 static void 
 ReadConfigFromReg(char *name);
@@ -470,40 +468,6 @@ static int fillCpuXml(char *xml, const std::map<int, dataItem> &mapInfo)
 	strcpy(xml, Printer.CStr());
 	return 0;
 }
-
-/**
- *
- */
-static void DestroyList(struct XmlSegmentS *listHead, int mode)
-{
-	struct XmlSegmentS	*CurrSegmentElement = NULL;
-	struct XmlSegmentS	*TempSegmentElement = NULL;
-	struct XmlColumnS	*CurrColumnElement	= NULL;
-	struct XmlColumnS	*TempColumnElement	= NULL;
-
-	CurrSegmentElement = listHead;
-	while(CurrSegmentElement)
-	{
-		CurrColumnElement = CurrSegmentElement->ColumnHeader;
-		while(CurrColumnElement)
-		{
-			TempColumnElement = CurrColumnElement;
-			CurrColumnElement = CurrColumnElement->Next;
-			if (mode) {
-				SAFE_DELETE_C(TempColumnElement->Value);
-			}
-			SAFE_DELETE_C(TempColumnElement);
-		}
-		
-		TempSegmentElement = CurrSegmentElement;
-		CurrSegmentElement = CurrSegmentElement->Next;
-
-		SAFE_DELETE_C(TempSegmentElement);
-	}
-
-	return;
-}
-
 
 
 static void ReadConfigFromReg(char *name)
@@ -861,18 +825,14 @@ int __stdcall iCardInit(char *xml)
 
 int __stdcall iCardDeinit()
 {
-	if (g_CpuCardOps) {
-		DestroyList(g_CpuCardOps->programXmlList->SegHeader, 0);
-		CPUClear();
-		g_CpuCardOps = NULL;
+	std::map<CardType, CardOps*>::iterator & iter = g_mapCardOps.begin();
+	for (; iter != g_mapCardOps.end(); iter++) {
+		CardOps *ops = iter->second;
+		SAFE_DELETE(ops->SegmentHelper);
+		SAFE_DELETE_C(ops->cardAdapter);
+		SAFE_DELETE_C(ops);
 	}
-
-	if (g_M1CardOps) {
-		DestroyList(g_M1CardOps->programXmlList->SegHeader, 0);
-		M1clear();
-		g_M1CardOps = NULL;
-	}
-	//SAFE_DELETE(g_SegHelper);
+	clean_up();
 
 	g_XmlListHead = NULL;
 	g_bPreLoad = FALSE;
@@ -1890,9 +1850,10 @@ int __stdcall iCheckException(char *pszLogXml,char *pszXml)
 
 int __stdcall apt_InitGList(CardType eType)
 {
+	CardOps *ops;
 	if (eType == eCPU16Card || eType == eCPU32Card) {
-		g_CpuCardOps = InitCpuCardOps();
-		g_CardOps = g_CpuCardOps;
+		ops = InitCpuCardOps();
+		g_mapCardOps[eType] = ops;
 
 #if (CPU_M1)
 		g_sourceValueMap.insert(std::make_pair("STAGENO", QueryColum(2, 4, "STAGENO", "000000")));
@@ -1901,11 +1862,14 @@ int __stdcall apt_InitGList(CardType eType)
 #endif
 
 	} else {
-		g_M1CardOps = InitM1CardOps();
-		g_CardOps = g_M1CardOps;		
+		ops = InitM1CardOps();
+		g_mapCardOps[eType] = ops;
 	}
+	
+
 	g_XmlListHead = g_CardOps->programXmlList;
 	g_SegHelper = (CSegmentHelper*)g_CardOps->SegmentHelper;
+	g_CardOps = g_mapCardOps[eType];
 	return 0;
 }
 

@@ -33,18 +33,22 @@ typedef int (__stdcall *DLLSysAuthDev)(unsigned char *, unsigned char *);
 typedef int (__stdcall *DLLGetRandom)(unsigned char, unsigned char, unsigned char *);
 typedef int (__stdcall *DLLSelectFile)(unsigned char, unsigned char *);
 typedef int (__stdcall *DLLSysAuthUCard)(unsigned char *, unsigned char *, unsigned char *);
-typedef int (__stdcall *DLLUCardAuthSys)(int);
 typedef int (__stdcall *DllReadBin)(unsigned char ,unsigned char *, unsigned char *, int, int);
 typedef int (__stdcall *DllWriteBin)(unsigned char, unsigned char *, unsigned char *,unsigned char , int ,int);
 typedef int (__stdcall *DllReadRec)(unsigned char ,unsigned char *, unsigned char *, unsigned long, int, int);
-typedef int (__stdcall *DllWriteRec)(unsigned char, unsigned char *, unsigned char *, unsigned long ,int, int);
 
-//add at 0624
+// 16/32 merge add unsigned char iSAMSeat
 
-typedef int (_stdcall  *DllAppendRec)(unsigned char *, unsigned char *, unsigned long);
+typedef int (__stdcall *DllWriteRec)(unsigned char, unsigned char, unsigned char *, unsigned char *, unsigned long ,int, int);
+
+//add iCardType and iSAMSeat
+typedef int (__stdcall *DLLUCardAuthSys)(unsigned char , unsigned char, int);
+typedef int (_stdcall  *DllAppendRec)(unsigned char , unsigned char, unsigned char *, unsigned char *, unsigned long);
 
 
-typedef int (_stdcall  *DllSignRec)(unsigned char *pFID, 
+typedef int (_stdcall  *DllSignRec)(unsigned char iCardType, 
+									unsigned char iSAMSeat,
+									unsigned char *pFID, 
 									int		iRecNo,
 									int		sign );
 

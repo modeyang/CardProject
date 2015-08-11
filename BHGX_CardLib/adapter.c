@@ -122,7 +122,8 @@ int __stdcall apt_ScanCard(char *card_info)
 		return CardScanErr; 
 	}
 
-	sprintf(card_info, "%d|%s|%s", (int)cardType, resp, attr);
+	set_card_type((CardType)cardType);
+	sprintf(card_info, "%d|%s|%s", cardType, resp, attr);
 
 	//¼ÓÔØxmlÎÄ¼ş
 	apt_InitGList(cardType);

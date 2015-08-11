@@ -1,2 +1,0 @@
-将BHDCCard.dll放入IE的安装路径中，例如：C:\Program Files\Internet Explorer
-其他两个放入system32中

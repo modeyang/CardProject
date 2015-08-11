@@ -140,7 +140,45 @@ struct XmlProgramS *get_card_xmlList(CardType eType)
 	return NULL;
 }
 
+/**
+*
+*/
+void DestroyList(struct XmlSegmentS *listHead, int mode)
+{
+	struct XmlSegmentS	*CurrSegmentElement = NULL;
+	struct XmlSegmentS	*TempSegmentElement = NULL;
+	struct XmlColumnS	*CurrColumnElement	= NULL;
+	struct XmlColumnS	*TempColumnElement	= NULL;
+
+	CurrSegmentElement = listHead;
+	while(CurrSegmentElement)
+	{
+		CurrColumnElement = CurrSegmentElement->ColumnHeader;
+		while(CurrColumnElement)
+		{
+			TempColumnElement = CurrColumnElement;
+			CurrColumnElement = CurrColumnElement->Next;
+			if (mode) {
+				SAFE_DELETE_C(TempColumnElement->Value);
+			}
+			SAFE_DELETE_C(TempColumnElement);
+		}
+
+		TempSegmentElement = CurrSegmentElement;
+		CurrSegmentElement = CurrSegmentElement->Next;
+
+		SAFE_DELETE_C(TempSegmentElement);
+	}
+
+	return;
+}
+
 void clean_up()
 {
-
+	int index = 0;
+	for (; index <= gCurPos; index++) {
+		DestroyList(gXmlLists[index].xmlListHeader->SegHeader, 0);
+		SAFE_DELETE_C(gXmlLists[index].xmlListHeader);
+		gCurPos --;
+	}
 }
