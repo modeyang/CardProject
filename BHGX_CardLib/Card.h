@@ -20,9 +20,13 @@ extern "C" {
 
 #define ENCRYPT			0
 
-#define	CARDSEAT_RF		0	//0：非接用户卡 
-#define CARDSEAT_PSAM1	1	//1：SAM卡编号1
-#define CARDSEAT_M1		2	//2：M1
+//#define	CARDSEAT_RF		0	//0：非接用户卡 
+//#define CARDSEAT_PSAM1	1	//1：SAM卡编号1
+//#define card_type		2	//2：M1
+
+#define CARDTYPE_M1		0	//
+#define CARDTYPE_CPU	1	//
+#define CARDTYPE_SAM	2	//
 
 
 #define	CARDSEAT_RF		0	//：非接用户卡 

@@ -110,9 +110,11 @@ static int GetUpdateKeyID(int SegID,int mode)
 		return KEY_UK_DF02_2;
 	else if (SegID < 13)
 		return KEY_UK_DF02_3;
-	else {
-		if (!mode && SegID < BIN_START)
+	else if (SegID < BIN_START){
+		if (mode == 0)
 			return KEY_UK_DF03_2;
+		return KEY_UK_DF03_1;
+	} else {
 		return KEY_UK_DF03_1;
 	}
 	return -1;
@@ -258,14 +260,14 @@ static int _iReadCard(struct RWRequestS *list)
 		while (pReq){
 			status = 0;
 			if (strlen((char*)(g_recIndex[pReq->nID-1].section)) > 0) {
-				status = Instance->iSelectFile(card_type, g_recIndex[pReq->nID-1].section);
+				status = Instance->iSelectFile(0, g_recIndex[pReq->nID-1].section);
 				UCardFlag = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].section);
 				status |= Instance->iUCardAuthSys(card_type, sam_seat, UCardFlag);
 				LOG_INFO("文件名:%s, KeyID:%d, iUCardAuthSys:%d", g_recIndex[pReq->nID-1].section, UCardFlag, status);
 			}
 
 			if (strlen((char*)(g_recIndex[pReq->nID-1].subSection)) > 0) {
-				status = Instance->iSelectFile(card_type, g_recIndex[pReq->nID-1].subSection);
+				status = Instance->iSelectFile(0, g_recIndex[pReq->nID-1].subSection);
 				UCardFlag = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].subSection);
 				status |= Instance->iUCardAuthSys(card_type, sam_seat, UCardFlag);
 				LOG_INFO("文件名:%s, KeyID:%d, iUCardAuthSys:%d", g_recIndex[pReq->nID-1].subSection, UCardFlag, status);
@@ -422,22 +424,26 @@ static int _iWriteCard(struct RWRequestS *list)
 		while (pReq)
 		{
 			status = 0;
-			if (strlen((char*)(g_recIndex[pReq->nID-1].section)) > 0) {
-				status = Instance->iSelectFile(card_type, g_recIndex[pReq->nID-1].section);
-				UKey = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].section);
-				status |= Instance->iUCardAuthSys(card_type, sam_seat, UKey);
-				LOG_INFO("文件名:%s, KeyID:%d, iUCardAuthSys:%d", g_recIndex[pReq->nID-1].section, UKey, status);
+			if (!IsSameFile(pReq, pOldReq)) {
+				if (strlen((char*)(g_recIndex[pReq->nID-1].section)) > 0) {
+					status = Instance->iSelectFile(0, g_recIndex[pReq->nID-1].section);
+					UKey = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].section);
+					status |= Instance->iUCardAuthSys(card_type, sam_seat, UKey);
+					LOG_INFO("文件名:%s, KeyID:%d, iUCardAuthSys:%d", g_recIndex[pReq->nID-1].section, UKey, status);
 
+				}
+
+				if (strlen((char*)(g_recIndex[pReq->nID-1].subSection)) > 0) {
+					status |= Instance->iSelectFile(0, g_recIndex[pReq->nID-1].subSection);
+					UKey = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].subSection);
+					status |= Instance->iUCardAuthSys(card_type, sam_seat, UKey);
+					LOG_INFO("文件名:%s, KeyID:%d, iUCardAuthSys:%d", g_recIndex[pReq->nID-1].subSection, UKey, status);
+
+				}
 			}
 
-			if (strlen((char*)(g_recIndex[pReq->nID-1].subSection)) > 0) {
-				status |= Instance->iSelectFile(card_type, g_recIndex[pReq->nID-1].subSection);
-				UKey = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].subSection);
-				status |= Instance->iUCardAuthSys(card_type, sam_seat, UKey);
-				LOG_INFO("文件名:%s, KeyID:%d, iUCardAuthSys:%d", g_recIndex[pReq->nID-1].subSection, UKey, status);
-
-			}
-
+			mode = *(BYTE*)(pReq->value);
+			mode = (mode==0 ? 1 : 0);
 			UKey = GetUpdateKeyID(pReq->nID, mode);
 			status |= Instance->iUCardAuthSys(card_type, sam_seat, UKey);
 			if (status) {
@@ -445,38 +451,33 @@ static int _iWriteCard(struct RWRequestS *list)
 				goto done;
 			}
 
-			pOldReq = pReq;
-			while (IsSameFile(pOldReq, pReq))
+			switch (pReq->datatype)
 			{
-				switch (pReq->datatype)
-				{
-				case eRecType:
-					status |= Instance->iWriteRec(card_type, sam_seat, g_recIndex[pReq->nID-1].fileName, pReq->value,
-						pReq->length , write_flag, get_seg_counts(pReq->nID));
-					LOG_INFO("记录文件名:%s，内容长度:%d, iWriteRec:%d", g_recIndex[pReq->nID-1].fileName, pReq->length, status);
-					break;
-				case eBinType:
-					status |= Instance->iWriteBin(card_type, g_recIndex[pReq->nID-1].fileName , pReq->value, 0, 
-						pReq->length, pReq->offset);
-					LOG_INFO("Bin文件名:%s，内容长度:%d, iWriteBin:%d", g_recIndex[pReq->nID-1].fileName, pReq->length, status);
+			case eRecType:
+				status |= Instance->iWriteRec(card_type, sam_seat, g_recIndex[pReq->nID-1].fileName, pReq->value,
+					pReq->length , write_flag, get_seg_counts(pReq->nID));
+				LOG_INFO("记录文件名:%s，内容长度:%d, iWriteRec:%d", g_recIndex[pReq->nID-1].fileName, pReq->length, status);
+				break;
+			case eBinType:
+				status |= Instance->iWriteBin(card_type, g_recIndex[pReq->nID-1].fileName , pReq->value, 0, 
+					pReq->length, pReq->offset);
+				LOG_INFO("Bin文件名:%s，内容长度:%d, iWriteBin:%d", g_recIndex[pReq->nID-1].fileName, pReq->length, status);
 
-					break;
-				case eCycType:
-					status |= Instance->iAppendRec(card_type, sam_seat, g_recIndex[pReq->nID-1].fileName, pReq->value, pReq->length);
-					LOG_INFO("循环文件名:%s，内容长度:%d, iAppendRec:%d", g_recIndex[pReq->nID-1].fileName, pReq->length, status);
+				break;
+			case eCycType:
+				status |= Instance->iAppendRec(card_type, sam_seat, g_recIndex[pReq->nID-1].fileName, pReq->value, pReq->length);
+				LOG_INFO("循环文件名:%s，内容长度:%d, iAppendRec:%d", g_recIndex[pReq->nID-1].fileName, pReq->length, status);
 
-					break;
-				case eSureType:
-					mode = *(BYTE*)(pReq->value);
-					mode = (mode==1 ? 1 : 0);
-					status |= Instance->iSignRec(card_type, sam_seat, g_recIndex[pReq->nID-1].fileName, pReq->nColumID, mode);
-					LOG_INFO("标记文件名:%s，内容:%d, iSignRec:%d", g_recIndex[pReq->nID-1].fileName, mode, status);
-					break;
+				break;
+			case eSureType:
 
-				}
-				pOldReq = pReq;
-				pReq = pReq->Next;
+				status = Instance->iSignRec(card_type, sam_seat, g_recIndex[pReq->nID-1].fileName, pReq->nColumID, mode);
+				LOG_INFO("标记文件名:%s，内容:%d, iSignRec:%d", g_recIndex[pReq->nID-1].fileName, mode, status);
+				break;
+
 			}
+			pOldReq = pReq;
+			pReq = pReq->Next;
 		}
 	}
 done:
@@ -544,10 +545,10 @@ int __stdcall FormatCpuCard(char c)
 	{
 		status = 0;
 		strcpy((char*)send  , "DDF1");
-		status |= Instance->iSelectFile(CARDSEAT_RF , send);
+		status |= Instance->iSelectFile(0 , send);
 
 		strcpy((char*)send  , "DF03");
-		status |= Instance->iSelectFile(CARDSEAT_RF , send);
+		status |= Instance->iSelectFile(0 , send);
 
 		status |= Instance->iUCardAuthSys(card_type, sam_seat, KEY_UK_DF03_1);
 		if (status) {
@@ -599,6 +600,7 @@ int __stdcall FormatCpuCard(char c)
 			strcpy((char*)send, "EE03");
 			length = START_POS_1 - END_OFFSET;
 			status |= Instance->iWriteBin(card_type, send, buff, 0, length, 0);
+			LOG_INFO("格式化结果:%d", status);
 		}
 	}
 	return status;

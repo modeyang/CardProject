@@ -701,8 +701,10 @@ static int iCreateScanXml(char * card_info, char *xml)
 	std::vector<std::string> vec_info;
 	vec_info = split(std::string(card_info), "|");
 	int card_type = atoi(vec_info[0].c_str());
-	if (card_type == eCPUCard) {
-		Segment->SetAttribute("VALUE", "CPU");
+	if (card_type == eCPU16Card) {
+		Segment->SetAttribute("VALUE", "16KCPU");
+	}else if (card_type == eCPU32Card) {
+		Segment->SetAttribute("VALUE", "32KCPU");
 	} else if (card_type == eM1Card) {
 		Segment->SetAttribute("VALUE", "M1");
 	} else {
@@ -711,7 +713,7 @@ static int iCreateScanXml(char * card_info, char *xml)
 
 	RootElement->LinkEndChild(Segment);
 
-	if (card_type == eCPUCard) {
+	if (card_type == eCPU16Card || card_type == eCPU32Card) {
 		Segment1 = new TiXmlElement("SEGMENT");
 		Segment1->SetAttribute("ID",1);
 		Segment1->SetAttribute("SOURCE", "PSAM");
@@ -1010,9 +1012,16 @@ static int _iReadInfo(int flag, char *xml, int del_flag=-1)
 
 	// 设备的真实读取
 	status = g_CardOps->cardAdapter->iReadCard(RequestList, g_CardOps->cardAdapter);
+	if (status != CardProcSuccess) {
+		CXmlUtil::CreateResponXML(status, err(status), xml);
+		LOG_ERROR(err(status));
+		goto read_done;
+	}
 
 	// 通过链表产生XML字符串
 	g_CardOps->iConvertXmlByList(list, xml, &length, del_flag);
+
+read_done:
 
 	// 销毁读写请求链表
 	apt_DestroyRWRequest(RequestList, 0);
@@ -1872,10 +1881,9 @@ int __stdcall apt_InitGList(CardType eType)
 		g_mapCardOps[eType] = ops;
 	}
 	
-
+	g_CardOps = g_mapCardOps[eType];
 	g_XmlListHead = g_CardOps->programXmlList;
 	g_SegHelper = (CSegmentHelper*)g_CardOps->SegmentHelper;
-	g_CardOps = g_mapCardOps[eType];
 	return 0;
 }
 

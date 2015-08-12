@@ -39,6 +39,7 @@ void CSegmentHelper::setXmlProgramS(struct XmlProgramS *xmlHeader)
 void CSegmentHelper::setCardOps(struct CardOps * ops)
 {
 	m_CardOps = ops;
+	m_XmlListHead = ops->programXmlList;
 }
 
 // mode 为1时表示分配内存

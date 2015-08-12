@@ -249,16 +249,18 @@ static int GetControlBuff(unsigned char *pControl, int nSecr)
 	/* 如果没有读卡设备接入*/
 	if(!Instance) 
 		return CardInitErr;
+
 	ISAPTSCANCARD;
+	unsigned char card_type = (unsigned char)get_card_type();
 
 	BlkNr = nSecr * 4 + 3;
 	memcpy(keyA, defKeyA, sizeof(keyA));
-	bRead = Instance->iReadBin(CARDSEAT_M1, keyA, pControl, 4*8, BlkNr * 128 + 6*8);
+	bRead = Instance->iReadBin(card_type, keyA, pControl, 4*8, BlkNr * 128 + 6*8);
 	if (bRead != 0){
 		ISAPTSCANCARD;
 
 		memset(keyA, 0xff, sizeof(keyA));
-		bRead = Instance->iReadBin(CARDSEAT_M1, keyA, pControl, 4*8, BlkNr * 128 + 6*8);
+		bRead = Instance->iReadBin(card_type, keyA, pControl, 4*8, BlkNr * 128 + 6*8);
 	}
 	return bRead;
 }
@@ -347,15 +349,16 @@ static int _FormatCard(unsigned char *pControl, unsigned char* szFormat,
 {
 	int nOffset = 128*nBlk;
 	unsigned char bool_test = 0;
+	unsigned char card_type = (unsigned char)get_card_type();
 
 	if(!Instance)
 		return CardInitErr;
 
 	if (GetWriteWord(pControl) == DEFAULT_CONTROL)
 	{
-		bool_test = Instance->iWriteBin(CARDSEAT_M1, keyB, szFormat, DEFAULT_CONTROL, 128, nOffset);
+		bool_test = Instance->iWriteBin(card_type, keyB, szFormat, DEFAULT_CONTROL, 128, nOffset);
 	}else{
-		bool_test = Instance->iWriteBin(CARDSEAT_M1, defKeyA, szFormat,  KEYA_CONTROL ,128, nOffset);
+		bool_test = Instance->iWriteBin(card_type, defKeyA, szFormat,  KEYA_CONTROL ,128, nOffset);
 	}
 	LOG_DEBUG("写卡操作: %d", bool_test);
 	return  bool_test==0 ? 0:-1;
@@ -392,6 +395,7 @@ static int ChangePwdEx(const unsigned char * pNewKeyA ,const unsigned char * ctr
 static int iGetKeySeed(int type, unsigned char *seed)
 {
 	unsigned char tmp[32];
+	unsigned char card_type = (unsigned char)get_card_type();
 
 	//没有寻到卡
 	if(!Instance || !Instance->iReadBin)
@@ -399,19 +403,19 @@ static int iGetKeySeed(int type, unsigned char *seed)
 
 	//读取seed
 	memset(tmp, 0, 32);
-	Instance->iReadBin(CARDSEAT_M1, defKeyA, tmp, 56, 640);
+	Instance->iReadBin(card_type, defKeyA, tmp, 56, 640);
 	if (type == GWCARD) {
 		bcd2str(tmp, seed, 14);
 		goto done;
 	} else if (type == NHCARD) {
 		memset(tmp, 0, sizeof(tmp));
-		Instance->iReadBin(CARDSEAT_M1, defKeyA, tmp, 72, 792);
+		Instance->iReadBin(card_type, defKeyA, tmp, 72, 792);
 		bcd2str(tmp, seed, 18);
 		goto done;
 	} else {
 		if (tmp[0]>>4 == 0){
 			memset(tmp, 0, sizeof(tmp));
-			Instance->iReadBin(CARDSEAT_M1, defKeyA, tmp, 72, 792);
+			Instance->iReadBin(card_type, defKeyA, tmp, 72, 792);
 			bcd2str(tmp, seed, 18);
 		} else {
 			bcd2str(tmp, seed, 14);
@@ -626,6 +630,7 @@ int _iReadCard(struct RWRequestS *list)
 	unsigned char bRead = 0;
 
 	struct RWRequestS *CurrRequest= NULL;
+	unsigned char card_type = (unsigned char)get_card_type();
 
 	/* 如果没有读卡设备接入*/
 	if(!Instance) 
@@ -635,7 +640,7 @@ int _iReadCard(struct RWRequestS *list)
 	CurrRequest = list;
 	while(CurrRequest)
 	{
-		bRead = Instance->iReadBin(CARDSEAT_M1, defKeyA, CurrRequest->value, CurrRequest->length, 
+		bRead = Instance->iReadBin(card_type, defKeyA, CurrRequest->value, CurrRequest->length, 
 			CurrRequest->offset);
 
 		// 向后迭代
@@ -719,6 +724,7 @@ int _iWriteCard(struct RWRequestS *list)
 	int nWriteControl = DEFAULT_CONTROL;
 	struct RWRequestS *CurrRequest= NULL;
 	int faile_retry = 0;
+	unsigned char card_type = (unsigned char)get_card_type();
 
 	if(!Instance)
 		return CardInitErr;
@@ -755,7 +761,7 @@ int _iWriteCard(struct RWRequestS *list)
 		CurrRequest = list;
 		while(CurrRequest)
 		{
-			bool_test = Instance->iWriteBin(CARDSEAT_M1, Key, CurrRequest->value, nWriteControl , 
+			bool_test = Instance->iWriteBin(card_type, Key, CurrRequest->value, nWriteControl , 
 				CurrRequest->length, CurrRequest->offset);
 			CurrRequest = CurrRequest->Next;
 			if (bool_test) {
