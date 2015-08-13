@@ -257,12 +257,9 @@ static struct RWRequestS  *_CreateReadList(struct RWRequestS *ReqList, int mode)
 #define		CPU_8K_OFFSET	254
 static int _iReadCard(struct RWRequestS *list)
 {
-	char buf[1024];
-
 	struct RWRequestS *pReq = list;
 	int status = 0;
 	int UCardFlag = 0;
-	memset(buf, 0, sizeof(buf));
 	if (Instance){
 		while (pReq){
 			status = 0;
@@ -430,22 +427,26 @@ static int _iWriteCard(struct RWRequestS *list)
 		while (pReq)
 		{
 			status = 0;
-			if (strlen((char*)(g_recIndex[pReq->nID-1].section)) > 0) {
-				status = Instance->iSelectFile(CARDSEAT_RF, g_recIndex[pReq->nID-1].section);
-				UKey = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].section);
-				status |= Instance->iUCardAuthSys(UKey);
-				LOG_INFO("文件名:%s, KeyID:%d, iUCardAuthSys:%d", g_recIndex[pReq->nID-1].section, UKey, status);
+			if (!IsSameFile(pReq, pOldReq)) {
+				if (strlen((char*)(g_recIndex[pReq->nID-1].section)) > 0) {
+					status = Instance->iSelectFile(CARDSEAT_RF, g_recIndex[pReq->nID-1].section);
+					UKey = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].section);
+					status |= Instance->iUCardAuthSys(UKey);
+					LOG_INFO("文件名:%s, KeyID:%d, iUCardAuthSys:%d", g_recIndex[pReq->nID-1].section, UKey, status);
 
+				}
+
+				if (strlen((char*)(g_recIndex[pReq->nID-1].subSection)) > 0) {
+					status |= Instance->iSelectFile(CARDSEAT_RF, g_recIndex[pReq->nID-1].subSection);
+					UKey = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].subSection);
+					status |= Instance->iUCardAuthSys(UKey);
+					LOG_INFO("文件名:%s, KeyID:%d, iUCardAuthSys:%d", g_recIndex[pReq->nID-1].subSection, UKey, status);
+
+				}
 			}
 
-			if (strlen((char*)(g_recIndex[pReq->nID-1].subSection)) > 0) {
-				status |= Instance->iSelectFile(CARDSEAT_RF, g_recIndex[pReq->nID-1].subSection);
-				UKey = GetFloderKeyID((char*)g_recIndex[pReq->nID-1].subSection);
-				status |= Instance->iUCardAuthSys(UKey);
-				LOG_INFO("文件名:%s, KeyID:%d, iUCardAuthSys:%d", g_recIndex[pReq->nID-1].subSection, UKey, status);
-
-			}
-
+			mode = *(BYTE*)(pReq->value);
+			mode = (mode==0 ? 1 : 0);
 			UKey = GetUpdateKeyID(pReq->nID, mode);
 			status |= Instance->iUCardAuthSys(UKey);
 			if (status) {
@@ -453,38 +454,32 @@ static int _iWriteCard(struct RWRequestS *list)
 				goto done;
 			}
 
-			pOldReq = pReq;
-			while (IsSameFile(pOldReq, pReq))
+			switch (pReq->datatype)
 			{
-				switch (pReq->datatype)
-				{
-				case eRecType:
-					status |= Instance->iWriteRec(CARDSEAT_RF, g_recIndex[pReq->nID-1].fileName, pReq->value,
-						pReq->length , write_flag, get_sec_counts(pReq->nID));
-					LOG_INFO("记录文件名:%s，内容长度:%d, iWriteRec:%d", g_recIndex[pReq->nID-1].fileName, pReq->length, status);
-					break;
-				case eBinType:
-					status |= Instance->iWriteBin(CARDSEAT_RF, g_recIndex[pReq->nID-1].fileName , pReq->value, 0, 
-						pReq->length, pReq->offset);
-					LOG_INFO("Bin文件名:%s，内容长度:%d, iWriteBin:%d", g_recIndex[pReq->nID-1].fileName, pReq->length, status);
+			case eRecType:
+				status |= Instance->iWriteRec(CARDSEAT_RF, g_recIndex[pReq->nID-1].fileName, pReq->value,
+					pReq->length , write_flag, get_sec_counts(pReq->nID));
+				LOG_INFO("记录文件名:%s，内容长度:%d, iWriteRec:%d", g_recIndex[pReq->nID-1].fileName, pReq->length, status);
+				break;
+			case eBinType:
+				status |= Instance->iWriteBin(CARDSEAT_RF, g_recIndex[pReq->nID-1].fileName , pReq->value, 0, 
+					pReq->length, pReq->offset);
+				LOG_INFO("Bin文件名:%s，内容长度:%d, iWriteBin:%d", g_recIndex[pReq->nID-1].fileName, pReq->length, status);
 
-					break;
-				case eCycType:
-					status |= Instance->iAppendRec(g_recIndex[pReq->nID-1].fileName, pReq->value, pReq->length);
-					LOG_INFO("循环文件名:%s，内容长度:%d, iAppendRec:%d", g_recIndex[pReq->nID-1].fileName, pReq->length, status);
+				break;
+			case eCycType:
+				status |= Instance->iAppendRec(g_recIndex[pReq->nID-1].fileName, pReq->value, pReq->length);
+				LOG_INFO("循环文件名:%s，内容长度:%d, iAppendRec:%d", g_recIndex[pReq->nID-1].fileName, pReq->length, status);
 
-					break;
-				case eSureType:
-					mode = *(BYTE*)(pReq->value);
-					mode = (mode==1 ? 1 : 0);
-					status |= Instance->iSignRec(g_recIndex[pReq->nID-1].fileName, pReq->nColumID, mode);
-					LOG_INFO("标记文件名:%s，内容:%d, iSignRec:%d", g_recIndex[pReq->nID-1].fileName, mode, status);
-					break;
+				break;
+			case eSureType:
+				status |= Instance->iSignRec(g_recIndex[pReq->nID-1].fileName, pReq->nColumID, mode);
+				LOG_INFO("标记文件名:%s，内容:%d, iSignRec:%d", g_recIndex[pReq->nID-1].fileName, mode, status);
+				break;
 
-				}
-				pOldReq = pReq;
-				pReq = pReq->Next;
 			}
+			pOldReq = pReq;
+			pReq = pReq->Next;
 		}
 	}
 done:

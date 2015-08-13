@@ -39,6 +39,7 @@ void CSegmentHelper::setXmlProgramS(struct XmlProgramS *xmlHeader)
 void CSegmentHelper::setCardOps(struct CardOps * ops)
 {
 	m_CardOps = ops;
+	m_XmlListHead = ops->programXmlList;
 }
 
 // mode 为1时表示分配内存
@@ -275,7 +276,7 @@ struct XmlSegmentS * CSegmentHelper::GetXmlSegmentByFlag(int flag)
 	int read_flag = 0;
 	while (flag > 0) {
 		read_flag ++ ;
-		if (flag & 0x1 > 0) {
+		if ((flag & 0x1) > 0) {
 			vecFlags.push_back(read_flag);
 		}	
 		flag = flag >> 1;
