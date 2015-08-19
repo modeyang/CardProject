@@ -830,13 +830,14 @@ int __stdcall iCardDeinit()
 	std::map<CardType, CardOps*>::iterator & iter = g_mapCardOps.begin();
 	for (; iter != g_mapCardOps.end(); iter++) {
 		CardOps *ops = iter->second;
-		SAFE_DELETE(ops->SegmentHelper);
-		SAFE_DELETE_C(ops->cardAdapter);
-		SAFE_DELETE_C(ops);
+		ops->iClearOPS(ops);
 	}
+	g_mapCardOps.clear();
 	clean_up();
 
 	g_XmlListHead = NULL;
+	g_CardOps = NULL;
+	g_SegHelper = NULL;
 	g_bPreLoad = FALSE;
 	g_bCardOpen = FALSE;
 	return apt_CloseCoreDevice();

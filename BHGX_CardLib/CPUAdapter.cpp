@@ -475,6 +475,12 @@ static struct XmlSegmentS*  CpuConvertXmltoList(char *xml)
 	return result;
 }
 
+void CPUClearOPS(struct CardOps *ops) 
+{
+	SAFE_DELETE(g_SegHelper);
+	SAFE_DELETE_C(ops->cardAdapter);
+	SAFE_DELETE_C(ops);
+}
 
 CardOps * __stdcall InitCpuCardOps()
 {
@@ -484,6 +490,7 @@ CardOps * __stdcall InitCpuCardOps()
 	mCardOps->iConvertXmlByList = CpuConvertXmlByList;
 	mCardOps->iConvertXmltoList = CpuConvertXmltoList;
 	mCardOps->iInitGList = InitCpuGlobalList;
+	mCardOps->iClearOPS = CPUClearOPS;
 
 	mCardOps->iInitGList();
 	mCardOps->programXmlList = get_card_xmlList(get_card_type());

@@ -1347,6 +1347,13 @@ adapter * __stdcall InitM1Adapter()
 	return M1Adapter;
 }
 
+void M1ClearOPS(struct CardOps *ops) 
+{
+	SAFE_DELETE(g_SegHelper);
+	SAFE_DELETE_C(ops->cardAdapter);
+	SAFE_DELETE_C(ops);
+}
+
 CardOps * __stdcall InitM1CardOps()
 {
 	CardOps *mCardOps = (CardOps *)malloc(sizeof(CardOps));
@@ -1356,6 +1363,7 @@ CardOps * __stdcall InitM1CardOps()
 	mCardOps->iConvertXmltoList = M1ConvertXmltoList;
 	mCardOps->iCallocForColmn =  M1CallocForColmn;
 	mCardOps->cardAdapter = InitM1Adapter();
+	mCardOps->iClearOPS = M1ClearOPS;
 
 	mCardOps->iInitGList();
 	mCardOps->programXmlList = get_card_xmlList(get_card_type());

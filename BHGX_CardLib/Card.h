@@ -203,6 +203,7 @@ typedef int                 (*ReadCard)(struct RWRequestS *list, void *apt);
 typedef int                 (*WriteCard)(struct RWRequestS *list,  void *apt);
 
 typedef void				(*CallocForColmn)(struct XmlColumnS *);
+typedef void				(*ClearOPS)(struct CardOps *);
 
 typedef enum CardType
 {
@@ -253,6 +254,7 @@ typedef struct CardOps
 	ConvertXmlByList	iConvertXmlByList;
 	ConvertXmltoList	iConvertXmltoList;
 	CallocForColmn      iCallocForColmn;
+	ClearOPS			iClearOPS;
 
 	struct XmlProgramS *programXmlList;
 	adapter		       *cardAdapter;
