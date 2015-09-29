@@ -22,8 +22,12 @@ CBHGX_Printer::CBHGX_Printer()
 
 CBHGX_Printer::~CBHGX_Printer()
 {
-	m_iPrinter.iFreePrinter();
-	FreeLibrary(m_iPrinter.hInstLibrary);
+	if (m_iPrinter.iFreePrinter != NULL) {
+		cout << "printer deinit" << endl;
+		m_iPrinter.iFreePrinter();
+		FreeLibrary(m_iPrinter.hInstLibrary);
+		
+	}
 }
 
 void GetPrintType(const char *strName, char *strType)
@@ -40,6 +44,7 @@ void GetPrintType(const char *strName, char *strType)
 		szName = szName.substr(0, szName.find(" "));
 		strcpy(strType, szName.c_str());
 	}
+	cout << "strType：" << strType << endl; 
 
 }
 
@@ -97,8 +102,8 @@ int	 CBHGX_Printer::Init(char *pszPrinter)
 		m_iPrinter.hInstLibrary = hInst;
 		m_iPrinter.iProbePrinter = (ProbePrinter)GetProcAddress(hInst, "iProbePrinter");
 
-		if (m_iPrinter.iProbePrinter != NULL && m_iPrinter.iProbePrinter())
-		{
+		//if (m_iPrinter.iProbePrinter != NULL && m_iPrinter.iProbePrinter())
+		//{
 			m_iPrinter.iFeedInCard = (FeedCardToM1)GetProcAddress(hInst,"iFeedCardToM1");
 			m_iPrinter.iBackCardToPrintHeader = (BackCardFromM1)GetProcAddress(hInst,"iBackCardFromM1");
 			m_iPrinter.iInitGraphics = (InitGraphics)GetProcAddress(hInst, "iInitGraphics");
@@ -110,8 +115,9 @@ int	 CBHGX_Printer::Init(char *pszPrinter)
 			m_iPrinter.iCheckPrinterStatus = (iCheckStatus)GetProcAddress(hInst, "iCheckPrinterStatus");
 
 			m_bInit = true;
+			cout << "加载动态库成功"<<endl;
 			return 0;
-		}
+		//}
 	}
 
 	return -1;
@@ -121,6 +127,7 @@ int	 CBHGX_Printer::FeedCard()
 {
 	if (m_iPrinter.iFeedInCard != NULL)
 	{
+		cout << "进卡.........."<<endl;
 		return m_iPrinter.iFeedInCard();
 	}
 	return -1;
@@ -128,8 +135,9 @@ int	 CBHGX_Printer::FeedCard()
 
 int CBHGX_Printer::BackToPrintHeader()
 {
-	if (m_iPrinter.iBackCardToPrintHeader != NULL)
+	if (m_iPrinter.iBackCardToPrintHeader != NULL) {
 		return m_iPrinter.iBackCardToPrintHeader();
+	}
 	return -1;
 }
 
@@ -190,6 +198,7 @@ int CBHGX_Printer::InitPrinter(char *CardCoverDataXml,char *pszXZQHXML)
 	{
 		return -1;
 	}
+	cout << "init Printer xml success....." << endl;
 	return 0;
 }
 
@@ -197,6 +206,7 @@ int CBHGX_Printer::InitPrinter(char *CardCoverDataXml,char *pszXZQHXML)
 int  CBHGX_Printer::DeInitPrinter()
 {
 	m_bInit = false;
+	cout << "deinit printer" << endl;
 	return m_iPrinter.iOutCard();
 }
 
@@ -207,14 +217,15 @@ int CBHGX_Printer::StartPrint()
 	{
 		//m_iPrinter.iBackCardToPrintHeader();
 		nRet = m_iPrinter.iInitGraphics(m_strPrinter.c_str());
-
-		if (nRet != 1)
-		{
+		cout << "iInitGraphics : " << m_strPrinter.c_str() << " status: " << nRet <<endl;
+		if (nRet != 1){
 			return -1;
 		}
-		for (size_t i=0; i<m_vecPrintSeg.size(); ++i)
+		cout << "vecPrintSeg size: "<< m_vecPrintSeg.size() << endl;
+		for (size_t i=0; i<m_vecPrintSeg.size(); i++)
 		{
 			PrintSegMent &seg = m_vecPrintSeg[i];
+			cout << m_vecPrintSeg[i].SegPrintInfo.strTarget.c_str() << " ";
 			if (seg.bPrint)
 			{
 				m_iPrinter.iDrawText(seg.SegPrintInfo.xPos, seg.SegPrintInfo.yPos,
@@ -228,11 +239,14 @@ int CBHGX_Printer::StartPrint()
 						stColum.strSource.c_str(), stColum.ColumnPrintInfo.strFontFace.c_str(),
 						stColum.ColumnPrintInfo.nFontHeight, stColum.ColumnPrintInfo.lFontStyle,
 						stColum.ColumnPrintInfo.lColor);
+					cout << stColum.strSource.c_str() << endl;
 				}
 			}
 		}
 		nRet = m_iPrinter.iPrintGraphics();
+		cout << "iPrintGraphics status: " << nRet <<endl;
 		nRet = m_iPrinter.iCloseGraphics();
+		cout << "iCloseGraphics status: " << nRet <<endl;
 	}
 	return nRet;
 }
@@ -268,6 +282,7 @@ int CBHGX_Printer::CreatePrintData(char *pszCardXml)
 			}
 			PrintSegMent &stSegment = m_vecPrintSeg[nColumID];
 			stSegment.bPrint = TRUE;
+			cout << "卡片数据: " <<  stSegment.SegPrintInfo.strTarget.c_str()  << endl;
 			std::string szContent = Cloumn->Attribute("VALUE");
 			if (stSegment.vecPrintColumn.size() > 1)
 			{

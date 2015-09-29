@@ -21,6 +21,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BHGX_PRINT_ALL", "BHGX_PRIN
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BHGX_MF_VCard", "VCard\BHGX_MF_VCard.vcproj", "{75D4E99B-E1AD-48A8-8C6B-2F32E79E916D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "printerDemo", "printerDemo\printerDemo.vcproj", "{8C60613C-DF9C-49AB-B222-44A165C32278}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -67,6 +69,10 @@ Global
 		{75D4E99B-E1AD-48A8-8C6B-2F32E79E916D}.Debug|Win32.Build.0 = Debug|Win32
 		{75D4E99B-E1AD-48A8-8C6B-2F32E79E916D}.Release|Win32.ActiveCfg = Release|Win32
 		{75D4E99B-E1AD-48A8-8C6B-2F32E79E916D}.Release|Win32.Build.0 = Release|Win32
+		{8C60613C-DF9C-49AB-B222-44A165C32278}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8C60613C-DF9C-49AB-B222-44A165C32278}.Debug|Win32.Build.0 = Debug|Win32
+		{8C60613C-DF9C-49AB-B222-44A165C32278}.Release|Win32.ActiveCfg = Release|Win32
+		{8C60613C-DF9C-49AB-B222-44A165C32278}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
