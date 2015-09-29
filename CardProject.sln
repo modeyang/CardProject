@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BHGX_HospitalProcess", "BHG
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CardProject", "CardProject\CardProject.vcproj", "{42189A3A-500B-41F2-AEDE-323292F5AE50}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "printerDemo", "printerDemo\printerDemo.vcproj", "{8C60613C-DF9C-49AB-B222-44A165C32278}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -43,6 +45,10 @@ Global
 		{42189A3A-500B-41F2-AEDE-323292F5AE50}.Debug|Win32.Build.0 = Debug|Win32
 		{42189A3A-500B-41F2-AEDE-323292F5AE50}.Release|Win32.ActiveCfg = Release|Win32
 		{42189A3A-500B-41F2-AEDE-323292F5AE50}.Release|Win32.Build.0 = Release|Win32
+		{8C60613C-DF9C-49AB-B222-44A165C32278}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8C60613C-DF9C-49AB-B222-44A165C32278}.Debug|Win32.Build.0 = Debug|Win32
+		{8C60613C-DF9C-49AB-B222-44A165C32278}.Release|Win32.ActiveCfg = Release|Win32
+		{8C60613C-DF9C-49AB-B222-44A165C32278}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
