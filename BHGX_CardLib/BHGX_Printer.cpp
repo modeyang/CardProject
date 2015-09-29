@@ -135,7 +135,10 @@ int CBHGX_Printer::BackToPrintHeader()
 
 int  CBHGX_Printer::CheckStatus()
 {
-	return m_iPrinter.iCheckPrinterStatus();
+	if (m_iPrinter.iCheckPrinterStatus != NULL) {
+		return m_iPrinter.iCheckPrinterStatus();
+	}
+	return 0;
 }
 
 int	 CBHGX_Printer::GetPrinterList(std::vector<std::string> &vecPrinter)
@@ -196,8 +199,10 @@ int CBHGX_Printer::InitPrinter(char *CardCoverDataXml,char *pszXZQHXML)
 int  CBHGX_Printer::DeInitPrinter()
 {
 	m_bInit = false;
-	cout << "deinit printer" << endl;
-	return m_iPrinter.iOutCard();
+	if (m_iPrinter.iOutCard != NULL) {
+		return m_iPrinter.iOutCard();
+	}
+	return 0;
 }
 
 int CBHGX_Printer::StartPrint()
