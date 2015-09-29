@@ -12,9 +12,9 @@ extern "C" {
 #pragma warning (disable : 4267)
 #pragma warning (disable : 4020)
 
-#define CPU_ONLY		0
-#define CPU_16K			1
-#define CPU_MERGE		1
+#define CPU_ONLY		1
+#define CPU_16K			0
+#define CPU_MERGE		0
 
 #define CPU_M1			0
 #define CPU_8K			0

@@ -6,6 +6,7 @@
 #include <Windows.h>
 #include <winspool.h>
 #include "tinyxml/headers/tinyxml.h"
+#include "public/debug.h"
 using namespace std;
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 #pragma comment(lib, "winspool.lib")
@@ -22,20 +23,20 @@ CBHGX_Printer::CBHGX_Printer()
 
 CBHGX_Printer::~CBHGX_Printer()
 {
-	m_iPrinter.iFreePrinter();
-	FreeLibrary(m_iPrinter.hInstLibrary);
+	if (m_iPrinter.iFreePrinter != NULL) {
+		m_iPrinter.iFreePrinter();
+		FreeLibrary(m_iPrinter.hInstLibrary);
+		
+	}
 }
 
 void GetPrintType(const char *strName, char *strType)
 {
 	std::string szName(strName);
 	size_t nPos = szName.find(" ");
-	if (nPos == -1)
-	{
+	if (nPos == -1){
 		strcpy(strType, strName);
-	}
-	else
-	{
+	}else{
 		szName = szName.substr(szName.find(" ")+1, szName.length());
 		szName = szName.substr(0, szName.find(" "));
 		strcpy(strType, szName.c_str());
@@ -52,12 +53,9 @@ int	 CBHGX_Printer::Init(char *pszPrinter)
 	char strType[50];
 	memset(strType, 0, sizeof(strType));
 
-	if (strlen(pszPrinter) == 0)
-	{
+	if (strlen(pszPrinter) == 0){
 		GetDefaultPrinterName(m_strPrinter);
-	}
-	else
-	{
+	}else{
 		m_strPrinter = pszPrinter;
 	}
 	
@@ -67,33 +65,28 @@ int	 CBHGX_Printer::Init(char *pszPrinter)
 
 	sprintf_s(szDLL, "BHGX_PRINT_%s.dll", strType);
 	hInst = LoadLibrary(szDLL);
-	if (hInst != NULL)
-	{
+	if (hInst != NULL){
 		bLoad = true;
 	}
 
 	std::string strDefaultPrinter;
 	GetDefaultPrinterName(strDefaultPrinter);
-	if (m_strPrinter != strDefaultPrinter)
-	{
+	if (m_strPrinter != strDefaultPrinter){
 		SetDefaultPrinter(pszPrinter);
 	}
 
-	if (!bLoad)
-	{
+	if (!bLoad){
 		memset(szDLL, 0, sizeof(szDLL));
 		sprintf_s(szDLL, "BHGX_PRINT_ALL.dll");
 		hInst = LoadLibrary(szDLL);
-		if (hInst != NULL)
-		{
+		if (hInst != NULL){
 			bLoad = true;
 		}
 	}
 
-	printf("调用打印的DLL为:%s\n", szDLL);
+	LOG_INFO("调用打印的DLL为:%s\n", szDLL);
 
-	if (bLoad)
-	{
+	if (bLoad){
 		m_iPrinter.hInstLibrary = hInst;
 		m_iPrinter.iProbePrinter = (ProbePrinter)GetProcAddress(hInst, "iProbePrinter");
 
@@ -110,17 +103,17 @@ int	 CBHGX_Printer::Init(char *pszPrinter)
 			m_iPrinter.iCheckPrinterStatus = (iCheckStatus)GetProcAddress(hInst, "iCheckPrinterStatus");
 
 			m_bInit = true;
+			LOG_INFO("加载动态库成功");
 			return 0;
 		}
 	}
-
+	LOG_ERROR("加载动态库失败");
 	return -1;
 }
 
 int	 CBHGX_Printer::FeedCard()
 {
-	if (m_iPrinter.iFeedInCard != NULL)
-	{
+	if (m_iPrinter.iFeedInCard != NULL){
 		return m_iPrinter.iFeedInCard();
 	}
 	return -1;
@@ -128,14 +121,18 @@ int	 CBHGX_Printer::FeedCard()
 
 int CBHGX_Printer::BackToPrintHeader()
 {
-	if (m_iPrinter.iBackCardToPrintHeader != NULL)
+	if (m_iPrinter.iBackCardToPrintHeader != NULL) {
 		return m_iPrinter.iBackCardToPrintHeader();
+	}
 	return -1;
 }
 
 int  CBHGX_Printer::CheckStatus()
 {
-	return m_iPrinter.iCheckPrinterStatus();
+	if (m_iPrinter.iCheckPrinterStatus != NULL) {
+		return m_iPrinter.iCheckPrinterStatus();
+	}
+	return 0;
 }
 
 int	 CBHGX_Printer::GetPrinterList(std::vector<std::string> &vecPrinter)
@@ -181,13 +178,11 @@ int	 CBHGX_Printer::GetPrinterList(std::vector<std::string> &vecPrinter)
 
 int CBHGX_Printer::InitPrinter(char *CardCoverDataXml,char *pszXZQHXML)
 {
-	if (CreatePrintInfo(pszXZQHXML) != 0)
-	{
+	if (CreatePrintInfo(pszXZQHXML) != 0){
 		return -1;
 	}
 
-	if (CreatePrintData(CardCoverDataXml) != 0)
-	{
+	if (CreatePrintData(CardCoverDataXml) != 0){
 		return -1;
 	}
 	return 0;
@@ -197,7 +192,10 @@ int CBHGX_Printer::InitPrinter(char *CardCoverDataXml,char *pszXZQHXML)
 int  CBHGX_Printer::DeInitPrinter()
 {
 	m_bInit = false;
-	return m_iPrinter.iOutCard();
+	if (m_iPrinter.iOutCard != NULL) {
+		return m_iPrinter.iOutCard();
+	}
+	return 0;
 }
 
 int CBHGX_Printer::StartPrint()
@@ -207,16 +205,17 @@ int CBHGX_Printer::StartPrint()
 	{
 		//m_iPrinter.iBackCardToPrintHeader();
 		nRet = m_iPrinter.iInitGraphics(m_strPrinter.c_str());
-
-		if (nRet != 1)
-		{
+		LOG_INFO("iInitGraphics : %s, status: %d", m_strPrinter.c_str(), nRet);
+		if (nRet != 1){
 			return -1;
 		}
-		for (size_t i=0; i<m_vecPrintSeg.size(); ++i)
+		LOG_INFO("vecPrintSeg size: %d", m_vecPrintSeg.size());
+		for (size_t i=0; i<m_vecPrintSeg.size(); i++)
 		{
 			PrintSegMent &seg = m_vecPrintSeg[i];
-			if (seg.bPrint)
-			{
+			
+			if (seg.bPrint){
+
 				m_iPrinter.iDrawText(seg.SegPrintInfo.xPos, seg.SegPrintInfo.yPos,
 					seg.SegPrintInfo.strTarget.c_str(), seg.SegPrintInfo.strFontFace.c_str(),
 					seg.SegPrintInfo.nFontHeight, seg.SegPrintInfo.lFontStyle, seg.SegPrintInfo.lColor);
@@ -228,11 +227,14 @@ int CBHGX_Printer::StartPrint()
 						stColum.strSource.c_str(), stColum.ColumnPrintInfo.strFontFace.c_str(),
 						stColum.ColumnPrintInfo.nFontHeight, stColum.ColumnPrintInfo.lFontStyle,
 						stColum.ColumnPrintInfo.lColor);
+					LOG_INFO("target: %s, data: %s", seg.SegPrintInfo.strTarget.c_str(), stColum.strSource.c_str());
 				}
 			}
 		}
 		nRet = m_iPrinter.iPrintGraphics();
+		LOG_INFO("iPrintGraphics status: %d",nRet); 
 		nRet = m_iPrinter.iCloseGraphics();
+		LOG_INFO("iCloseGraphics status: %d",nRet); 
 	}
 	return nRet;
 }
@@ -245,16 +247,13 @@ int CBHGX_Printer::CreatePrintData(char *pszCardXml)
 	TiXmlElement *Cloumn = NULL;
 	XmlDoc.Parse(pszCardXml);
 	RootElement = XmlDoc.RootElement();
-	if (RootElement == NULL)
-	{
+	if (RootElement == NULL){
 		return -1;
 	}
 	Segment = RootElement->FirstChildElement();
-	if (Segment != NULL)
-	{
+	if (Segment != NULL){
 		int nSegID = atoi(Segment->Attribute("ID"));
-		if (nSegID < 0)
-		{
+		if (nSegID < 0){
 			return -1;
 		}
 		Cloumn = Segment->FirstChildElement();
@@ -262,34 +261,30 @@ int CBHGX_Printer::CreatePrintData(char *pszCardXml)
 		{
 			int nColumID = atoi(Cloumn->Attribute("ID"));
 			nColumID = QuerySegment(nColumID);
-			if (nColumID < 0)
-			{
+			if (nColumID < 0){
 				continue;
 			}
 			PrintSegMent &stSegment = m_vecPrintSeg[nColumID];
 			stSegment.bPrint = TRUE;
+			LOG_INFO("卡片数据: %s", stSegment.SegPrintInfo.strTarget.c_str());
 			std::string szContent = Cloumn->Attribute("VALUE");
-			if (stSegment.vecPrintColumn.size() > 1)
-			{
+			if (stSegment.vecPrintColumn.size() > 1){
+
 				int CtrlPos = stSegment.vecPrintColumn[0].ColumnPrintInfo.nCtrl;
-				if (szContent.length() > 2*CtrlPos)
-				{
+				if (szContent.length() > 2*CtrlPos){
+
 					stSegment.vecPrintColumn[0].strSource = szContent.substr(0, 2*CtrlPos);
 					stSegment.vecPrintColumn[1].strSource = szContent.substr(2*CtrlPos, szContent.size());
 					BackupLine &line = m_mapBackup[stSegment.nID];
 					stSegment.vecPrintColumn[0].ColumnPrintInfo.yPos = line.ypos;
 					stSegment.vecPrintColumn[0].ColumnPrintInfo.nFontHeight = line.nFontHeight;
 					stSegment.vecPrintColumn[1].ColumnPrintInfo.nFontHeight = line.nFontHeight;
-				}
-				else
-				{
+				} else{
 					stSegment.vecPrintColumn[0].strSource = szContent;
 					stSegment.vecPrintColumn.pop_back();
 					//stSegment.vecPrintColumn.erase(++stSegment.vecPrintColumn.begin());
 				}
-			}
-			else
-			{
+			}else{
 				stSegment.vecPrintColumn[0].strSource = szContent;
 			}
 			Cloumn = Cloumn->NextSiblingElement();
@@ -312,8 +307,7 @@ int CBHGX_Printer::CreatePrintInfo(char *szPrintXML)
 
 	XmlDoc.Parse(szPrintXML);
 	RootElement = XmlDoc.RootElement();
-	if (RootElement == NULL)
-	{
+	if (RootElement == NULL){
 		return -1;
 	}
 	Program = RootElement->FirstChildElement();
@@ -378,8 +372,7 @@ int CBHGX_Printer::QuerySegment(int nID)
 	for (size_t i=0; i<m_vecPrintSeg.size(); ++i)
 	{
 		PrintSegMent &Seg = m_vecPrintSeg[i];
-		if (nID == Seg.nID)
-		{
+		if (nID == Seg.nID) {
 			return (int)i;
 		}
 	}
@@ -388,11 +381,10 @@ int CBHGX_Printer::QuerySegment(int nID)
 
 int CBHGX_Printer::QueryColumn(PrintSegMent &segment, int nID)
 {
-	for (size_t i=0; i<segment.vecPrintColumn.size(); ++i)
-	{
+	for (size_t i=0; i<segment.vecPrintColumn.size(); ++i) {
+		
 		PrintColumn &Column = segment.vecPrintColumn[i];
-		if (nID == Column.nID)
-		{
+		if (nID == Column.nID){
 			return (int)i;
 		}
 	}
@@ -403,14 +395,10 @@ int CBHGX_Printer::GetDefaultPrinterName(std::string &strDefaultPrinter)
 {
 	DWORD len = 0;
 	::GetDefaultPrinter(NULL, &len);
-	char *szPrinter = (char*)malloc(sizeof(char)*len);
-	if (szPrinter != NULL)
-	{
-		GetDefaultPrinter(szPrinter, &len);
-		strDefaultPrinter = szPrinter;
-		free(szPrinter);
-		return 0;
-	}
-	return -1;
+	char szPrinter[100];
+	GetDefaultPrinter(szPrinter, &len);
+	szPrinter[len] = 0;
+	strDefaultPrinter = szPrinter;
+	return 0;
 }
 

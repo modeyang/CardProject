@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<SEGMENTS PROGRAMID="001">
+    <SEGMENT ID="2">
+        <COLUMN ID="1" VALUE="袁飞附件阿拉丁．发达精神力" />
+        <COLUMN ID="2" VALUE="男" />
+        <COLUMN ID="3" VALUE="2090808" />
+        <COLUMN ID="4" VALUE="000000" />
+        <COLUMN ID="5" VALUE="1" />
+	  <COLUMN ID="6" VALUE="广西南宁市兴宁区" />
+    </SEGMENT>
+</SEGMENTS>
