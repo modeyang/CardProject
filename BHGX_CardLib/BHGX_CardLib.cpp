@@ -1445,6 +1445,7 @@ int __stdcall iPrintCard(
 		}
 	}
 
+
 	if (m_pBHPrinter->InitPrinter(pszCardCoverDataXml, pszCardCoverXml)!= 0)
 	{
 		SAFE_DELETE(m_pBHPrinter);

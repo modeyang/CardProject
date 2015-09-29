@@ -21,7 +21,7 @@
 		</SEGMENT>
 	  <!--添加地址一栏 x，y位置你们自己去修改，如果要换行的话，参见姓名那一栏-->
 		<SEGMENT ID="6" TARGET="地址：" COLOR="0"  X="3.44" Y="3.1" HEIGHT="0.27" WIDTH="1.48" FONT.FACE="黑体" FONT.HEITHT="7" >
-			<COLUMN ID="1" SOURCE="ADDR" TARGET="地址" COLOR="0"  X="4.84" Y="3.1" HEIGHT="0.27" WIDTH="2.83" FONT.FACE="黑体" FONT.HEITHT="7" CTRL="1">
+			<COLUMN ID="1" SOURCE="ADDR" TARGET="地址" COLOR="0"  X="4.84" Y="3.1" HEIGHT="0.27" WIDTH="2.83" FONT.FACE="黑体" FONT.HEITHT="7" CTRL="8">
 			<SUBCOLUMN Y1="3.1" X2="4.84" Y2="3.77" FONT.HEITHT="6" />
 			 </COLUMN>
 		</SEGMENT>

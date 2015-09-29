@@ -64,7 +64,6 @@ int main(int argc, char* argv[])
 	for (int i=0 ; i < vecPrinter.size(); i++) {
 		cout << i+1 << ":\t" << vecPrinter[i] << endl;
 	}
-	//cout << printers << endl; 
 	cout << "ÇëÊäÈë´òÓ¡»ú±àºÅ[1|2..]" <<endl;
 	int printIndex;
 	cin >> printIndex;
