@@ -680,7 +680,7 @@ static int iCreateScanXml(char * card_info, char *xml)
 	TiXmlDocument *XmlDoc;
 	TiXmlElement *RootElement;
 	TiXmlDeclaration HeadDec;
-	TiXmlElement *Segment, *Segment1;
+	TiXmlElement *Segment, *Segment1, *Segment2;
 	TiXmlPrinter Printer;
 
 	// ´´½¨XMLÎÄµµ
@@ -714,14 +714,21 @@ static int iCreateScanXml(char * card_info, char *xml)
 	RootElement->LinkEndChild(Segment);
 
 	if (card_type == eCPU16Card || card_type == eCPU32Card) {
-		Segment1 = new TiXmlElement("SEGMENT");
-		Segment1->SetAttribute("ID",1);
-		Segment1->SetAttribute("SOURCE", "PSAM");
-		Segment1->SetAttribute("VALUE", vec_info[1].c_str());
-		RootElement->LinkEndChild(Segment1);
+		if (vec_info.size() > 2) {
+			Segment1 = new TiXmlElement("SEGMENT");
+			Segment1->SetAttribute("ID",1);
+			Segment1->SetAttribute("SOURCE", "PSAM");
+			Segment1->SetAttribute("VALUE", vec_info[1].c_str());
+			RootElement->LinkEndChild(Segment1);
+			// get sam ID
+			g_SamID = vec_info[1];
 
-		// get sam ID
-		g_SamID = vec_info[1];
+			Segment2 = new TiXmlElement("SEGMENT");
+			Segment2->SetAttribute("ID",1);
+			Segment2->SetAttribute("SOURCE", "ATR");
+			Segment2->SetAttribute("VALUE", vec_info[2].c_str());
+			RootElement->LinkEndChild(Segment2);
+		}
 	}
 	XmlDoc->LinkEndChild(RootElement);
 
