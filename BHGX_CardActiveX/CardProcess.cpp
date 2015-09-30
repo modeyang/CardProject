@@ -4,18 +4,18 @@
 #include "CardProcess.h"
 #include "../BHGX_HISReader/BHGX_HISReader.h"
 #include "../BHGX_CardLib/BHGX_CardLib.h"
-#include "../BHGX_HospitalProcess/BHGX_HospitalProcess.h"
+//#include "../BHGX_HospitalProcess/BHGX_HospitalProcess.h"
 #include "tinyxml/headers/tinyxml.h"
 #include <comutil.h>
 #include <comdef.h>
 #ifdef _DEBUG
 #pragma comment(lib, "../debug/BHGX_CardLib.lib")
 #pragma comment(lib, "../debug/BHGX_HISReader.lib")
-#pragma comment(lib, "../debug/BHGX_HospitalProcess.lib")
+//#pragma comment(lib, "../debug/BHGX_HospitalProcess.lib")
 #else
 #pragma comment(lib, "../release/BHGX_CardLib.lib")
 #pragma comment(lib, "../release/BHGX_HISReader.lib")
-#pragma comment(lib, "../release/BHGX_HospitalProcess.lib")
+//#pragma comment(lib, "../release/BHGX_HospitalProcess.lib")
 #endif
 
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
@@ -459,51 +459,51 @@ STDMETHODIMP CCardProcess::iATLFormatHospInfo(LONG* pRet)
 
 STDMETHODIMP CCardProcess::iATLWriteHospInfo(BSTR xml, LONG* pRet)
 {
-	_bstr_t bstr(xml);
-	char *strInXML = (char*)bstr;
-	int ret = iWriteHospInfo(strInXML);
-	GetErrInfo(ret, (*pRet));
+	//_bstr_t bstr(xml);
+	//char *strInXML = (char*)bstr;
+	//int ret = iWriteHospInfo(strInXML);
+	//GetErrInfo(ret, (*pRet));
 	return S_OK;
 }
 
 STDMETHODIMP CCardProcess::iATLReadClinicInfo(BSTR pszCode, BSTR* readXML)
 {
-	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
-	_bstr_t bszCode(pszCode);
-	int ret = iReadClinicInfo((char*)bszCode, g_ReadBuff);
-	if (ret) {
-		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
-	}
-	_bstr_t bstr(g_ReadBuff);
-	*readXML = bstr.Detach();
+	//memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
+	//_bstr_t bszCode(pszCode);
+	//int ret = iReadClinicInfo((char*)bszCode, g_ReadBuff);
+	//if (ret) {
+	//	memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
+	//	CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	//}
+	//_bstr_t bstr(g_ReadBuff);
+	//*readXML = bstr.Detach();
 	return S_OK;
 }
 
 STDMETHODIMP CCardProcess::iATLReadMedicalInfo(BSTR pszCode, BSTR* readXML)
 {
-	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
-	_bstr_t bszCode(pszCode);
-	int ret = iReadMedicalInfo((char*)bszCode, g_ReadBuff);
-	if (ret) {
-		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
-	}
-	_bstr_t bstr(g_ReadBuff);
-	*readXML = bstr.Detach();
+	//memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
+	//_bstr_t bszCode(pszCode);
+	//int ret = iReadMedicalInfo((char*)bszCode, g_ReadBuff);
+	//if (ret) {
+	//	memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
+	//	CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	//}
+	//_bstr_t bstr(g_ReadBuff);
+	//*readXML = bstr.Detach();
 	return S_OK;
 }
 
 STDMETHODIMP CCardProcess::iATLReadFeeInfo(BSTR pszCode, BSTR* readXML)
 {
-	memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
-	_bstr_t bszCode(pszCode);
-	int ret = iReadFeeInfo((char*)bszCode, g_ReadBuff);
-	if (ret) {
-		memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
-		CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
-	}
-	_bstr_t bstr(g_ReadBuff);
-	*readXML = bstr.Detach();
+	//memset(g_ReadBuff, 0,sizeof(g_ReadBuff));
+	//_bstr_t bszCode(pszCode);
+	//int ret = iReadFeeInfo((char*)bszCode, g_ReadBuff);
+	//if (ret) {
+	//	memset(g_ReadBuff, 0 ,sizeof(g_ReadBuff));
+	//	CreateResponXML(-1, GetErrInfo(ret), g_ReadBuff);
+	//}
+	//_bstr_t bstr(g_ReadBuff);
+	//*readXML = bstr.Detach();
 	return S_OK;
 }
