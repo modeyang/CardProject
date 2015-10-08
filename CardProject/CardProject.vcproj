@@ -181,6 +181,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Markup.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration

@@ -50,7 +50,7 @@ int get_printer_list(char *pinters, std::vector<std::string> &vecPrinter) {
 	return vecPrinter.size();
 }
 
-int main(int argc, char* argv[])
+void printByCardLib()
 {
 	char printers[1024];
 	std::vector<std::string> vecPrinter;
@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 		cout << "无法获取打印机列表" << endl;
 		goto done;
 	}
-	
+
 	get_printer_list(printers, vecPrinter);
 	for (int i=0 ; i < vecPrinter.size(); i++) {
 		cout << i+1 << ":\t" << vecPrinter[i] << endl;
@@ -96,7 +96,50 @@ int main(int argc, char* argv[])
 
 done:
 	getchar();
-	getchar();
-	getchar();
+}
+
+void printByRawLib()
+{
+	cout << "dayin" << endl;
+}
+
+void printHelp()
+{
+	cout<<"*************一卡通打印测试*********************"<<endl;
+	cout<<"功能测试："<<endl;
+	cout<<"\t1:根据cardlib动态库打印"<<endl;
+	cout<<"\t2:根据P310e动态库打印"<<endl;
+}
+
+int main(int argc, char* argv[])
+{
+	std::locale::global(std::locale(""));
+
+	printHelp();
+	char szSelect[10];
+	cout<<"请输入功能测试选项:";
+	cin>>szSelect;
+	std::string strSelect = szSelect;
+	while (1)
+	{
+		if (strSelect == "q" || strSelect == "quit")
+			break;
+
+		int nSelect = atoi(szSelect);
+		nSelect -- ;
+		if (nSelect < 0 || nSelect > 2 ) {
+		} else {
+			if (nSelect == 0) {
+				printByCardLib();
+			} else if (nSelect == 1) {
+				printByRawLib();
+			}
+		}
+		memset(szSelect, 0 , sizeof(szSelect));
+		printHelp();
+		cout<<"\n请输入功能测试选项:";
+		cin>>szSelect;
+		strSelect = szSelect;
+	}
 	return 0;
 }
