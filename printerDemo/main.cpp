@@ -100,7 +100,33 @@ done:
 
 void printByRawLib()
 {
-	cout << "dayin" << endl;
+	HINSTANCE hLib = LoadLibrary("BHGX_PRINT_P310E.dll");
+	if (hLib == NULL) {
+		cout << "unfound BHGX_PRINT_P310E.dll" <<endl;
+		return;
+	}
+	typedef int(*pTest)(char *);
+	pTest test = (pTest)GetProcAddress(hLib,"iInitGraphics");
+	int iRet = test("Fagoo P310e (V2)");
+	if (iRet != 1){
+		cout << "init Fagoo P310e (V2) error" <<endl;
+		return;
+	}
+	typedef int(*pText)(long px, long py, const char * text, 
+		const char * fontType, long fontSize, 
+		long fontStyle, long fontColor);
+	typedef int(*pPrint)(void);
+	typedef int(*pClose)(void);
+	pClose Close = (pClose)GetProcAddress(hLib, "iCloseGraphics");
+	pText Text = (pText)GetProcAddress(hLib,"iPrintText");
+	pPrint Print = (pPrint)GetProcAddress(hLib,"iFlushGraphics");
+	iRet = Text(406, 85, "性别:", "黑体", 7, 0, 0);
+	cout << "iPrintText" << iRet << endl;
+	iRet = Text(493, 85, "男", "黑体", 7, 0, 0);
+	cout << "iPrintText" << iRet << endl;
+	cout << "iFlushGraphics" << Print() << endl;
+	cout << "iCloseGraphics" << Close() << endl;
+
 }
 
 void printHelp()
@@ -113,7 +139,7 @@ void printHelp()
 
 int main(int argc, char* argv[])
 {
-	std::locale::global(std::locale(""));
+	//std::locale::global(std::locale(""));
 
 	printHelp();
 	char szSelect[10];
