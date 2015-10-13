@@ -108,8 +108,8 @@ void printByRawLib()
 	typedef int(*pTest)(char *);
 	pTest test = (pTest)GetProcAddress(hLib,"iInitGraphics");
 	int iRet = test("Fagoo P310e (V2)");
-	if (iRet != 1){
-		cout << "init Fagoo P310e (V2) error" <<endl;
+	if (iRet != 0){
+		cout << "init Fagoo P310e (V2) error: " << iRet << endl;
 		return;
 	}
 	typedef int(*pText)(long px, long py, const char * text, 
@@ -123,9 +123,15 @@ void printByRawLib()
 	iRet = Text(406, 85, "性别:", "黑体", 7, 0, 0);
 	cout << "iPrintText" << iRet << endl;
 	iRet = Text(493, 85, "男", "黑体", 7, 0, 0);
+	cout << "iPrintText: " << iRet << endl;
+
+	iRet = Text(406, 153, "身份证:", "黑体", 7, 0, 0);
 	cout << "iPrintText" << iRet << endl;
-	cout << "iFlushGraphics" << Print() << endl;
-	cout << "iCloseGraphics" << Close() << endl;
+	iRet = Text(543, 85, "2090808", "黑体", 7, 0, 0);
+	cout << "iPrintText: " << iRet << endl;
+
+	cout << "iFlushGraphics : " << Print() << endl;
+	cout << "iCloseGraphics : " << Close() << endl;
 
 }
 
