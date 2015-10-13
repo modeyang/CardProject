@@ -124,6 +124,12 @@ void printByRawLib()
 	cout << "iPrintText" << iRet << endl;
 	iRet = Text(493, 85, "男", "黑体", 7, 0, 0);
 	cout << "iPrintText: " << iRet << endl;
+
+	iRet = Text(406, 153, "身份证:", "黑体", 7, 0, 0);
+	cout << "iPrintText" << iRet << endl;
+	iRet = Text(543, 85, "2090808", "黑体", 7, 0, 0);
+	cout << "iPrintText: " << iRet << endl;
+
 	cout << "iFlushGraphics : " << Print() << endl;
 	cout << "iCloseGraphics : " << Close() << endl;
 

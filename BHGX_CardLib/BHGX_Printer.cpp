@@ -93,9 +93,10 @@ int	 CBHGX_Printer::Init(char *pszPrinter)
 	if (bLoad){
 		m_iPrinter.hInstLibrary = hInst;
 		m_iPrinter.iProbePrinter = (ProbePrinter)GetProcAddress(hInst, "iProbePrinter");
+		printf("iProbePrinter:%d status:%d\n", m_iPrinter.iProbePrinter, m_iPrinter.iProbePrinter());
 
-		if (m_iPrinter.iProbePrinter != NULL && m_iPrinter.iProbePrinter())
-		{
+		//if (m_iPrinter.iProbePrinter != NULL && m_iPrinter.iProbePrinter())
+		//{
 			m_iPrinter.iFeedInCard = (FeedCardToM1)GetProcAddress(hInst,"iFeedCardToM1");
 			m_iPrinter.iBackCardToPrintHeader = (BackCardFromM1)GetProcAddress(hInst,"iBackCardFromM1");
 			m_iPrinter.iInitGraphics = (InitGraphics)GetProcAddress(hInst, "iInitGraphics");
@@ -109,7 +110,7 @@ int	 CBHGX_Printer::Init(char *pszPrinter)
 			m_bInit = true;
 			cout << "加载动态库成功"<<endl;
 			return 0;
-		}
+		//}
 	}
 
 	return -1;
@@ -210,23 +211,22 @@ int CBHGX_Printer::StartPrint()
 	int nRet = -1;
 	if (m_bInit)
 	{
-		//m_iPrinter.iBackCardToPrintHeader();
 		nRet = m_iPrinter.iInitGraphics(m_strPrinter.c_str());
-		cout << "iInitGraphics : " << m_strPrinter.c_str() << " status: " << nRet <<endl;
-		if (nRet != 1){
-			return -1;
-		}
-		cout << "vecPrintSeg size: "<< m_vecPrintSeg.size() << endl;
+		printf("iInitGraphics  status: %d, vecPrintSeg size: %d\n", nRet, m_vecPrintSeg.size());
 		for (size_t i=0; i<m_vecPrintSeg.size(); i++)
 		{
 			PrintSegMent &seg = m_vecPrintSeg[i];
-			cout << m_vecPrintSeg[i].SegPrintInfo.strTarget.c_str() << " ";
 			if (seg.bPrint)
 			{
 				m_iPrinter.iDrawText(seg.SegPrintInfo.xPos, seg.SegPrintInfo.yPos,
 					seg.SegPrintInfo.strTarget.c_str(), seg.SegPrintInfo.strFontFace.c_str(),
 					seg.SegPrintInfo.nFontHeight, seg.SegPrintInfo.lFontStyle, seg.SegPrintInfo.lColor);
 
+				printf("%d, %d, %s, %s, %d, %d, %d\n", seg.SegPrintInfo.xPos, seg.SegPrintInfo.yPos,
+					seg.SegPrintInfo.strTarget.c_str(), seg.SegPrintInfo.strFontFace.c_str(),
+					seg.SegPrintInfo.nFontHeight, seg.SegPrintInfo.lFontStyle, seg.SegPrintInfo.lColor);
+	
+				printf("size %d\n", seg.vecPrintColumn.size());
 				for (size_t j=0; j<seg.vecPrintColumn.size(); ++j)
 				{
 					PrintColumn &stColum = seg.vecPrintColumn[j];
@@ -234,7 +234,11 @@ int CBHGX_Printer::StartPrint()
 						stColum.strSource.c_str(), stColum.ColumnPrintInfo.strFontFace.c_str(),
 						stColum.ColumnPrintInfo.nFontHeight, stColum.ColumnPrintInfo.lFontStyle,
 						stColum.ColumnPrintInfo.lColor);
-					cout << stColum.strSource.c_str() << endl;
+
+					printf("%d, %d, %s, %s, %d, %d, %d\n", stColum.ColumnPrintInfo.xPos, stColum.ColumnPrintInfo.yPos,
+						stColum.strSource.c_str(), stColum.ColumnPrintInfo.strFontFace.c_str(),
+						stColum.ColumnPrintInfo.nFontHeight, stColum.ColumnPrintInfo.lFontStyle,
+						stColum.ColumnPrintInfo.lColor);
 				}
 			}
 		}
@@ -272,7 +276,7 @@ int CBHGX_Printer::CreatePrintData(char *pszCardXml)
 				continue;
 			}
 			PrintSegMent &stSegment = m_vecPrintSeg[nColumID];
-			stSegment.bPrint = TRUE;
+			stSegment.bPrint = true;
 			cout << "卡片数据: " <<  stSegment.SegPrintInfo.strTarget.c_str()  << endl;
 			std::string szContent = Cloumn->Attribute("VALUE");
 			if (stSegment.vecPrintColumn.size() > 1){
@@ -333,7 +337,7 @@ int CBHGX_Printer::CreatePrintInfo(char *szPrintXML)
 		stSegment.SegPrintInfo.nWidth = Cm2Pos(atof(Segment->Attribute("WIDTH")));
 		stSegment.SegPrintInfo.strFontFace = Segment->Attribute("FONT.FACE");
 		stSegment.SegPrintInfo.nFontHeight = abs(atoi(Segment->Attribute("FONT.HEITHT")));
-		stSegment.bPrint = FALSE;
+		stSegment.bPrint = false;
 		Colum = Segment->FirstChildElement();
 		while (Colum)
 		{
