@@ -150,11 +150,12 @@ int	 CBHGX_Printer::GetPrinterList(std::vector<std::string> &vecPrinter)
 	::EnumPrinters(Flags, "", Level, NULL, 0, &cbBuf, &pcReturned);
 	pPrinterEnum = (LPPRINTER_INFO_1)LocalAlloc(LPTR, cbBuf+4);
 
-	if (NULL == pPrinterEnum)
-	{
+	if (NULL == pPrinterEnum){
+		LOG_ERROR("获取打印机失败, NULL");
 		return  0;
 	}
 
+	LOG_INFO("pPrinterEnum : %d", pPrinterEnum);
 	if (!EnumPrinters(
 		Flags,    //   DWORD   Flags,   printer   object   types  
 		Name,    //   LPTSTR   Name,   name   of   printer   object  
@@ -165,13 +166,14 @@ int	 CBHGX_Printer::GetPrinterList(std::vector<std::string> &vecPrinter)
 		&pcReturned)    //   LPDWORD   pcReturned   number   of   printers   enumerated  
 		)
 	{
-		printf("获取打印机失败\n");
+		LOG_ERROR("获取打印机失败");
 		return 0;
 	}
 	for (unsigned int i=0; i<pcReturned; i++)
 	{
 		PRINTER_INFO_1A printer = pPrinterEnum[i];
 		vecPrinter.push_back(printer.pName);
+		LOG_INFO("found printer name: %s", printer.pName);
 	}
 	LocalFree(pPrinterEnum);
 	return (int)vecPrinter.size();
