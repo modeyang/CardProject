@@ -7,6 +7,8 @@
 #include <winspool.h>
 #include "tinyxml/headers/tinyxml.h"
 #include "public/debug.h"
+#include "Card.h"
+
 using namespace std;
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 #pragma comment(lib, "winspool.lib")
@@ -46,7 +48,7 @@ void GetPrintType(const char *strName, char *strType)
 
 int	 CBHGX_Printer::Init(char *pszPrinter)
 {
-	char szDLL[100];
+	char szDLL[100] ;
 	memset(szDLL, 0, sizeof(szDLL));
 	bool bLoad = false;
 	HINSTANCE hInst = NULL;
@@ -63,7 +65,7 @@ int	 CBHGX_Printer::Init(char *pszPrinter)
 	GetPrintType((char*)m_strPrinter.c_str(), strType);
 	strType[strlen(strType)] = 0;
 
-	sprintf_s(szDLL, "BHGX_PRINT_%s.dll", strType);
+	sprintf_s(szDLL, "%s\\BHGX_PRINT_%s.dll", DRIVER_PATH, strType);
 	hInst = LoadLibrary(szDLL);
 	if (hInst != NULL){
 		bLoad = true;
@@ -77,21 +79,22 @@ int	 CBHGX_Printer::Init(char *pszPrinter)
 
 	if (!bLoad){
 		memset(szDLL, 0, sizeof(szDLL));
-		sprintf_s(szDLL, "BHGX_PRINT_ALL.dll");
+		sprintf_s(szDLL, "%s\\BHGX_PRINT_ALL.dll", DRIVER_PATH);
 		hInst = LoadLibrary(szDLL);
 		if (hInst != NULL){
 			bLoad = true;
 		}
 	}
 
-	LOG_INFO("调用打印的DLL为:%s\n", szDLL);
+	LOG_INFO("调用打印的DLL为:%s", szDLL);
 
 	if (bLoad){
 		m_iPrinter.hInstLibrary = hInst;
 		m_iPrinter.iProbePrinter = (ProbePrinter)GetProcAddress(hInst, "iProbePrinter");
+		LOG_INFO("iProbePrinter: %d, status: %d", m_iPrinter.iProbePrinter, m_iPrinter.iProbePrinter());
 
-		if (m_iPrinter.iProbePrinter != NULL && m_iPrinter.iProbePrinter())
-		{
+		//if (m_iPrinter.iProbePrinter != NULL && m_iPrinter.iProbePrinter())
+		//{
 			m_iPrinter.iFeedInCard = (FeedCardToM1)GetProcAddress(hInst,"iFeedCardToM1");
 			m_iPrinter.iBackCardToPrintHeader = (BackCardFromM1)GetProcAddress(hInst,"iBackCardFromM1");
 			m_iPrinter.iInitGraphics = (InitGraphics)GetProcAddress(hInst, "iInitGraphics");
@@ -105,7 +108,7 @@ int	 CBHGX_Printer::Init(char *pszPrinter)
 			m_bInit = true;
 			LOG_INFO("加载动态库成功");
 			return 0;
-		}
+		//}
 	}
 	LOG_ERROR("加载动态库失败");
 	return -1;
@@ -149,11 +152,12 @@ int	 CBHGX_Printer::GetPrinterList(std::vector<std::string> &vecPrinter)
 	::EnumPrinters(Flags, "", Level, NULL, 0, &cbBuf, &pcReturned);
 	pPrinterEnum = (LPPRINTER_INFO_1)LocalAlloc(LPTR, cbBuf+4);
 
-	if (NULL == pPrinterEnum)
-	{
+	if (NULL == pPrinterEnum){
+		LOG_ERROR("获取打印机失败, NULL");
 		return  0;
 	}
 
+	LOG_INFO("pPrinterEnum : %d", pPrinterEnum);
 	if (!EnumPrinters(
 		Flags,    //   DWORD   Flags,   printer   object   types  
 		Name,    //   LPTSTR   Name,   name   of   printer   object  
@@ -164,13 +168,14 @@ int	 CBHGX_Printer::GetPrinterList(std::vector<std::string> &vecPrinter)
 		&pcReturned)    //   LPDWORD   pcReturned   number   of   printers   enumerated  
 		)
 	{
-		printf("获取打印机失败\n");
+		LOG_ERROR("获取打印机失败");
 		return 0;
 	}
 	for (unsigned int i=0; i<pcReturned; i++)
 	{
 		PRINTER_INFO_1A printer = pPrinterEnum[i];
 		vecPrinter.push_back(printer.pName);
+		LOG_INFO("found printer name: %s", printer.pName);
 	}
 	LocalFree(pPrinterEnum);
 	return (int)vecPrinter.size();
@@ -206,9 +211,9 @@ int CBHGX_Printer::StartPrint()
 		//m_iPrinter.iBackCardToPrintHeader();
 		nRet = m_iPrinter.iInitGraphics(m_strPrinter.c_str());
 		LOG_INFO("iInitGraphics : %s, status: %d", m_strPrinter.c_str(), nRet);
-		if (nRet != 1){
-			return -1;
-		}
+		//if (nRet != 0){
+		//	return -1;
+		//}
 		LOG_INFO("vecPrintSeg size: %d", m_vecPrintSeg.size());
 		for (size_t i=0; i<m_vecPrintSeg.size(); i++)
 		{
@@ -220,6 +225,10 @@ int CBHGX_Printer::StartPrint()
 					seg.SegPrintInfo.strTarget.c_str(), seg.SegPrintInfo.strFontFace.c_str(),
 					seg.SegPrintInfo.nFontHeight, seg.SegPrintInfo.lFontStyle, seg.SegPrintInfo.lColor);
 
+				LOG_INFO("%d, %d, %s, %s, %d, %d, %d", seg.SegPrintInfo.xPos, seg.SegPrintInfo.yPos,
+					seg.SegPrintInfo.strTarget.c_str(), seg.SegPrintInfo.strFontFace.c_str(),
+					seg.SegPrintInfo.nFontHeight, seg.SegPrintInfo.lFontStyle, seg.SegPrintInfo.lColor);
+
 				for (size_t j=0; j<seg.vecPrintColumn.size(); ++j)
 				{
 					PrintColumn &stColum = seg.vecPrintColumn[j];
@@ -227,7 +236,11 @@ int CBHGX_Printer::StartPrint()
 						stColum.strSource.c_str(), stColum.ColumnPrintInfo.strFontFace.c_str(),
 						stColum.ColumnPrintInfo.nFontHeight, stColum.ColumnPrintInfo.lFontStyle,
 						stColum.ColumnPrintInfo.lColor);
-					LOG_INFO("target: %s, data: %s", seg.SegPrintInfo.strTarget.c_str(), stColum.strSource.c_str());
+
+					LOG_INFO("%d, %d, %s, %s, %d, %d, %d", stColum.ColumnPrintInfo.xPos, stColum.ColumnPrintInfo.yPos,
+						stColum.strSource.c_str(), stColum.ColumnPrintInfo.strFontFace.c_str(),
+						stColum.ColumnPrintInfo.nFontHeight, stColum.ColumnPrintInfo.lFontStyle,
+						stColum.ColumnPrintInfo.lColor);
 				}
 			}
 		}
@@ -265,8 +278,7 @@ int CBHGX_Printer::CreatePrintData(char *pszCardXml)
 				continue;
 			}
 			PrintSegMent &stSegment = m_vecPrintSeg[nColumID];
-			stSegment.bPrint = TRUE;
-			LOG_INFO("卡片数据: %s", stSegment.SegPrintInfo.strTarget.c_str());
+			stSegment.bPrint = true;
 			std::string szContent = Cloumn->Attribute("VALUE");
 			if (stSegment.vecPrintColumn.size() > 1){
 
@@ -326,7 +338,7 @@ int CBHGX_Printer::CreatePrintInfo(char *szPrintXML)
 		stSegment.SegPrintInfo.nWidth = Cm2Pos(atof(Segment->Attribute("WIDTH")));
 		stSegment.SegPrintInfo.strFontFace = Segment->Attribute("FONT.FACE");
 		stSegment.SegPrintInfo.nFontHeight = abs(atoi(Segment->Attribute("FONT.HEITHT")));
-		stSegment.bPrint = FALSE;
+		stSegment.bPrint = false;
 		Colum = Segment->FirstChildElement();
 		while (Colum)
 		{

@@ -182,7 +182,7 @@ struct  PrintSegMent
 	int				nID;
 	std::string		strContent;
 	BH_PrintInfo	SegPrintInfo;
-	BOOL			bPrint;
+	bool			bPrint;
 	vecColumn		vecPrintColumn;
 	PrintSegMent()
 		:nID(0)
@@ -196,7 +196,7 @@ struct  PrintSegMent
 		,strContent(node.strContent)
 		,SegPrintInfo(node.SegPrintInfo)
 		,vecPrintColumn(node.vecPrintColumn)
-		,bPrint(FALSE)
+		,bPrint(false)
 	{
 
 	}

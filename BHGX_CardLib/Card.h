@@ -18,6 +18,7 @@ extern "C" {
 #define CPU_M1			0
 #define CPU_MERGE		1
 
+#define DRIVER_PATH	"D:\\card_drivers"
 #define ENCRYPT			0
 
 //#define	CARDSEAT_RF		0	//0：非接用户卡 

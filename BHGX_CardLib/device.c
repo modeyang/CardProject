@@ -4,6 +4,7 @@
 
 #include "device.h"
 #include "public/debug.h"
+#include "Card.h"
 #pragma warning (disable : 4996)
 #pragma warning (disable : 4020)
 #pragma warning (disable : 4013)
@@ -110,7 +111,7 @@ struct CardDevice *getCardDevice(const char *System)
 	HANDLE hFind;
 	//char Pattern[MAX_PATH];
 	char CurPath[MAX_PATH];
-	char SysPath[MAX_PATH] = "D://card_drivers";
+	char SysPath[MAX_PATH] = DRIVER_PATH;
 
 	int nProbe = 0;
 
