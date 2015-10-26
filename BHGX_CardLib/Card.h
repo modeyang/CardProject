@@ -12,8 +12,8 @@ extern "C" {
 #pragma warning (disable : 4267)
 #pragma warning (disable : 4020)
 
-#define CPU_ONLY		0
-#define CPU_16K			1
+#define CPU_ONLY		1
+#define CPU_16K			0
 #define CPU_MERGE		0
 
 #define CPU_M1			0
@@ -25,6 +25,8 @@ extern "C" {
 
 // for cpu test all, combination with CPU_8K_ONLY flag
 #define CPU_8K_TEST_ALL 0
+
+#define DRIVER_PATH	"D:\\card_drivers"
 
 #define ENCRYPT			0
 

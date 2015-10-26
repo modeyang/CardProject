@@ -7,6 +7,8 @@
 #include <winspool.h>
 #include "tinyxml/headers/tinyxml.h"
 #include "public/debug.h"
+#include "Card.h"
+
 using namespace std;
 #pragma comment(lib, "tinyxml/libs/tinyxmld.lib")
 #pragma comment(lib, "winspool.lib")
@@ -46,7 +48,7 @@ void GetPrintType(const char *strName, char *strType)
 
 int	 CBHGX_Printer::Init(char *pszPrinter)
 {
-	char szDLL[100];
+	char szDLL[100] ;
 	memset(szDLL, 0, sizeof(szDLL));
 	bool bLoad = false;
 	HINSTANCE hInst = NULL;
@@ -63,7 +65,7 @@ int	 CBHGX_Printer::Init(char *pszPrinter)
 	GetPrintType((char*)m_strPrinter.c_str(), strType);
 	strType[strlen(strType)] = 0;
 
-	sprintf_s(szDLL, "BHGX_PRINT_%s.dll", strType);
+	sprintf_s(szDLL, "%s\\BHGX_PRINT_%s.dll", DRIVER_PATH, strType);
 	hInst = LoadLibrary(szDLL);
 	if (hInst != NULL){
 		bLoad = true;
@@ -77,7 +79,7 @@ int	 CBHGX_Printer::Init(char *pszPrinter)
 
 	if (!bLoad){
 		memset(szDLL, 0, sizeof(szDLL));
-		sprintf_s(szDLL, "BHGX_PRINT_ALL.dll");
+		sprintf_s(szDLL, "%s\\BHGX_PRINT_ALL.dll", DRIVER_PATH);
 		hInst = LoadLibrary(szDLL);
 		if (hInst != NULL){
 			bLoad = true;
