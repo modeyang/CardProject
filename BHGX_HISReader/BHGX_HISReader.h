@@ -19,7 +19,7 @@ extern "C" {
 	* 输出参数：	
 	* 返 回 值：	0:成功 其他：失败
 	*******************************************************************************/
-	DLL_EXPORT int __stdcall iReadHISInfo(char *pszCardCheckWSDL, char *pszCardServerURL, char *xml,  bool bMsg=FALSE, char *msgSUrl="");
+	DLL_EXPORT int __stdcall iReadHISInfo(char *pszCardCheckWSDL, char *pszCardServerURL, char *xml,  bool bMsg=false, char *msgSUrl="");
 
 	/*******************************************************************************
 	* 函数名称：	iReadOnlyHIS	
@@ -30,7 +30,7 @@ extern "C" {
 	* 输出参数：	
 	* 返 回 值：	0:成功 其他：失败
 	*******************************************************************************/
-	DLL_EXPORT int __stdcall iReadOnlyHIS(char *xml,  bool bMsg=FALSE, char *msgSUrl="");
+	DLL_EXPORT int __stdcall iReadOnlyHIS(char *xml,  bool bMsg=false, char *msgSUrl="");
 
 	/*******************************************************************************
 	* 函数名称：	iReadInfoForXJ	

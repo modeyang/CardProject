@@ -24,8 +24,9 @@ static char **EnumDLL( __in const char *directory, __out int *count)
 	int i = 0, j = 0;
 
 	// 开始查找
-	lstrcpy(Pattern, directory);
-	lstrcat(Pattern,"*.dll");
+	//lstrcpy(Pattern, directory);
+	lstrcpy(Pattern, "D:\\card_drivers\\");
+	lstrcat(Pattern,"BHGX*.dll");
 	hFind = FindFirstFile(Pattern, &FindFileData);
 	if(hFind == INVALID_HANDLE_VALUE)
 	{
@@ -119,7 +120,7 @@ struct CardDevice *getCardDevice(const char *System)
 	int nProbe = 0;
 
 	// 开始查找
-	strcpy(Pattern, System);
+	strcpy(Pattern, "D:\\card_drivers\\");
 	strcat(Pattern, "BHGX_MF_*.dll");
 	hFind = FindFirstFile(Pattern, &FindFileData);
 	while (hFind != INVALID_HANDLE_VALUE)

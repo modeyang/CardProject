@@ -67,7 +67,7 @@ int	 CBHGX_Printer::Init(char *pszPrinter)
 	GetPrintType((char*)m_strPrinter.c_str(), strType);
 	strType[strlen(strType)] = 0;
 
-	sprintf_s(szDLL, "BHGX_PRINT_%s.dll", strType);
+	sprintf_s(szDLL, "%s\\BHGX_PRINT_%s.dll", "D:\\card_drivers\\", strType);
 	hInst = LoadLibrary(szDLL);
 	if (hInst != NULL){
 		bLoad = true;
@@ -81,7 +81,7 @@ int	 CBHGX_Printer::Init(char *pszPrinter)
 
 	if (!bLoad){
 		memset(szDLL, 0, sizeof(szDLL));
-		sprintf_s(szDLL, "BHGX_PRINT_ALL.dll");
+		sprintf_s(szDLL, "%s\\BHGX_PRINT_ALL.dll", "D:\\card_drivers\\");
 		hInst = LoadLibrary(szDLL);
 		if (hInst != NULL){
 			bLoad = true;
@@ -192,7 +192,7 @@ int CBHGX_Printer::InitPrinter(char *CardCoverDataXml,char *pszXZQHXML)
 	if (CreatePrintData(CardCoverDataXml) != 0){
 		return -1;
 	}
-	cout << "init Printer xml success....." << endl;
+
 	return 0;
 }
 
@@ -221,12 +221,7 @@ int CBHGX_Printer::StartPrint()
 				m_iPrinter.iDrawText(seg.SegPrintInfo.xPos, seg.SegPrintInfo.yPos,
 					seg.SegPrintInfo.strTarget.c_str(), seg.SegPrintInfo.strFontFace.c_str(),
 					seg.SegPrintInfo.nFontHeight, seg.SegPrintInfo.lFontStyle, seg.SegPrintInfo.lColor);
-
-				printf("%d, %d, %s, %s, %d, %d, %d\n", seg.SegPrintInfo.xPos, seg.SegPrintInfo.yPos,
-					seg.SegPrintInfo.strTarget.c_str(), seg.SegPrintInfo.strFontFace.c_str(),
-					seg.SegPrintInfo.nFontHeight, seg.SegPrintInfo.lFontStyle, seg.SegPrintInfo.lColor);
 	
-				printf("size %d\n", seg.vecPrintColumn.size());
 				for (size_t j=0; j<seg.vecPrintColumn.size(); ++j)
 				{
 					PrintColumn &stColum = seg.vecPrintColumn[j];
@@ -235,17 +230,11 @@ int CBHGX_Printer::StartPrint()
 						stColum.ColumnPrintInfo.nFontHeight, stColum.ColumnPrintInfo.lFontStyle,
 						stColum.ColumnPrintInfo.lColor);
 
-					printf("%d, %d, %s, %s, %d, %d, %d\n", stColum.ColumnPrintInfo.xPos, stColum.ColumnPrintInfo.yPos,
-						stColum.strSource.c_str(), stColum.ColumnPrintInfo.strFontFace.c_str(),
-						stColum.ColumnPrintInfo.nFontHeight, stColum.ColumnPrintInfo.lFontStyle,
-						stColum.ColumnPrintInfo.lColor);
 				}
 			}
 		}
 		nRet = m_iPrinter.iPrintGraphics();
-		cout << "iPrintGraphics status: " << nRet <<endl;
 		nRet = m_iPrinter.iCloseGraphics();
-		cout << "iCloseGraphics status: " << nRet <<endl;
 	}
 	return nRet;
 }
@@ -277,7 +266,6 @@ int CBHGX_Printer::CreatePrintData(char *pszCardXml)
 			}
 			PrintSegMent &stSegment = m_vecPrintSeg[nColumID];
 			stSegment.bPrint = true;
-			cout << "¿¨Æ¬Êý¾Ý: " <<  stSegment.SegPrintInfo.strTarget.c_str()  << endl;
 			std::string szContent = Cloumn->Attribute("VALUE");
 			if (stSegment.vecPrintColumn.size() > 1){
 

@@ -18,13 +18,13 @@ using namespace std;
 }\
 
 //寻找打印机
-typedef int (__stdcall *ProbePrinter)();
+typedef int (__stdcall *ProbePrinter)(void);
 
 //释放打印机
-typedef int (__stdcall *FreePrinter)();
+typedef int (__stdcall *FreePrinter)(void);
 
 //进卡
-typedef int (__stdcall *FeedCardToM1)();
+typedef int (__stdcall *FeedCardToM1)(void);
 
 //出卡
 typedef int (__stdcall *BackCardFromM1)();

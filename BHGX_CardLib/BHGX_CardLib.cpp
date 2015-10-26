@@ -1397,8 +1397,7 @@ int __stdcall iPatchCard(
 //获取打印机列表名字
 int __stdcall iGetPrinterList(char *PrinterXML)
 {
-	if (PrinterXML == NULL)
-	{
+	if (PrinterXML == NULL){
 		return -1;
 	}
 	std::vector<std::string> vecPrinter;
