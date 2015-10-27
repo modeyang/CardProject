@@ -217,6 +217,7 @@ typedef enum CardType
 
 	eCPU32Card = 9,
 	eCPUSAM32,
+	eErrorType,
 
 }CardType;
 

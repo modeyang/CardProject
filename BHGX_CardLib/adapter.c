@@ -84,6 +84,7 @@ int __stdcall apt_ScanCard(char *card_info)
 	unsigned char cardType = 0, psamType=0;
 	int status = 0;
 	unsigned short para = 30;
+	int seat_scan_status = 0;
 	int seat;
 
 	char resp[260];
@@ -102,26 +103,28 @@ int __stdcall apt_ScanCard(char *card_info)
 	if (cardType == CARDTYPE_CPU16 || cardType == CARDTYPE_CPU32) {
 		seat = CARDSEAT_PSAM1;
 		for (; seat <= CARDSEAT_PSAM2; seat++) {
-			status = Instance->ICCSet(seat, &psamType, resp);
-			LOG_INFO("SAM¿¨Ñ°ÕÒ,²ÛÎ»ºÅ:%d, status:%d, type:%d, sam info:%s", seat, status, psamType, resp);
+			int seat_status = Instance->ICCSet(seat, &psamType, resp);
+			LOG_INFO("SAM¿¨Ñ°ÕÒ,²ÛÎ»ºÅ:%d, status:%d, type:%d, sam info:%s", seat, seat_status, psamType, resp);
 			if (psamType == CARDTYPE_SAM16) {
 
 				LOG_INFO("SAM¿¨×ù:%dÎª16K SAM¿¨", seat);
 				set_card_sam(seat, eCPUSAM16);
+				seat_scan_status |= 1;
 			} else if (psamType == CARDTYPE_SAM32) {
 
 				LOG_INFO("SAM¿¨×ù:%dÎª32K SAM¿¨", seat);
 				set_card_sam(seat, eCPUSAM32);
+				seat_scan_status |= 1;
 			} else {
 				LOG_ERROR("²»ÄÜÊ¶±ðµÄSAM¿¨");
 			}
 		}
-	}
+	} 
 	
-	if (status) {
-		return CardScanErr; 
+	if (status != 0 || (cardType != eM1Card && seat_scan_status == 0)) {
+		LOG_ERROR("Ñ°¿¨´íÎó, card type: %d status: %d, seat_scan_status: %d", cardType, status, seat_scan_status);
+		return CardScanErr;
 	}
-
 	set_card_type((CardType)cardType);
 	sprintf(card_info, "%d|%s|%s", cardType, resp, attr);
 

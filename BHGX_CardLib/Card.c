@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <memory.h>
 
-CardType g_CardType;
+CardType g_CardType = eErrorType;
 
 static CardOps *cardOpsArray[ARRAY_MAX] = {NULL};
 
