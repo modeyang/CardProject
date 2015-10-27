@@ -26,7 +26,7 @@ extern "C" {
 // for cpu test all, combination with CPU_8K_ONLY flag
 #define CPU_8K_TEST_ALL 0
 
-#define DRIVER_PATH	"D:\\card_drivers"
+#define DRIVER_PATH		"D:\\card_drivers"
 
 #define ENCRYPT			0
 

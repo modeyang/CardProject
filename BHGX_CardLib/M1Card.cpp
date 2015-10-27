@@ -254,7 +254,6 @@ static int GetControlBuff(unsigned char *pControl, int nSecr)
 	/* 如果没有读卡设备接入*/
 	if(!Instance) 
 		return CardInitErr;
-	ISAPTSCANCARD;
 
 	BlkNr = nSecr * 4 + 3;
 	memcpy(keyA, defKeyA, sizeof(keyA));
@@ -442,8 +441,6 @@ static int repairKeyForFault(unsigned char *ctrlword)
 	if(!Instance || !Instance->iReadBin)
 		return -1;
 
-	ISAPTSCANCARD;
-
 	//读出卡号,得出旧的KeyB
 	memset(oldKeyB, 0, sizeof(oldKeyB));
 	memset(seed, 0, sizeof(seed));
@@ -466,7 +463,6 @@ static int repairKeyForFault(unsigned char *ctrlword)
 	{
 		nRet = ChangePwdEx(defKeyA, ctrlword, oldKeyB, curKeyB, i, 0, changeflag);
 		if (nRet) {
-			ISAPTSCANCARD;
 			nRet = ChangePwdEx(defKeyA, ctrlword, oldKeyB, NHKyeB, i, 0, changeflag);
 		}
 		if (nRet)
@@ -489,7 +485,6 @@ static int repairKeyBAllF(unsigned char *ctrlword)
 	//没有寻到卡
 	if(!Instance || !Instance->iReadBin)
 		return -1;
-	ISAPTSCANCARD;
 
 	//读出卡号,得出旧的KeyB
 	memset(newKeyB, 0, sizeof(newKeyB));
@@ -527,7 +522,6 @@ static int repairKeyB(unsigned char *ctrlword)
 	//没有寻到卡
 	if(!Instance || !Instance->iReadBin)
 		return -1;
-	ISAPTSCANCARD;
 
 	//读出卡号,得出旧的KeyB
 	memset(oldKeyB, 0, sizeof(oldKeyB));
@@ -754,8 +748,6 @@ int _iWriteCard(struct RWRequestS *list)
 				memcpy(Key, defKeyA, sizeof(defKeyA));
 			}
 		}
-
-		ISAPTSCANCARD;
 
 		CurrRequest = list;
 		while(CurrRequest)
